@@ -1,6 +1,7 @@
 # async-monitor.js
 
 ![Build and Deployment](https://github.com/manulykebe/async-monitor.js/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)
+![Code Scanning](https://github.com/manulykebe/async-monitor.js/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
 
 [![NPM Version][npm-image]][npm-url]
 [![CDNJS][cdnjs-image]][cdnjs-url]
