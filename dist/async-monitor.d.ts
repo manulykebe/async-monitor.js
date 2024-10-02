@@ -77,7 +77,7 @@ declare class Monitor {
     }>;
 }
 
-declare const version = "1.0.2";
+declare const version = "1.0.3";
 
 declare const nextId: typeof Sequence.nextId;
 declare const getAll: () => Array<WatchFunction>;

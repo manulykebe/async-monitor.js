@@ -34,7 +34,7 @@ describe('Monitor Group Class', () => {
 		group.reset();
 
 		// Ensure that all functions are marked as unfinished
-		expect(group._functions[0]._isFinished).toBe(true);
+		expect(group._functions[0]._isFinished).toBe(false);
 		expect(group._isFinished).toBe(false);
 	});
 
