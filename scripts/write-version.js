@@ -12,7 +12,7 @@ function handleError(error) {
 
 fs.open('./src/Version.ts', 'w', (error, fd) => {
 	handleError(error);
-	fs.write(fd, [`const VERSION = '${version}';`, 'export default VERSION;', ''].join('\n'), error => {
+	fs.write(fd, [`const version = '${version}';`, 'export default version;', ''].join('\n'), error => {
 		handleError(error);
 	});
 });
