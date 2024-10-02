@@ -1,5 +1,5 @@
 {
-	"name": "@async-monitor/monitor.js",
+	"name": "async-monitor.js",
 	"description": "A lightweight and efficient monitoring engine designed to seamlessly track and manage hierarchically organized asynchronous JavaScript functions. Perfect for developers looking to streamline and gain insights into complex async workflows, ensuring reliable performance and easy debugging.",
 	"version": "1.0.4",
 	"type": "module",

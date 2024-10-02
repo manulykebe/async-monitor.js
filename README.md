@@ -71,11 +71,10 @@ features or fixes) in `src/<file>.test.ts` to be accepted. See
 
 Maintainers: [Manu Vanneste](https://github.com/manulykebe).
 
-[npm-image]: https://img.shields.io/npm/v/@asyncmonitorjs/monitor.js.svg
-[npm-url]: https://npmjs.org/package/@asyncmonitorjs/monitor.js
-[downloads-image]: https://img.shields.io/npm/dm/@asyncmonitorjs/monitor.js.svg
+[npm-image]: https://badge.fury.io/js/async-monitor.js.svg
+[npm-url]: https://www.npmjs.com/package/async-monitor.js
+
+<!-- [downloads-image]: https://img.shields.io/npm/dm/@asyncmonitorjs/monitor.js.svg
 [downloads-url]: https://npmjs.org/package/@asyncmonitorjs/monitor.js
 [ci-image]: https://github.com/manulykebe/async-monitor.js/workflows/build%20and%20tests/badge.svg?branch=main
-[ci-url]: https://github.com/manulykebe/async-monitor.js/actions
-[cdnjs-image]: https://img.shields.io/cdnjs/v/asyncmonitor.js.svg
-[cdnjs-url]: https://cdnjs.com/libraries/asyncmonitor.js
+[ci-url]: https://github.com/manulykebe/async-monitor.js/actions -->
