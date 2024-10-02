@@ -1,0 +1,126 @@
+pre,
+code {
+	font-size: 14px;
+	font-family: monospace;
+	margin: 0px;
+}
+
+#console {
+	background-color: #f0f0f0;
+	padding: 10px;
+	border: 1px solid #ccc;
+	height: calc(100% - 22px);
+	overflow-y: auto;
+	font-family: monospace;
+}
+
+.button-container {
+	align-content: flex-start;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	gap: 2px;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	width: 220px;
+}
+
+.btn-wrapper {
+	display: flex;
+	align-items: center;
+}
+
+/* Styling for the code icon (next to the button) */
+#codeIcon {
+	font-size: 24px;
+	margin-right: 10px;
+	cursor: pointer;
+	color: grey;
+	transition: color 0.3s ease;
+	transform: translateX(189px);
+}
+
+/* Change icon color on hover */
+#codeIcon:hover {
+	color: #0056b3;
+}
+
+button {
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	text-align: left;
+	width: 200px;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+/* Styling for the log entries */
+.log-entry {
+	display: flex;
+	margin-bottom: 4px;
+}
+
+/* Styling for the time column */
+.log-time {
+	color: dimgray;
+	width: 60px;
+}
+
+/* Styling for the message column */
+.log-message {
+	flex: 1;
+	margin-left: 10px;
+}
+
+/* Styling for the <pre> tag within the message column */
+.log-pre {
+	white-space: pre-wrap; /* Allows multiline handling */
+}
+
+/* Styling for the <pre> tag within the message column */
+.log-group {
+	font-weight: bold;
+}
+
+.log-warn {
+	background-color: #fef6d5;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+}
+
+/* Styling for the warning icon */
+.log-warn::before {
+	content: '⚠️'; /* Unicode for warning symbol */
+	margin-right: 8px;
+	font-size: 1.2em;
+	transform: translateY(-2px);
+}
+
+/* Styling for the log table */
+.log-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Styling for table headers */
+.log-table-header {
+	border: 1px solid black;
+	padding: 4px;
+	text-align: left;
+	background-color: #f4f4f4; /* Optional, for visibility */
+}
+
+/* Styling for table cells */
+.log-table-cell {
+	border: 1px solid black;
+	padding: 4px;
+}

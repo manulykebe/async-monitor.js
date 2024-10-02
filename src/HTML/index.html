@@ -3,55 +3,32 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>async-monitor.js</title>
-		<style>
-			pre,
-			code {
-				font-family: 'Courier New', 'Lucida Console', monospace;
-				font-size: 12px;
-				font-weight: bold;
-				margin: 0px;
-			}
 
-			#console {
-				background-color: #f0f0f0;
-				padding: 10px;
-				border: 1px solid #ccc;
-				height: calc(100% - 22px);
-				overflow-y: auto;
-				font-family: monospace;
-			}
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+		<link rel="stylesheet" href="styles.css" />
 
-			.button-container {
-				display: flex;
-				gap: 10px;
-				margin-top: 20px;
+		<script type="module" src="./js/console-log.js"></script>
+		<script type="module" src="./js/version.js"></script>
+		<script type="module" src="./js/index-parallel.js"></script>
+		<script type="module" src="./js/index-serial.js"></script>
+		<script>
+			function show_code(url) {
+				window.open(url, 'popupWindow', 'width=600,height=400,scrollbars=yes');
 			}
-
-			button {
-				padding: 10px 20px;
-				font-size: 16px;
-				cursor: pointer;
-				background-color: #007bff;
-				color: white;
-				border: none;
-				border-radius: 5px;
-			}
-
-			button:hover {
-				background-color: #0056b3;
-			}
-		</style>
-
-		<!-- <script type="module" src="./js/console-log.js"></script> -->
-		<script type="module" src="./js/index.js"></script>
+		</script>
 	</head>
 
 	<body>
 		<div class="button-container">
-			<button onclick="demo_serial_execution()">Serial Execution</button>
-			<button onclick="demo_parallel_execution()">Parallel Execution</button>
+			<div class="btn-wrapper">
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-parallel.js')"></i>
+				<button onclick="demo_parallel_execution()">Parallel Execution</button>
+			</div>
+			<div class="btn-wrapper">
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-serial.js')"></i>
+				<button onclick="demo_serial_execution()">Serial Execution</button>
+			</div>
 		</div>
-
 		<div id="console"></div>
 	</body>
 </html>

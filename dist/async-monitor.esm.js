@@ -174,7 +174,12 @@ var Watch = /** @class */ (function () {
         return monitorInstance
             .monitorStatuses()
             .then(function (statuses) {
-            console.log("status(es): ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
+            if (statuses.statusesPromise.length > 1) {
+                console.log("statuses: ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
+            }
+            else {
+                console.log("status: ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
+            }
             _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
             _statuses = statuses.statusesPromise
                 .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
