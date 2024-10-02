@@ -9,15 +9,38 @@
 [![Build and Tests][ci-image]][ci-url]
 
 ```html
-<div id="version"></div>
 <script type="module">
-	import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-	const div_version = document.getElementById('version');
-	div_version.innerText = version;
+	import {Group} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+
+	const watches = new Group();
+
+	const function_to_watch1 = () => sleep(5, /*fail:*/ false);
+	const function_to_watch2 = () => sleep(2, /*fail:*/ false);
+
+	watches.addWatch({
+		parent: undefined,
+		child: 'a',
+		f: function_to_watch1,
+		onCompleteCallback: function () {
+			console.log('++++onCompleteCallback() after step 1');
+		},
+	});
+
+	watches.addWatch({
+		parent: 'a',
+		child: 'b',
+		f: function_to_watch2,
+		onCompleteCallback: function () {
+			console.log('++++onCompleteCallback() after step 2');
+		},
+	});
+
+	watches.WatchAll();
 </script>
 ```
 
 [Examples](https://manulykebe.github.io/async-monitor.js/src/HTML/index.html)
+[CodePen](https://codepen.io/codepenatlykebe/pen/gOVPBEg)
 
 # Features
 
