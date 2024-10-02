@@ -1,34 +1,30 @@
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>async-monitor.js</title>
+		<style>
+			#console {
+				background-color: #f0f0f0;
+				padding: 10px;
+				border: 1px solid #ccc;
+				height: 200px;
+				overflow-y: auto;
+				font-family: monospace;
+			}
+		</style>
 
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>async-monitor.js</title>
-	<style>
-		#console {
-			background-color: #f0f0f0;
-			padding: 10px;
-			border: 1px solid #ccc;
-			height: 200px;
-			overflow-y: auto;
-			font-family: monospace;
-		}
-	</style>
+		<script type="module" src="./js/console-log.js"></script>
+	</head>
 
-	<script type="module" src="./js/console-log.js"></script>
+	<body>
+		<div id="version"></div>
+		<div id="console"></div>
+		<script>
+			console.log('Hello, this will appear in both the browser console and the div!');
+			console.log('This is another log message.');
+		</script>
 
-</head>
-
-<body>
-	<div id="version"></div>
-	<div id="console"></div>
-	<script>
-		console.log('Hello, this will appear in both the browser console and the div!');
-		console.log('This is another log message.');
-	</script>
-
-	<script type="module" src="./js/index.js"></script>
-
-</body>
-
+		<script type="module" src="./js/index.js"></script>
+	</body>
 </html>

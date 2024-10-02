@@ -12,7 +12,7 @@ console.log = function (message) {
 			try {
 				message = JSON.stringify(message, undefined, 4);
 			} catch (error) {
-				message = Object.keys(message)
+				message = Object.keys(message);
 			}
 
 		logMessage.textContent = message;

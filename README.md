@@ -16,6 +16,7 @@
 	div_version.innerText = version;
 </script>
 ```
+
 [link](https://manulykebe.github.io/async-monitor.js/src/HTML/version.html)
 
 # Features
