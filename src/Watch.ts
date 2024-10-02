@@ -21,8 +21,11 @@ export class Watch {
 		return monitorInstance
 			.monitorStatuses()
 			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
-				console.log('took:', parseInt(((performance.now() - statuses.performance) * 1000).toString()) / 1000 + 'ms');
-				console.log('statuses:', statuses.statusesPromise.map(x => x.status).join(','));
+				console.log(
+					'took:',
+					parseInt(((performance.now() - statuses.performance || 0) * 1000).toString()) / 1000 + 'ms',
+				);
+				console.log('statuses:', statuses.statusesPromise.map(x => x.status.toString()).join(','));
 
 				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
 				_statuses = statuses.statusesPromise

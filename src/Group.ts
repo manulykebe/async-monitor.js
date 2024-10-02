@@ -56,21 +56,10 @@ export default class Group {
 	}
 
 	// Add a watch function
-	addWatch = (f: () => void) => {
-		const watchFunction: WatchFunction = {
-			child: undefined,
-			group: undefined,
-			parent: undefined,
-			sequence: undefined,
-			promise: undefined,
-			f: f,
-			onCompleteCallback: undefined,
-			onRejectCallback: undefined,
-			// _isRunning: false,
-			// _isFinished: false,
-			// _index: undefined
-		};
-		if (typeof f === 'function') {
+	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
+		let watchFunction: WatchFunction;
+		if (typeof addWatchFunction === 'function') {
+			watchFunction = new Element(addWatchFunction);
 			if (this._seq === 0) {
 				watchFunction.parent = watchFunction.parent || undefined;
 				watchFunction.child = '_monitor_1';
@@ -79,12 +68,12 @@ export default class Group {
 				watchFunction.parent = '_monitor_' + this._seq++;
 				watchFunction.child = '_monitor_' + this._seq;
 			}
+		} else {
+			// Create a new Element and add it to the group
+			watchFunction = new Element(addWatchFunction);
 		}
-
-		// Create a new Element and add it to the group
-		const new_element: WatchFunction = new Element(watchFunction);
-		new_element.group = this;
-		this._functions.push(new_element);
+		watchFunction.group = this;
+		this._functions.push(watchFunction);
 	};
 	// Abort the group TODO
 	abort(): void {

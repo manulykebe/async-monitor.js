@@ -172,8 +172,8 @@ define(['exports'], (function (exports) { 'use strict';
             return monitorInstance
                 .monitorStatuses()
                 .then(function (statuses) {
-                console.log('took:', parseInt(((performance.now() - statuses.performance) * 1000).toString()) / 1000 + 'ms');
-                console.log('statuses:', statuses.statusesPromise.map(function (x) { return x.status; }).join(','));
+                console.log('took:', parseInt(((performance.now() - statuses.performance || 0) * 1000).toString()) / 1000 + 'ms');
+                console.log('statuses:', statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(','));
                 _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
                 _statuses = statuses.statusesPromise
                     .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
@@ -333,21 +333,10 @@ define(['exports'], (function (exports) { 'use strict';
             };
             this._abort = new AbortController(); // Declare abort controller
             // Add a watch function
-            this.addWatch = function (f) {
-                var watchFunction = {
-                    child: undefined,
-                    group: undefined,
-                    parent: undefined,
-                    sequence: undefined,
-                    promise: undefined,
-                    f: f,
-                    onCompleteCallback: undefined,
-                    onRejectCallback: undefined,
-                    // _isRunning: false,
-                    // _isFinished: false,
-                    // _index: undefined
-                };
-                if (typeof f === 'function') {
+            this.addWatch = function (addWatchFunction) {
+                var watchFunction;
+                if (typeof addWatchFunction === 'function') {
+                    watchFunction = new Element(addWatchFunction);
                     if (_this._seq === 0) {
                         watchFunction.parent = watchFunction.parent || undefined;
                         watchFunction.child = '_monitor_1';
@@ -358,10 +347,12 @@ define(['exports'], (function (exports) { 'use strict';
                         watchFunction.child = '_monitor_' + _this._seq;
                     }
                 }
-                // Create a new Element and add it to the group
-                var new_element = new Element(watchFunction);
-                new_element.group = _this;
-                _this._functions.push(new_element);
+                else {
+                    // Create a new Element and add it to the group
+                    watchFunction = new Element(addWatchFunction);
+                }
+                watchFunction.group = _this;
+                _this._functions.push(watchFunction);
             };
         }
         Object.defineProperty(Group.prototype, "_isRunning", {
@@ -471,7 +462,7 @@ define(['exports'], (function (exports) { 'use strict';
         return Sequence;
     }());
 
-    var version = '1.0.1';
+    var version = '1.0.2';
 
     var mainGroup = new Group();
 

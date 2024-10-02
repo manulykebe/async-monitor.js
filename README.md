@@ -17,7 +17,7 @@
 </script>
 ```
 
-[link](https://manulykebe.github.io/async-monitor.js/src/HTML/version.html)
+[Examples](https://manulykebe.github.io/async-monitor.js/src/HTML/index.html)
 
 # Features
 

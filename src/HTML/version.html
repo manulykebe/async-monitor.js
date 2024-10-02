@@ -4,27 +4,54 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>async-monitor.js</title>
 		<style>
+			pre,
+			code {
+				font-family: 'Courier New', 'Lucida Console', monospace;
+				font-size: 12px;
+				font-weight: bold;
+				margin: 0px;
+			}
+
 			#console {
 				background-color: #f0f0f0;
 				padding: 10px;
 				border: 1px solid #ccc;
-				height: 200px;
+				height: calc(100% - 22px);
 				overflow-y: auto;
 				font-family: monospace;
+			}
+
+			.button-container {
+				display: flex;
+				gap: 10px;
+				margin-top: 20px;
+			}
+
+			button {
+				padding: 10px 20px;
+				font-size: 16px;
+				cursor: pointer;
+				background-color: #007bff;
+				color: white;
+				border: none;
+				border-radius: 5px;
+			}
+
+			button:hover {
+				background-color: #0056b3;
 			}
 		</style>
 
 		<script type="module" src="./js/console-log.js"></script>
+		<script type="module" src="./js/index.js"></script>
 	</head>
 
 	<body>
-		<div id="version"></div>
-		<div id="console"></div>
-		<script>
-			console.log('Hello, this will appear in both the browser console and the div!');
-			console.log('This is another log message.');
-		</script>
+		<div class="button-container">
+			<button onclick="demo_serial_execution()">Serial Execution</button>
+			<button onclick="demo_parallel_execution()">Parallel Execution</button>
+		</div>
 
-		<script type="module" src="./js/index.js"></script>
+		<div id="console"></div>
 	</body>
 </html>

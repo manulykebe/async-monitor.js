@@ -1,7 +1,5 @@
-.DS_Store
-.idea
 .vscode
 .tmp
-build/npm*
 node_modules
-npm-debug.log
+
+.env

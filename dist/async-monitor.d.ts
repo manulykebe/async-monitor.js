@@ -34,7 +34,7 @@ declare class Group {
     _onRejectedCallback: () => void;
     _abort: AbortController;
     get _isRunning(): boolean;
-    addWatch: (f: () => void) => void;
+    addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
     abort(): void;
     reset(): void;
     getAll(): Array<WatchFunction>;
@@ -77,7 +77,7 @@ declare class Monitor {
     }>;
 }
 
-declare const version = "1.0.1";
+declare const version = "1.0.2";
 
 declare const nextId: typeof Sequence.nextId;
 declare const getAll: () => Array<WatchFunction>;
