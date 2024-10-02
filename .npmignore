@@ -1,6 +1,10 @@
-assets/
-bower.json
+.tmp
 docs/
-examples/
-CONTRIBUTING.md
-test/
+node_modules/
+scripts/
+src/
+.*
+.*.*
+jest*.*
+rollup.*
+tsconfig.json

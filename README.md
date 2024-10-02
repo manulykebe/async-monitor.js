@@ -44,6 +44,8 @@
 
 # Features
 
+A lightweight and efficient monitoring engine designed to seamlessly track and manage hierarchically organized asynchronous JavaScript functions. Perfect for developers looking to streamline and gain insights into complex async workflows, ensuring reliable performance and easy debugging.
+
 # Examples
 
 # Work in progress!
@@ -69,10 +71,10 @@ features or fixes) in `src/<file>.test.ts` to be accepted. See
 
 Maintainers: [Manu Vanneste](https://github.com/manulykebe).
 
-[npm-image]: https://img.shields.io/npm/v/@asyncmonitorjs/tween.js.svg
-[npm-url]: https://npmjs.org/package/@asyncmonitorjs/tween.js
-[downloads-image]: https://img.shields.io/npm/dm/@asyncmonitorjs/tween.js.svg
-[downloads-url]: https://npmjs.org/package/@asyncmonitorjs/tween.js
+[npm-image]: https://img.shields.io/npm/v/@asyncmonitorjs/monitor.js.svg
+[npm-url]: https://npmjs.org/package/@asyncmonitorjs/monitor.js
+[downloads-image]: https://img.shields.io/npm/dm/@asyncmonitorjs/monitor.js.svg
+[downloads-url]: https://npmjs.org/package/@asyncmonitorjs/monitor.js
 [ci-image]: https://github.com/manulykebe/async-monitor.js/workflows/build%20and%20tests/badge.svg?branch=main
 [ci-url]: https://github.com/manulykebe/async-monitor.js/actions
 [cdnjs-image]: https://img.shields.io/cdnjs/v/asyncmonitor.js.svg

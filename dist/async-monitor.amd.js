@@ -485,7 +485,7 @@ define(['exports'], (function (exports) { 'use strict';
         return Sequence;
     }());
 
-    var version = '1.0.3';
+    var version = '1.0.4';
 
     var mainGroup = new Group();
 

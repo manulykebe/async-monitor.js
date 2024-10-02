@@ -1,6 +1,6 @@
 {
 	"name": "@async-monitor/monitor.js",
-	"description": "Simple and fast monitoring engine for async javascript functions.",
+	"description": "A lightweight and efficient monitoring engine designed to seamlessly track and manage hierarchically organized asynchronous JavaScript functions. Perfect for developers looking to streamline and gain insights into complex async workflows, ensuring reliable performance and easy debugging.",
 	"version": "1.0.4",
 	"type": "module",
 	"main": "dist/async-monitor.cjs",
@@ -18,18 +18,22 @@
 		"README.md",
 		"LICENSE"
 	],
-	"homepage": "https://github.com/manulykebe/monitor.js",
+	"publishConfig": {
+		"access": "public"
+	},
+	"homepage": "https://manulykebe.github.io/async-monitor.js",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/manulykebe/monitor.js.git"
+		"url": "git+https://github.com/manulykebe/async-monitor.js.git"
 	},
 	"bugs": {
-		"url": "https://github.com/manulykebe/monitor.js/issues"
+		"url": "https://github.com/manulykebe/async-monitor.js/issues"
 	},
 	"license": "MIT",
 	"keywords": [
-		"monitor",
-		"interpolation"
+		"asynchronous",
+		"execution",
+		"monitoring"
 	],
 	"scripts": {
 		"dev": "(npm run tsc-watch -- --preserveWatchOutput & p1=$!; npm run rollup-build -- --watch & p2=$!; wait $p1 $p2)",
@@ -49,7 +53,7 @@
 		"release:major": "npm version major --message 'v%s' && npm publish && npm run _release:push-branch",
 		"_release:push-branch": "git push --follow-tags --set-upstream origin `git rev-parse --abbrev-ref HEAD`"
 	},
-	"author": "monitor.js contributors (https://github.com/manulykebe/monitor.js/graphs/contributors)",
+	"author": "monitor.js contributors (https://github.com/manulykebe/async-monitor.js/graphs/contributors)",
 	"devDependencies": {
 		"@babel/preset-env": "^7.25.4",
 		"@types/jest": "^29.5.13",
