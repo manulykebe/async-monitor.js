@@ -77,7 +77,7 @@ declare class Monitor {
     }>;
 }
 
-declare const VERSION = "1.0.0";
+declare const version = "1.0.0";
 
 declare const nextId: typeof Sequence.nextId;
 declare const getAll: () => Array<WatchFunction>;
@@ -91,7 +91,7 @@ declare const _default: {
     Sequence: typeof Sequence;
     nextId: typeof Sequence.nextId;
     Monitor: typeof Monitor;
-    VERSION: string;
+    version: string;
     getAll: () => Array<WatchFunction>;
     removeAll: () => void;
     add: () => void;
@@ -100,4 +100,4 @@ declare const _default: {
     sleep: typeof sleep;
 };
 
-export { Group, Monitor, Sequence, VERSION, Watch, add, _default as default, getAll, nextId, now, remove, removeAll, sleep };
+export { Group, Monitor, Sequence, Watch, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };

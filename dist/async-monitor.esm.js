@@ -469,7 +469,7 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var VERSION = '1.0.0';
+var version = '1.0.0';
 
 var mainGroup = new Group();
 
@@ -486,7 +486,7 @@ var Index = {
     Sequence: Sequence,
     nextId: nextId,
     Monitor: Monitor,
-    VERSION: VERSION,
+    version: version,
     getAll: getAll,
     removeAll: removeAll,
     add: add,
@@ -495,4 +495,4 @@ var Index = {
     sleep: sleep,
 };
 
-export { Group, Monitor, Sequence, VERSION, Watch, add, Index as default, getAll, nextId, now, remove, removeAll, sleep };
+export { Group, Monitor, Sequence, Watch, add, Index as default, getAll, nextId, now, remove, removeAll, sleep, version };

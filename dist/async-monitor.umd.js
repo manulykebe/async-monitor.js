@@ -475,7 +475,7 @@
         return Sequence;
     }());
 
-    var VERSION = '1.0.0';
+    var version = '1.0.0';
 
     var mainGroup = new Group();
 
@@ -492,7 +492,7 @@
         Sequence: Sequence,
         nextId: nextId,
         Monitor: Monitor,
-        VERSION: VERSION,
+        version: version,
         getAll: getAll,
         removeAll: removeAll,
         add: add,
@@ -504,7 +504,6 @@
     exports.Group = Group;
     exports.Monitor = Monitor;
     exports.Sequence = Sequence;
-    exports.VERSION = VERSION;
     exports.Watch = Watch;
     exports.add = add;
     exports.default = Index;
@@ -514,6 +513,7 @@
     exports.remove = remove;
     exports.removeAll = removeAll;
     exports.sleep = sleep;
+    exports.version = version;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

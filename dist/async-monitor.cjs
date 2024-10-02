@@ -473,7 +473,7 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var VERSION = '1.0.0';
+var version = '1.0.0';
 
 var mainGroup = new Group();
 
@@ -490,7 +490,7 @@ var Index = {
     Sequence: Sequence,
     nextId: nextId,
     Monitor: Monitor,
-    VERSION: VERSION,
+    version: version,
     getAll: getAll,
     removeAll: removeAll,
     add: add,
@@ -502,7 +502,6 @@ var Index = {
 exports.Group = Group;
 exports.Monitor = Monitor;
 exports.Sequence = Sequence;
-exports.VERSION = VERSION;
 exports.Watch = Watch;
 exports.add = add;
 exports.default = Index;
@@ -512,3 +511,4 @@ exports.now = now;
 exports.remove = remove;
 exports.removeAll = removeAll;
 exports.sleep = sleep;
+exports.version = version;

@@ -7,13 +7,16 @@ async-monitor.js
 ```html
 <div id="version"></div>
 <script type="module">
-	import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js'
-	const div_version = document.getElementById('version')
+	import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+	const div_version = document.getElementById('version');
 	div_version.innerText = version;
 </script>
 ```
+
 # Features
+
 # Examples
+
 # Work in progress!
 
 # Tests
