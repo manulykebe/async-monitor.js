@@ -1,16 +1,34 @@
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
-	</head>
 
-	<body>
-		<div id="version"></div>
-		<script type="module">
-			import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-			const div_version = document.getElementById('version');
-			div_version.innerText = version;
-		</script>
-	</body>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>async-monitor.js</title>
+	<style>
+		#console {
+			background-color: #f0f0f0;
+			padding: 10px;
+			border: 1px solid #ccc;
+			height: 200px;
+			overflow-y: auto;
+			font-family: monospace;
+		}
+	</style>
+
+	<script type="module" src="./js/console-log.js"></script>
+
+</head>
+
+<body>
+	<div id="version"></div>
+	<div id="console"></div>
+	<script>
+		console.log('Hello, this will appear in both the browser console and the div!');
+		console.log('This is another log message.');
+	</script>
+
+	<script type="module" src="./js/index.js"></script>
+
+</body>
+
 </html>
