@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "./.tmp",
+		"declaration": true,
+		"strict": true,
+		"sourceMap": true,
+		"module": "es2015",
+		"target": "es5",
+		"moduleResolution": "node",
+		"lib": ["dom", "es2015"],
+		"ignoreDeprecations": "5.0",
+		// "verbatimModuleSyntax": true
+		"esModuleInterop": true
+	},
+	"exclude": ["node_modules", "examples"]
+}
