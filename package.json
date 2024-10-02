@@ -1,7 +1,7 @@
 {
 	"name": "@async-monitor/monitor.js",
 	"description": "Simple and fast monitoring engine for async javascript functions.",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"type": "module",
 	"main": "dist/async-monitor.cjs",
 	"types": "dist/async-monitor.d.ts",
