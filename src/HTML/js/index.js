@@ -8,8 +8,8 @@ const serialWatches = new Group();
 const parallelWatches = new Group();
 
 const function_to_watch1 = () => sleep(1, /*fail:*/ false);
-const function_to_watch2 = () => sleep(1, /*fail:*/ false);
-const function_to_watch3 = () => sleep(1, /*fail:*/ false);
+const function_to_watch2 = () => sleep(2, /*fail:*/ false);
+const function_to_watch3 = () => sleep(3, /*fail:*/ false);
 
 serialWatches.addWatch({
 	parent: undefined,
@@ -74,7 +74,13 @@ function demo_serial_execution() {
 	console.log('      |');
 	console.log('      --->' + function_to_watch3.toString());
 	serialWatches.reset();
-	serialWatches.WatchAll();
+	serialWatches.WatchAll(() => {
+		console.table(
+			serialWatches._functions.map((f, i) => {
+				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+			}),
+		);
+	});
 }
 function demo_parallel_execution() {
 	console.clear();
@@ -83,8 +89,17 @@ function demo_parallel_execution() {
 	console.log(`--->${function_to_watch2.toString()}`);
 	console.log(`--->${function_to_watch3.toString()}`);
 	parallelWatches.reset();
-	parallelWatches.WatchAll();
+	parallelWatches.WatchAll(() => {
+		console.table(
+			parallelWatches._functions.map((f, i) => {
+				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+			}),
+		);
+	});
 }
 // Make the functions available in the global scope
 window.demo_serial_execution = demo_serial_execution;
 window.demo_parallel_execution = demo_parallel_execution;
+
+document['serialWatches'] = serialWatches;
+document['parallelWatches'] = parallelWatches;

@@ -8,27 +8,32 @@ export interface WatchFunction {
 	sequence: number | undefined;
 	promise?: Promise<any> | void;
 	f: () => void;
+	onStartCallback: (() => void) | undefined;
 	onCompleteCallback: (() => void) | undefined;
 	onRejectCallback: (() => void) | undefined;
 	_isRunning?: boolean;
 	_isFinished?: boolean;
 	_index?: number | undefined;
+	_startTime?: number;
+	_stopTime?: number;
+	_duration?: number;
 }
 
 let _group_id: number = 0;
 export default class Group {
-	private _id = _group_id++;
+	_id = _group_id++;
 	_functions: WatchFunction[] = [];
-	private _startTime: number = 0;
-	private _stopTime: number = 0;
-	private _seq: number = 0;
+	_startTime: number = 0;
+	_stopTime: number = 0;
+	_duration: number = 0;
+	_seq: number = 0;
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
 
 	// Default Callbacks
 	_onStartCallback: () => void = () => {
-		console.groupCollapsed('Group: ' + this._id);
+		console.group('Group: ' + this._id);
 		console.log('*** START ***');
 	};
 
@@ -39,12 +44,10 @@ export default class Group {
 
 	_onUnCompleteCallback: () => void = () => {
 		console.log('*** UNCOMPLETE! ***');
-		console.groupEnd();
 	};
 
 	_onRejectedCallback: () => void = () => {
 		console.log('*** REJECTED ***');
-		console.groupEnd();
 	};
 
 	_abort: AbortController = new AbortController(); // Declare abort controller
@@ -56,7 +59,7 @@ export default class Group {
 
 	// Check if any function in the group is running
 	get _isFinished(): boolean {
-		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, false);
+		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, true);
 	}
 
 	// Add a watch function
@@ -134,13 +137,15 @@ export default class Group {
 			return;
 		}
 
+		this._startTime = Date.now();
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
 
 		// Create an array of valid watch objects from the group's functions
 		const watchArray = this._functions.map(fn => ({
 			promise: fn.promise ?? undefined, // Use the promise if it exists, otherwise undefined
 			onRejectCallback: fn.onRejectCallback, // The callback for rejection
-			group: this, // The current group
+			group: this, // The current group,
+			_startTime: Date.now(),
 		}));
 
 		// Pass the array to the WatchAll function
@@ -152,10 +157,13 @@ export default class Group {
 		return this;
 	}
 	onStart(callback: () => void) {
+		this._startTime = Date.now(); //#m
 		this._onStartCallback = callback;
 		return this;
 	}
 	onComplete(callback: () => void) {
+		debugger;
+		this._stopTime = Date.now(); //#m
 		this._onCompleteCallback = callback;
 		return this;
 	}

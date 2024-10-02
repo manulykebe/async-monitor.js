@@ -67,8 +67,11 @@ define(['exports'], (function (exports) { 'use strict';
 
     var Element = /** @class */ (function () {
         function Element(f, parent, child, onCompleteCallback, onRejectCallback) {
+            this.onStartCallback = function () { };
             this.onCompleteCallback = function () { };
             this.onRejectCallback = function () { };
+            this._startTime = 0;
+            this._stopTime = 0;
             if (typeof f === 'object') {
                 // If an object of type WatchFunction is passed, use its properties
                 this.f = f.f;
@@ -169,11 +172,11 @@ define(['exports'], (function (exports) { 'use strict';
                 .filter(function (x) { return x.promise instanceof Promise; })
                 .map(function (x) { return x.promise; });
             var monitorInstance = new Monitor(validFs);
+            document['monitorInstance'] = monitorInstance;
             return monitorInstance
                 .monitorStatuses()
                 .then(function (statuses) {
-                console.log('took:', parseInt(((performance.now() - statuses.performance || 0) * 1000).toString()) / 1000 + 'ms');
-                console.log('statuses:', statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(','));
+                console.log("status(es): ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
                 _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
                 _statuses = statuses.statusesPromise
                     .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
@@ -232,6 +235,8 @@ define(['exports'], (function (exports) { 'use strict';
         var watches = group._functions;
         if (watches.every(function (f) { return f._isFinished; })) {
             // All watches are finished
+            group._stopTime = Date.now();
+            group._duration = group._stopTime - group._startTime;
             if (typeof group._onCompleteCallback === 'function')
                 group._onCompleteCallback();
             return;
@@ -255,12 +260,15 @@ define(['exports'], (function (exports) { 'use strict';
         if (children.length > 0) {
             children.forEach(function (child) {
                 child._isRunning = true;
+                child._startTime = Date.now();
                 child.sequence = _sequence;
                 try {
                     child.promise = child.f();
                 }
                 catch (error) {
                     console.warn('Watch: critical! error in call to (async) function:\n', error);
+                    child._stopTime = Date.now();
+                    child._duration = child._stopTime - child._startTime;
                     child._isRunning = false;
                     if (typeof group._onUnCompleteCallback === 'function')
                         group._onUnCompleteCallback();
@@ -285,6 +293,8 @@ define(['exports'], (function (exports) { 'use strict';
                         children.forEach(function (child) {
                             child._isRunning = false;
                             child._isFinished = true;
+                            child._stopTime = Date.now();
+                            child._duration = child._stopTime - (child._startTime || 0);
                         });
                         if (!watches.some(function (x) { return x._isRunning; }) && watches.every(function (x) { return x._isFinished; })) {
                             if (typeof callback === 'function')
@@ -311,10 +321,11 @@ define(['exports'], (function (exports) { 'use strict';
             this._functions = [];
             this._startTime = 0;
             this._stopTime = 0;
+            this._duration = 0;
             this._seq = 0;
             // Default Callbacks
             this._onStartCallback = function () {
-                console.groupCollapsed('Group: ' + _this._id);
+                console.group('Group: ' + _this._id);
                 console.log('*** START ***');
             };
             this._onCompleteCallback = function () {
@@ -323,11 +334,9 @@ define(['exports'], (function (exports) { 'use strict';
             };
             this._onUnCompleteCallback = function () {
                 console.log('*** UNCOMPLETE! ***');
-                console.groupEnd();
             };
             this._onRejectedCallback = function () {
                 console.log('*** REJECTED ***');
-                console.groupEnd();
             };
             this._abort = new AbortController(); // Declare abort controller
             // Add a watch function
@@ -364,7 +373,7 @@ define(['exports'], (function (exports) { 'use strict';
         Object.defineProperty(Group.prototype, "_isFinished", {
             // Check if any function in the group is running
             get: function () {
-                return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, false);
+                return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, true);
             },
             enumerable: false,
             configurable: true
@@ -423,6 +432,7 @@ define(['exports'], (function (exports) { 'use strict';
                     this._onCompleteCallback();
                 return;
             }
+            this._startTime = Date.now();
             if (typeof this._onStartCallback === 'function')
                 this._onStartCallback();
             // Create an array of valid watch objects from the group's functions
@@ -431,7 +441,8 @@ define(['exports'], (function (exports) { 'use strict';
                 return ({
                     promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
                     onRejectCallback: fn.onRejectCallback, // The callback for rejection
-                    group: _this, // The current group
+                    group: _this, // The current group,
+                    _startTime: Date.now(),
                 });
             });
             // Pass the array to the WatchAll function
@@ -442,10 +453,13 @@ define(['exports'], (function (exports) { 'use strict';
             return this;
         };
         Group.prototype.onStart = function (callback) {
+            this._startTime = Date.now(); //#m
             this._onStartCallback = callback;
             return this;
         };
         Group.prototype.onComplete = function (callback) {
+            debugger;
+            this._stopTime = Date.now(); //#m
             this._onCompleteCallback = callback;
             return this;
         };
@@ -455,7 +469,11 @@ define(['exports'], (function (exports) { 'use strict';
     var now = function () { return performance.now(); };
 
     /**
-     * Utils
+     * Sequence
+     *
+     * A utility class that provides sequential unique IDs.
+     * It maintains a static counter that increments with each call to `nextId()`,
+     * ensuring that each ID is unique within the runtime of the application.
      */
     var Sequence = /** @class */ (function () {
         function Sequence() {

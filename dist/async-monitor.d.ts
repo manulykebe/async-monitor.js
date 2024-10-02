@@ -13,18 +13,23 @@ interface WatchFunction {
     sequence: number | undefined;
     promise?: Promise<any> | void;
     f: () => void;
+    onStartCallback: (() => void) | undefined;
     onCompleteCallback: (() => void) | undefined;
     onRejectCallback: (() => void) | undefined;
     _isRunning?: boolean;
     _isFinished?: boolean;
     _index?: number | undefined;
+    _startTime?: number;
+    _stopTime?: number;
+    _duration?: number;
 }
 declare class Group {
-    private _id;
+    _id: number;
     _functions: WatchFunction[];
-    private _startTime;
-    private _stopTime;
-    private _seq;
+    _startTime: number;
+    _stopTime: number;
+    _duration: number;
+    _seq: number;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
     _onStartCallback: () => void;
@@ -61,7 +66,11 @@ declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<nu
 declare const now: () => number;
 
 /**
- * Utils
+ * Sequence
+ *
+ * A utility class that provides sequential unique IDs.
+ * It maintains a static counter that increments with each call to `nextId()`,
+ * ensuring that each ID is unique within the runtime of the application.
  */
 declare class Sequence {
     private static _nextId;

@@ -18,14 +18,12 @@ export class Watch {
 			.map(x => x.promise);
 		const monitorInstance = new Monitor(validFs);
 
+		(document as any)['monitorInstance'] = monitorInstance;
+
 		return monitorInstance
 			.monitorStatuses()
 			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
-				console.log(
-					'took:',
-					parseInt(((performance.now() - statuses.performance || 0) * 1000).toString()) / 1000 + 'ms',
-				);
-				console.log('statuses:', statuses.statusesPromise.map(x => x.status.toString()).join(','));
+				console.log(`status(es): ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 
 				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
 				_statuses = statuses.statusesPromise
@@ -87,6 +85,9 @@ export function WatchAll(
 
 	if (watches.every(f => f._isFinished)) {
 		// All watches are finished
+		group._stopTime = Date.now();
+		group._duration = group._stopTime - group._startTime;
+
 		if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
 		return;
 	}
@@ -112,12 +113,15 @@ export function WatchAll(
 	if (children.length > 0) {
 		children.forEach(child => {
 			child._isRunning = true;
+			child._startTime = Date.now();
 			child.sequence = _sequence;
 
 			try {
 				child.promise = child.f();
 			} catch (error) {
 				console.warn('Watch: critical! error in call to (async) function:\n', error);
+				child._stopTime = Date.now();
+				child._duration = child._stopTime - child._startTime;
 				child._isRunning = false;
 				if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
 				return;
@@ -144,6 +148,8 @@ export function WatchAll(
 						children.forEach(child => {
 							child._isRunning = false;
 							child._isFinished = true;
+							child._stopTime = Date.now();
+							child._duration = child._stopTime - (child._startTime || 0);
 						});
 
 						if (!watches.some(x => x._isRunning) && watches.every(x => x._isFinished)) {
