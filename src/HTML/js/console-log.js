@@ -1,5 +1,5 @@
-import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-// import {version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
+// import {version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+import {version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
 
 const originalConsoleLog = console.log;
 const originalConsoleClear = console.clear;

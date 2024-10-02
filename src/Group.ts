@@ -21,7 +21,6 @@ export default class Group {
 	_functions: WatchFunction[] = [];
 	private _startTime: number = 0;
 	private _stopTime: number = 0;
-	_isFinished: boolean = false;
 	private _seq: number = 0;
 
 	__callback?: () => void | undefined;
@@ -55,6 +54,11 @@ export default class Group {
 		return !!this._functions.map(x => x._isRunning).reduce((a, b) => a || b, false);
 	}
 
+	// Check if any function in the group is running
+	get _isFinished(): boolean {
+		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, false);
+	}
+
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
 		let watchFunction: WatchFunction;
@@ -81,8 +85,8 @@ export default class Group {
 	}
 	// Reset all watch functions in the group
 	reset(): void {
+		this._functions.forEach(x => (x._isRunning = false));
 		this._functions.forEach(x => (x._isFinished = false));
-		this._isFinished = false;
 	}
 
 	// Get all functions in the group
@@ -129,7 +133,6 @@ export default class Group {
 			if (typeof this._onCompleteCallback === 'function') this._onCompleteCallback();
 			return;
 		}
-		this._isFinished = false;
 
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
 

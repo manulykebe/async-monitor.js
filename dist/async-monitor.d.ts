@@ -24,7 +24,6 @@ declare class Group {
     _functions: WatchFunction[];
     private _startTime;
     private _stopTime;
-    _isFinished: boolean;
     private _seq;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
@@ -34,6 +33,7 @@ declare class Group {
     _onRejectedCallback: () => void;
     _abort: AbortController;
     get _isRunning(): boolean;
+    get _isFinished(): boolean;
     addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
     abort(): void;
     reset(): void;

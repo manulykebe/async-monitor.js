@@ -265,7 +265,6 @@
                 }
                 catch (error) {
                     console.warn('Watch: critical! error in call to (async) function:\n', error);
-                    group._isFinished = true;
                     child._isRunning = false;
                     if (typeof group._onUnCompleteCallback === 'function')
                         group._onUnCompleteCallback();
@@ -316,7 +315,6 @@
             this._functions = [];
             this._startTime = 0;
             this._stopTime = 0;
-            this._isFinished = false;
             this._seq = 0;
             // Default Callbacks
             this._onStartCallback = function () {
@@ -367,14 +365,22 @@
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Group.prototype, "_isFinished", {
+            // Check if any function in the group is running
+            get: function () {
+                return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, false);
+            },
+            enumerable: false,
+            configurable: true
+        });
         // Abort the group TODO
         Group.prototype.abort = function () {
             this._abort.abort();
         };
         // Reset all watch functions in the group
         Group.prototype.reset = function () {
+            this._functions.forEach(function (x) { return (x._isRunning = false); });
             this._functions.forEach(function (x) { return (x._isFinished = false); });
-            this._isFinished = false;
         };
         // Get all functions in the group
         Group.prototype.getAll = function () {
@@ -421,7 +427,6 @@
                     this._onCompleteCallback();
                 return;
             }
-            this._isFinished = false;
             if (typeof this._onStartCallback === 'function')
                 this._onStartCallback();
             // Create an array of valid watch objects from the group's functions

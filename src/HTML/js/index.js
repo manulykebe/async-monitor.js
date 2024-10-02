@@ -1,5 +1,5 @@
-import {Group, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-// import {Monitor, Group, sleep, version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
+// import {Group, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+import {Group, sleep, version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
 
 console.log(`version: ${version}`);
 console.log('');
@@ -7,9 +7,9 @@ console.log('');
 const serialWatches = new Group();
 const parallelWatches = new Group();
 
-const function_to_watch1 = () => sleep(5, /*fail:*/ false);
-const function_to_watch2 = () => sleep(2, /*fail:*/ false);
-const function_to_watch3 = () => sleep(3, /*fail:*/ false);
+const function_to_watch1 = () => sleep(1, /*fail:*/ false);
+const function_to_watch2 = () => sleep(1, /*fail:*/ false);
+const function_to_watch3 = () => sleep(1, /*fail:*/ false);
 
 serialWatches.addWatch({
 	parent: undefined,
@@ -73,6 +73,7 @@ function demo_serial_execution() {
 	console.log('   --->' + function_to_watch2.toString());
 	console.log('      |');
 	console.log('      --->' + function_to_watch3.toString());
+	serialWatches.reset();
 	serialWatches.WatchAll();
 }
 function demo_parallel_execution() {
@@ -81,6 +82,7 @@ function demo_parallel_execution() {
 	console.log(`--->${function_to_watch1.toString()}`);
 	console.log(`--->${function_to_watch2.toString()}`);
 	console.log(`--->${function_to_watch3.toString()}`);
+	parallelWatches.reset();
 	parallelWatches.WatchAll();
 }
 // Make the functions available in the global scope

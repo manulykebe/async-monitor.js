@@ -118,7 +118,6 @@ export function WatchAll(
 				child.promise = child.f();
 			} catch (error) {
 				console.warn('Watch: critical! error in call to (async) function:\n', error);
-				group._isFinished = true;
 				child._isRunning = false;
 				if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
 				return;
