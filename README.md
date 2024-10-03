@@ -4,13 +4,10 @@
 ![Code Scanning](https://github.com/manulykebe/async-monitor.js/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
 
 [![NPM Version][npm-image]][npm-url]
-[![CDNJS][cdnjs-image]][cdnjs-url]
-[![NPM Downloads][downloads-image]][downloads-url]
-[![Build and Tests][ci-image]][ci-url]
 
 ```html
 <script type="module">
-	import {Group} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+	import {Group, sleep} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 
 	const watches = new Group();
 
