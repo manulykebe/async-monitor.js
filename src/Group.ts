@@ -2,15 +2,15 @@ import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 
 export interface WatchFunction {
-	child: string | undefined;
+	parent?: string | undefined;
+	child?: string | undefined;
 	group?: Group | undefined;
-	parent: string | undefined;
-	sequence: number | undefined;
+	sequence?: number | undefined;
 	promise?: Promise<any> | void;
 	f: () => void;
-	onStartCallback: (() => void) | undefined;
-	onCompleteCallback: (() => void) | undefined;
-	onRejectCallback: (() => void) | undefined;
+	onStartCallback?: (() => void) | undefined;
+	onCompleteCallback?: (() => void) | undefined;
+	onRejectCallback?: (() => void) | undefined;
 	_isRunning?: boolean;
 	_isFinished?: boolean;
 	_index?: number | undefined;
@@ -116,7 +116,7 @@ export default class Group {
 		return new Watch(watchArray, callback, callback_error);
 	}
 
-	WatchAll(callback: () => void | undefined, callback_error: () => void | undefined) {
+	WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined) {
 		this.__callback = callback ?? (() => {});
 		this.__callback_error = callback_error ?? (() => {});
 
@@ -132,7 +132,7 @@ export default class Group {
 		}
 
 		if (this._isRunning) {
-			console.warn('Groep wordt reeds uitgevoerd!');
+			console.warn('This WatchAll group is already being monitored.');
 			if (typeof this._onCompleteCallback === 'function') this._onCompleteCallback();
 			return;
 		}
