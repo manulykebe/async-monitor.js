@@ -14,9 +14,9 @@ export interface WatchFunction {
 	_isRunning?: boolean;
 	_isFinished?: boolean;
 	_index?: number | undefined;
-	_startTime?: number;
-	_stopTime?: number;
-	_duration?: number;
+	_startTime: number;
+	_stopTime: number;
+	_duration: number;
 }
 
 let _group_id: number = 0;

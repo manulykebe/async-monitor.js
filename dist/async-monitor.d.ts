@@ -1,3 +1,13 @@
+/**
+ * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
+ * has a random option when param fail is not set.
+ *
+ * @param seconds - The number of seconds (default is a random number between 0 and 3).
+ * @param fail - Whether the function should reject or not (default is `false`).
+ * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
+ */
+declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<number>;
+
 declare class Watch {
     constructor(fs: Array<{
         promise: Promise<any> | void;
@@ -7,21 +17,21 @@ declare class Watch {
 }
 
 interface WatchFunction {
-    child: string | undefined;
+    parent?: string | undefined;
+    child?: string | undefined;
     group?: Group | undefined;
-    parent: string | undefined;
-    sequence: number | undefined;
+    sequence?: number | undefined;
     promise?: Promise<any> | void;
     f: () => void;
-    onStartCallback: (() => void) | undefined;
-    onCompleteCallback: (() => void) | undefined;
-    onRejectCallback: (() => void) | undefined;
+    onStartCallback?: (() => void) | undefined;
+    onCompleteCallback?: (() => void) | undefined;
+    onRejectCallback?: (() => void) | undefined;
     _isRunning?: boolean;
     _isFinished?: boolean;
     _index?: number | undefined;
-    _startTime?: number;
-    _stopTime?: number;
-    _duration?: number;
+    _startTime: number;
+    _stopTime: number;
+    _duration: number;
 }
 declare class Group {
     _id: number;
@@ -47,21 +57,11 @@ declare class Group {
     add(): void;
     remove(): void;
     Watch(callback: () => void, callback_error: () => void): Watch;
-    WatchAll(callback: () => void | undefined, callback_error: () => void | undefined): void;
+    WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): void;
     onRejected(callback: () => void): this;
     onStart(callback: () => void): this;
     onComplete(callback: () => void): this;
 }
-
-/**
- * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
- * has a random option when param fail is not set.
- *
- * @param seconds - The number of seconds (default is a random number between 0 and 3).
- * @param fail - Whether the function should reject or not (default is `false`).
- * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
- */
-declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<number>;
 
 declare const now: () => number;
 
@@ -109,4 +109,4 @@ declare const _default: {
     sleep: typeof sleep;
 };
 
-export { Group, Monitor, Sequence, Watch, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };
+export { Group, Monitor, Sequence, Watch, type WatchFunction, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };

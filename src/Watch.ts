@@ -148,7 +148,7 @@ export function WatchAll(
 				[
 					...onCompleteCallback,
 					() => {
-						children.forEach(child => {
+						children.forEach((child: WatchFunction) => {
 							child._isRunning = false;
 							child._isFinished = true;
 							child._stopTime = Date.now();

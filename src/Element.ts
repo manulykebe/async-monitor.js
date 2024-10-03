@@ -11,11 +11,12 @@ export default class Element implements WatchFunction {
 	onStartCallback: (() => void) | undefined = () => {};
 	onCompleteCallback: (() => void) | undefined = () => {};
 	onRejectCallback: (() => void) | undefined = () => {};
-	_isFinished: boolean;
-	_isRunning: boolean;
+	_isFinished: boolean = false;
+	_isRunning: boolean = false;
 	_index?: number | undefined;
 	_startTime: number = 0;
 	_stopTime: number = 0;
+	_duration: number = 0;
 
 	constructor(
 		f: (() => void) | WatchFunction,

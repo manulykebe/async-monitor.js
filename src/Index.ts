@@ -1,5 +1,5 @@
 import {sleep} from './Sleep';
-import Group from './Group';
+import Group, {type WatchFunction} from './Group';
 import now from './Now';
 import Sequence from './Sequence';
 import Monitor from './Monitor';
@@ -18,7 +18,8 @@ const remove = MONITOR.remove.bind(MONITOR);
 
 // Directly export the items as named exports
 export {Group, now, Sequence, nextId, Monitor, version, getAll, removeAll, add, remove, Watch, sleep};
-
+// Export types and interfaces.
+export {WatchFunction};
 // Use default export if necessary
 export default {
 	Group,

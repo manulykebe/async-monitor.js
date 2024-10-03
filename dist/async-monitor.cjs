@@ -72,8 +72,11 @@ var Element = /** @class */ (function () {
         this.onStartCallback = function () { };
         this.onCompleteCallback = function () { };
         this.onRejectCallback = function () { };
+        this._isFinished = false;
+        this._isRunning = false;
         this._startTime = 0;
         this._stopTime = 0;
+        this._duration = 0;
         if (typeof f === 'object') {
             // If an object of type WatchFunction is passed, use its properties
             this.f = f.f;
@@ -434,7 +437,7 @@ var Group = /** @class */ (function () {
             callback_error = this.__callback_error;
         }
         if (this._isRunning) {
-            console.warn('Groep wordt reeds uitgevoerd!');
+            console.warn('This WatchAll group is already being monitored.');
             if (typeof this._onCompleteCallback === 'function')
                 this._onCompleteCallback();
             return;
