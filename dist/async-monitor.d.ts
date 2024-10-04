@@ -77,6 +77,22 @@ declare class Sequence {
     static nextId(): number;
 }
 
+interface TreeData {
+    parent: string | number | undefined;
+    child: string | number | undefined;
+    name: string | undefined;
+}
+declare class Tree {
+    private map;
+    private roots;
+    private consoleLogText;
+    private buildTree;
+    private collectTerminalNodes;
+    private calculateMaxLength;
+    private displayTreeWithLineLength;
+    processTree(data: TreeData[]): string;
+}
+
 declare class Monitor {
     private fs;
     constructor(fs: Promise<any>[]);
@@ -107,6 +123,7 @@ declare const _default: {
     remove: () => void;
     Watch: typeof Watch;
     sleep: typeof sleep;
+    Tree: typeof Tree;
 };
 
-export { Group, Monitor, Sequence, Watch, type WatchFunction, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };
