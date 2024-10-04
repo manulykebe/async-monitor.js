@@ -78,7 +78,12 @@ export class Watch {
 
 let _sequence = 0;
 
-export function WatchAll(
+export function WatchAll(group: Group, callback: (() => void) | undefined, callback_error?: () => void): void {
+	// Call the private function with the default parent value as undefined
+	_watchAllInternal(group, undefined, callback, callback_error);
+}
+
+function _watchAllInternal(
 	group: Group,
 	parent: string | undefined,
 	callback: (() => void) | undefined,
@@ -105,7 +110,7 @@ export function WatchAll(
 
 	if (parent === undefined) {
 		if (children.length === 0) {
-			console.warn('Niets te doen...');
+			console.warn('Nothing to do.');
 			if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
 			return;
 		}
@@ -165,7 +170,7 @@ export function WatchAll(
 							.filter(x => x.parent === parent)
 							.map(x => x.child)
 							.forEach(x => {
-								WatchAll(group, x, callback, callback_error);
+								_watchAllInternal(group, x, callback, callback_error);
 							});
 					},
 				],

@@ -149,7 +149,7 @@ export default class Group {
 		}));
 
 		// Pass the array to the WatchAll function
-		return WatchAll(this, undefined, callback, callback_error);
+		return WatchAll(this, callback, callback_error);
 	}
 
 	onRejected(callback: () => void) {

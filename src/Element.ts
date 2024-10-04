@@ -2,10 +2,10 @@ import Group from './Group';
 import type {WatchFunction} from './Group';
 
 export default class Element implements WatchFunction {
+	sequence: number | undefined;
+	parent: string | undefined;
 	child: string | undefined;
 	group?: Group | undefined;
-	parent: string | undefined;
-	sequence: number | undefined;
 	promise?: Promise<any>;
 	f: () => void;
 	onStartCallback: (() => void) | undefined = () => {};
@@ -19,24 +19,30 @@ export default class Element implements WatchFunction {
 	_duration: number = 0;
 
 	constructor(
-		f: (() => void) | WatchFunction,
-		parent?: string,
-		child?: string,
-		onCompleteCallback?: () => void,
-		onRejectCallback?: () => void,
+		arg: (() => void) | WatchFunction,
+		parent: string = '',
+		child: string = '',
+		onStartCallback: () => void = () => {},
+		onCompleteCallback: () => void = () => {},
+		onRejectCallback: () => void = () => {},
+		_startTime: number = 0,
+		_stopTime: number = 0,
+		_duration: number = 0,
 	) {
-		if (typeof f === 'object') {
+		if (typeof arg === 'object') {
 			// If an object of type WatchFunction is passed, use its properties
-			this.f = f.f;
-			this.parent = f.parent;
-			this.child = f.child;
-			this.onCompleteCallback = f.onCompleteCallback;
-			this.onRejectCallback = f.onRejectCallback;
+			this.f = arg.f;
+			this.parent = arg.parent;
+			this.child = arg.child;
+			this.onStartCallback = arg.onStartCallback;
+			this.onCompleteCallback = arg.onCompleteCallback;
+			this.onRejectCallback = arg.onRejectCallback;
 		} else {
 			// If a function is passed, assign the passed or default values for other properties
-			this.f = f;
+			this.f = arg;
 			this.parent = parent;
 			this.child = child;
+			this.onStartCallback = onStartCallback;
 			this.onCompleteCallback = onCompleteCallback;
 			this.onRejectCallback = onRejectCallback;
 		}
