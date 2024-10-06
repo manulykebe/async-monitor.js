@@ -38,9 +38,9 @@ function demo_parallel_execution() {
 	const treeData = parallelWatches._functions.map(f => {
 		return {name: f.name, parent: f.parent, child: f.child};
 	});
-	// const treeBuilder = new Tree();
-	// const treeOutput = treeBuilder.processTree(data);
-	// console.log(treeOutput);
+	const treeBuilder = new Tree();
+	const treeOutput = treeBuilder.processTree(data);
+	console.log(treeOutput);
 
 	parallelWatches.reset();
 	parallelWatches.WatchAll(() => {

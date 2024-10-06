@@ -42,7 +42,12 @@ function demo_serial_execution() {
 	console.log(`   ---> function_to_watch2: ${function_to_watch2.toString()}`);
 	console.log('      |');
 	console.log(`      ---> function_to_watch3: ${function_to_watch3.toString()}`);
-
+	const treeData = serialWatches._functions.map(f => {
+		return {name: f.name, parent: f.parent, child: f.child};
+	});
+	const treeBuilder = new Tree();
+	const treeOutput = treeBuilder.processTree(data);
+	console.log(treeOutput);
 	serialWatches.reset();
 	serialWatches.WatchAll(() => {
 		console.table(
