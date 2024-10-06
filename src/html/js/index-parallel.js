@@ -1,5 +1,5 @@
-import {Group, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-// import {Group, sleep, version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
+// import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+import {Group, sleep, version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
 
 const parallelWatches = new Group();
 
@@ -35,6 +35,13 @@ function demo_parallel_execution() {
 	console.log(`|---> function_to_watch1: ${function_to_watch1.toString()}`);
 	console.log(`|---> function_to_watch2: ${function_to_watch2.toString()}`);
 	console.log(`|---> function_to_watch3: ${function_to_watch3.toString()}`);
+	const treeData = parallelWatches._functions.map(f => {
+		return {name: f.name, parent: f.parent, child: f.child};
+	});
+	// const treeBuilder = new Tree();
+	// const treeOutput = treeBuilder.processTree(data);
+	// console.log(treeOutput);
+
 	parallelWatches.reset();
 	parallelWatches.WatchAll(() => {
 		console.table(

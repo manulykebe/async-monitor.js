@@ -36,7 +36,7 @@
 </script>
 ```
 
-[Examples](https://manulykebe.github.io/async-monitor.js/src/HTML/index.html)
+[Examples](https://manulykebe.github.io/async-monitor.js/src/html/index.html)
 [CodePen](https://codepen.io/codepenatlykebe/pen/gOVPBEg)
 
 # Features

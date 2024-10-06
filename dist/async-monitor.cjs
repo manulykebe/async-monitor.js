@@ -660,19 +660,20 @@ var Tree = /** @class */ (function () {
     return Tree;
 }());
 // Example Usage
-var data = [
-    { name: undefined, parent: undefined, child: 'a' },
-    { name: 'fetch data a', parent: 'a', child: 'b' },
-    { name: 'fetch data b', parent: 'a', child: 'b' },
-    { name: 'make snow flake', parent: 'b', child: 3 },
-    { name: 'publish to s3', parent: 3, child: 'y' },
-    { name: 'publish to s4', parent: 3, child: undefined },
-    { name: 'do quality check', parent: 'b', child: 'd' },
-    { name: 'on s3', parent: 'd', child: 'z' },
-];
-var treeBuilder = new Tree();
-var treeOutput = treeBuilder.processTree(data);
-console.log(treeOutput);
+// const data: TreeData[] = [
+// 	{name: undefined, parent: undefined, child: 'a'},
+// 	{name: 'fetch data a', parent: 'a', child: 'b'},
+// 	{name: 'fetch data b', parent: 'a', child: 'b'},
+// 	{name: 'make snow flake', parent: 'b', child: 3},
+// 	{name: 'publish to s3', parent: 3, child: 'y'},
+// 	{name: 'publish to s4', parent: 3, child: undefined},
+// 	{name: 'do quality check', parent: 'b', child: 'd'},
+// 	{name: 'on s3', parent: 'd', child: 'z'},
+// ];
+// Usage:
+// const treeBuilder = new Tree();
+// const treeOutput = treeBuilder.processTree(data);
+// console.log(treeOutput);
 
 var version = '1.0.5';
 
