@@ -46,7 +46,7 @@ function demo_serial_execution() {
 		return {name: f.name, parent: f.parent, child: f.child};
 	});
 	const treeBuilder = new Tree();
-	const treeOutput = treeBuilder.processTree(data);
+	const treeOutput = treeBuilder.processTree(treeData);
 	console.log(treeOutput);
 	serialWatches.reset();
 	serialWatches.WatchAll(() => {
