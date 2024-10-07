@@ -1,13 +1,13 @@
 // import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
-const serialWatches = new Group();
+const mixedWatches = new Group();
 
 const function_to_watch1 = () => sleep(1, /*fail:*/ false);
 const function_to_watch2 = () => sleep(2, /*fail:*/ false);
 const function_to_watch3 = () => sleep(3, /*fail:*/ false);
 
-serialWatches.addWatch({
+mixedWatches.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
@@ -17,7 +17,7 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+mixedWatches.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
@@ -27,37 +27,58 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+mixedWatches.addWatch({
 	name: 'fetch data from ETL store: s2',
-	parent: 'b',
-	child: 'c',
-	f: function_to_watch3,
+	parent: 'a',
+	child: 'b',
+	f: function_to_watch2,
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 	},
 });
 
-serialWatches.addWatch({
-	name: 'fetch data from ETL store: s3',
-	parent: 'c',
-	child: 'd',
+mixedWatches.addWatch({
+	name: 'build snowflake',
+	parent: 'b',
+	child: 'c',
 	f: function_to_watch3,
+	onCompleteCallback: function () {
+		console.log('++++onCompleteCallback("build snowflake from s1 & s2")');
+	},
+});
+
+mixedWatches.addWatch({
+	name: 'fetch data from ETL store: s3',
+	parent: 'a',
+	child: 'd',
+	f: function_to_watch2,
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 	},
 });
 
-serialWatches.addWatch({
+mixedWatches.addWatch({
 	name: 'build snowflake',
 	parent: 'd',
+	child: 'e',
 	f: function_to_watch3,
 	onCompleteCallback: function () {
-		console.log('++++onCompleteCallback("build snowflake")');
+		console.log('++++onCompleteCallback("build snowflake from s3")');
 	},
 });
 
-function demo_serial_execution() {
-	const treeData = serialWatches._functions.map(f => {
+mixedWatches.addWatch({
+	name: 'publish snowflake',
+	parent: 'e',
+	child: 'f',
+	f: function_to_watch3,
+	onCompleteCallback: function () {
+		console.log('++++onCompleteCallback("publish snowflake")');
+	},
+});
+
+function demo_mixed_execution() {
+	const treeData = mixedWatches._functions.map(f => {
 		return {name: f.name, parent: f.parent, child: f.child};
 	});
 
@@ -66,10 +87,10 @@ function demo_serial_execution() {
 	console.clear();
 	console.log(treeOutput);
 
-	serialWatches.reset();
-	serialWatches.WatchAll(() => {
+	mixedWatches.reset();
+	mixedWatches.WatchAll(() => {
 		console.table(
-			serialWatches._functions.map((f, i) => {
+			mixedWatches._functions.map((f, i) => {
 				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
 			}),
 		);
@@ -77,5 +98,5 @@ function demo_serial_execution() {
 }
 
 // Make the functions available in the global scope
-window.demo_serial_execution = demo_serial_execution;
-// document['serialWatches'] = serialWatches;
+window.demo_mixed_execution = demo_mixed_execution;
+// document['mixedWatches'] = mixedWatches;

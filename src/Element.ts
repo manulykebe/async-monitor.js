@@ -21,6 +21,7 @@ export default class Element implements WatchFunction {
 
 	constructor(
 		arg: (() => void) | WatchFunction,
+		name: string = '',
 		parent: string = '',
 		child: string = '',
 		onStartCallback: () => void = () => {},
@@ -33,7 +34,7 @@ export default class Element implements WatchFunction {
 		if (typeof arg === 'object') {
 			// If an object of type WatchFunction is passed, use its properties
 			this.f = arg.f;
-			this.parent = arg.parent;
+			(this.name = arg.name), (this.parent = arg.parent);
 			this.child = arg.child;
 			this.onStartCallback = arg.onStartCallback;
 			this.onCompleteCallback = arg.onCompleteCallback;
@@ -41,6 +42,7 @@ export default class Element implements WatchFunction {
 		} else {
 			// If a function is passed, assign the passed or default values for other properties
 			this.f = arg;
+			this.name = name;
 			this.parent = parent;
 			this.child = child;
 			this.onStartCallback = onStartCallback;

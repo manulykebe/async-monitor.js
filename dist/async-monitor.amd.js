@@ -66,7 +66,8 @@ define(['exports'], (function (exports) { 'use strict';
     }
 
     var Element = /** @class */ (function () {
-        function Element(arg, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, _startTime, _stopTime, _duration) {
+        function Element(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, _startTime, _stopTime, _duration) {
+            if (name === void 0) { name = ''; }
             if (parent === void 0) { parent = ''; }
             if (child === void 0) { child = ''; }
             if (onStartCallback === void 0) { onStartCallback = function () { }; }
@@ -84,7 +85,7 @@ define(['exports'], (function (exports) { 'use strict';
             if (typeof arg === 'object') {
                 // If an object of type WatchFunction is passed, use its properties
                 this.f = arg.f;
-                this.parent = arg.parent;
+                (this.name = arg.name), (this.parent = arg.parent);
                 this.child = arg.child;
                 this.onStartCallback = arg.onStartCallback;
                 this.onCompleteCallback = arg.onCompleteCallback;
@@ -93,6 +94,7 @@ define(['exports'], (function (exports) { 'use strict';
             else {
                 // If a function is passed, assign the passed or default values for other properties
                 this.f = arg;
+                this.name = name;
                 this.parent = parent;
                 this.child = child;
                 this.onStartCallback = onStartCallback;
