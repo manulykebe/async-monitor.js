@@ -3,6 +3,7 @@ import type {WatchFunction} from './Group';
 
 export default class Element implements WatchFunction {
 	sequence: number | undefined;
+	name: string = '';
 	parent: string | undefined;
 	child: string | undefined;
 	group?: Group | undefined;

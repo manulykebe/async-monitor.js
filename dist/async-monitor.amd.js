@@ -72,6 +72,7 @@ define(['exports'], (function (exports) { 'use strict';
             if (onStartCallback === void 0) { onStartCallback = function () { }; }
             if (onCompleteCallback === void 0) { onCompleteCallback = function () { }; }
             if (onRejectCallback === void 0) { onRejectCallback = function () { }; }
+            this.name = '';
             this.onStartCallback = function () { };
             this.onCompleteCallback = function () { };
             this.onRejectCallback = function () { };

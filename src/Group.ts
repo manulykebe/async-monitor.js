@@ -2,6 +2,7 @@ import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 
 export interface WatchFunction {
+	name: string;
 	parent?: string | undefined;
 	child?: string | undefined;
 	group?: Group | undefined;

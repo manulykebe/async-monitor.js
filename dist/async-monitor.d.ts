@@ -17,6 +17,7 @@ declare class Watch {
 }
 
 interface WatchFunction {
+    name: string;
     parent?: string | undefined;
     child?: string | undefined;
     group?: Group | undefined;
