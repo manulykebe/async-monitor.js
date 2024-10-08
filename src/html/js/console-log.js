@@ -70,6 +70,7 @@ function createTableFromObject(data) {
 }
 
 const originalConsoleClear = console.clear;
+const originalConsoleError = console.error;
 const originalConsoleGroup = console.group;
 const originalConsoleGroupEnd = console.groupEnd;
 const originalConsoleLog = console.log;
@@ -106,11 +107,6 @@ function appendLogToConsole(time, message, classname) {
 	}
 }
 
-console.log = function (message) {
-	originalConsoleLog(message);
-	appendLogToConsole(getCurrentTime(), message);
-};
-
 console.clear = function () {
 	originalConsoleClear();
 
@@ -119,8 +115,17 @@ console.clear = function () {
 		consoleDiv.innerHTML = '';
 	}
 
-	console.log(`version: ${version}`);
-	console.log('');
+	console.log(`async-monitor.js@${version}`);
+};
+
+console.log = function (message) {
+	originalConsoleLog(message);
+	appendLogToConsole(getCurrentTime(), message);
+};
+
+console.error = function (message) {
+	originalConsoleError(message);
+	appendLogToConsole(getCurrentTime(), message, 'log-error');
 };
 
 console.group = function (label) {

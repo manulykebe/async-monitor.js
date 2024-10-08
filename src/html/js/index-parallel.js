@@ -1,53 +1,91 @@
-import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-// import {Group, sleep, version} from 'http://127.0.0.1:5500/dist/async-monitor.esm.js';
+// import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
 const parallelWatches = new Group();
 
-const function_to_watch1 = () => sleep(1, /*fail:*/ false);
-const function_to_watch2 = () => sleep(2, /*fail:*/ false);
-const function_to_watch3 = () => sleep(3, /*fail:*/ false);
-
 parallelWatches.addWatch({
-	name: 'step 1',
-	f: function_to_watch1,
+	name: 'preparation step',
+	parent: undefined,
+	child: 'a',
+	f: () => sleep(undefined, false),
+	onStartCallback: function () {
+		const button = document.getElementById('demo01');
+		button.disabled = true;
+		button.innerText = 'Executing...';
+	},
 	onCompleteCallback: function () {
-		console.log('++++onCompleteCallback() after step 1');
+		console.log('++++onCompleteCallback("preparation step")');
 	},
 });
 
 parallelWatches.addWatch({
-	name: 'step 2',
-	f: function_to_watch2,
+	name: 'fetch data from ETL store: s1',
+	parent: 'a',
+	child: 'b',
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
-		console.log('++++onCompleteCallback() after step 2');
+		console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 	},
 });
 
 parallelWatches.addWatch({
-	name: 'step 3',
-	f: function_to_watch3,
+	name: 'fetch data from ETL store: s2',
+	parent: 'a',
+	child: 'b',
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
-		console.log('++++onCompleteCallback() after step 3');
+		console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+	},
+});
+
+parallelWatches.addWatch({
+	name: 'fetch data from ETL store: s3',
+	parent: 'a',
+	child: 'b',
+	f: () => sleep(undefined, false),
+	onCompleteCallback: function () {
+		console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+	},
+});
+
+parallelWatches.addWatch({
+	name: 'build snowflake',
+	parent: 'b',
+	f: () => sleep(undefined, false),
+	onCompleteCallback: function () {
+		console.log('++++onCompleteCallback("build snowflake")');
 	},
 });
 
 function demo_parallel_execution() {
-	const treeData = parallelWatches._functions.map(f => {
-		return {name: f.name, parent: f.parent, child: f.child};
-	});
-	const treeBuilder = new Tree();
-	const treeOutput = treeBuilder.processTree(treeData);
-	console.log(treeOutput);
+	console.clear();
+	console.log(parallelWatches.consoleTree);
 
 	parallelWatches.reset();
-	parallelWatches.WatchAll(() => {
-		console.table(
-			parallelWatches._functions.map((f, i) => {
-				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
-			}),
-		);
-	});
+	parallelWatches.WatchAll(
+		() => {
+			const button = document.getElementById('demo01');
+			button.disabled = false;
+			button.innerText = 'Parallel Execution';
+			console.table(
+				parallelWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+		() => {
+			const button = document.getElementById('demo01');
+			button.disabled = false;
+			button.innerText = 'Parallel Execution (aborted)';
+			console.table(
+				parallelWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+	);
 }
 
 // Make the functions available in the global scope
 window.demo_parallel_execution = demo_parallel_execution;
+document['parallelWatches'] = parallelWatches;

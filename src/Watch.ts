@@ -38,7 +38,7 @@ export class Watch {
 			})
 			.finally(() => {
 				if (_breakOnRejected) {
-					console.warn('Afgebroken omwille van een afgewezen belofte...');
+					console.warn('Promise rejected...');
 					const fs0 = fs[0];
 					if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
 					if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
@@ -52,7 +52,7 @@ export class Watch {
 								console.warn('Watch.onRejectCallback is not critical:\n', error);
 							}
 						}
-						console.warn(new Error(x.reason));
+						console.warn('onRejectCallback not provided.');
 					});
 
 					// f_rejected for global watch
@@ -90,7 +90,7 @@ function _watchAllInternal(
 	callback_error?: () => void,
 ): void {
 	const watches = group._functions;
-
+	debugger;
 	if (watches.every(f => f._isFinished)) {
 		// All watches are finished
 		group._stopTime = Date.now();
@@ -123,6 +123,12 @@ function _watchAllInternal(
 			child._isRunning = true;
 			child._startTime = Date.now();
 			child.sequence = _sequence;
+			if (typeof child.onStartCallback === 'function')
+				try {
+					child.onStartCallback();
+				} catch (error) {
+					console.warn(`Watch: onStartCallback failed (sequence: ${child.sequence}):\n`, error);
+				}
 
 			try {
 				child.promise = child.f();

@@ -1,3 +1,20 @@
+// Example Usage
+// const data: TreeData[] = [
+// 	{name: undefined, parent: undefined, child: 'a'},
+// 	{name: 'fetch data a', parent: 'a', child: 'b'},
+// 	{name: 'fetch data b', parent: 'a', child: 'b'},
+// 	{name: 'make snow flake', parent: 'b', child: 3},
+// 	{name: 'publish to s3', parent: 3, child: 'y'},
+// 	{name: 'publish to s4', parent: 3, child: undefined},
+// 	{name: 'do quality check', parent: 'b', child: 'd'},
+// 	{name: 'on s3', parent: 'd', child: 'z'},
+// ];
+
+// Usage:
+// const treeBuilder = new Tree();
+// const treeOutput = treeBuilder.processTree(data);
+// console.log(treeOutput);
+
 interface TreeNode {
 	name: string | number;
 	description: string;
@@ -86,10 +103,11 @@ export default class Tree {
 	private calculateMaxLength(
 		node: TreeNode,
 		prefix: string = '',
+		isFirst: boolean = true,
 		isLast: boolean = true,
 		maxLengthObj = {maxLength: 0},
 	): void {
-		const line = `${prefix}${isLast ? '└─' : '├─'} ${node.description}`;
+		const line = `${isFirst ? '──' : prefix}${isLast && !isFirst ? '└─' : '├─'} ${node.description}`;
 
 		// Calculate the longest line length during this dry run
 		if (line.length > maxLengthObj.maxLength) {
@@ -100,7 +118,7 @@ export default class Tree {
 
 		node.children.forEach((child, index) => {
 			const isLastChild = index === node.children.length - 1;
-			this.calculateMaxLength(child, newPrefix, isLastChild, maxLengthObj);
+			this.calculateMaxLength(child, newPrefix, false, isLastChild, maxLengthObj);
 		});
 	}
 
@@ -108,6 +126,7 @@ export default class Tree {
 	private displayTreeWithLineLength(
 		node: TreeNode,
 		prefix: string = '',
+		isFirst: boolean = true,
 		isLast: boolean = true,
 		terminalIndex: {current: number; total: number},
 		maxLength: number,
@@ -115,7 +134,7 @@ export default class Tree {
 	): void {
 		const isTerminal = node.children.length === 0;
 		let terminalLabel = '';
-		let line = `${prefix}${isLast ? '└─' : '├─'} ${node.description}`;
+		let line = `${isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
 
 		if (isTerminal) {
 			const index = terminalIndex.current++;
@@ -124,16 +143,16 @@ export default class Tree {
 			// Pad terminal lines with '─'
 			const paddingNeeded = maxLength - (line.length + terminalLabel.length);
 			if (paddingNeeded > 0) {
-				line += ' ' + '─'.repeat(paddingNeeded);
+				line += ' ' + '─'.repeat(paddingNeeded + 1);
 			}
 			line += terminalLabel;
 
 			encounteredTerminalRef.value = true; // Set the flag to true once a terminal node is encountered
 		} else {
-			// Pad non-terminal lines with dots and check if it appears after a terminal node
+			// Pad non-terminal lines with spaces and check if it appears after a terminal node
 			const paddingNeeded = maxLength - line.length;
 			if (paddingNeeded > 0) {
-				line += ' '.repeat(paddingNeeded);
+				line += ' '.repeat(paddingNeeded + 1);
 			}
 			if (encounteredTerminalRef.value) {
 				line += '│'; // Pad non-terminal nodes that appear after the first terminal node with '│'
@@ -146,7 +165,15 @@ export default class Tree {
 
 		node.children.forEach((child, index) => {
 			const isLastChild = index === node.children.length - 1;
-			this.displayTreeWithLineLength(child, newPrefix, isLastChild, terminalIndex, maxLength, encounteredTerminalRef);
+			this.displayTreeWithLineLength(
+				child,
+				newPrefix,
+				false,
+				isLastChild,
+				terminalIndex,
+				maxLength,
+				encounteredTerminalRef,
+			);
 		});
 	}
 
@@ -157,7 +184,7 @@ export default class Tree {
 
 		// Step 2: Dry run to calculate the longest line
 		const maxLengthObj = {maxLength: 0};
-		tree.forEach(root => this.calculateMaxLength(root, '', true, maxLengthObj));
+		tree.forEach(root => this.calculateMaxLength(root, '', true, true, maxLengthObj));
 
 		// Step 3: Track terminal node indices
 		const terminalNodes: TreeNode[] = [];
@@ -169,30 +196,21 @@ export default class Tree {
 
 		// Step 5: Display the tree with the longest line length added to terminal nodes and padded
 		tree.forEach(root =>
-			this.displayTreeWithLineLength(root, '', true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef),
+			this.displayTreeWithLineLength(
+				root,
+				'',
+				true,
+				true,
+				terminalIndex,
+				maxLengthObj.maxLength,
+				encounteredTerminalRef,
+			),
 		);
 
 		// Step 6: Add final completion line
-		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength) + '└─ completed';
+		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
 
 		// Return the console output as string
 		return this.consoleLogText;
 	}
 }
-
-// Example Usage
-// const data: TreeData[] = [
-// 	{name: undefined, parent: undefined, child: 'a'},
-// 	{name: 'fetch data a', parent: 'a', child: 'b'},
-// 	{name: 'fetch data b', parent: 'a', child: 'b'},
-// 	{name: 'make snow flake', parent: 'b', child: 3},
-// 	{name: 'publish to s3', parent: 3, child: 'y'},
-// 	{name: 'publish to s4', parent: 3, child: undefined},
-// 	{name: 'do quality check', parent: 'b', child: 'd'},
-// 	{name: 'on s3', parent: 'd', child: 'z'},
-// ];
-
-// Usage:
-// const treeBuilder = new Tree();
-// const treeOutput = treeBuilder.processTree(data);
-// console.log(treeOutput);

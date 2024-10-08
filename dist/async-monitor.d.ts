@@ -59,6 +59,7 @@ declare class Group {
     remove(): void;
     Watch(callback: () => void, callback_error: () => void): Watch;
     WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): void;
+    get consoleTree(): string;
     onRejected(callback: () => void): this;
     onStart(callback: () => void): this;
     onComplete(callback: () => void): this;
@@ -106,10 +107,6 @@ declare class Monitor {
 declare const version = "1.0.5";
 
 declare const nextId: typeof Sequence.nextId;
-declare const getAll: () => Array<WatchFunction>;
-declare const removeAll: () => void;
-declare const add: () => void;
-declare const remove: () => void;
 
 declare const _default: {
     Group: typeof Group;
@@ -118,13 +115,9 @@ declare const _default: {
     nextId: typeof Sequence.nextId;
     Monitor: typeof Monitor;
     version: string;
-    getAll: () => Array<WatchFunction>;
-    removeAll: () => void;
-    add: () => void;
-    remove: () => void;
     Watch: typeof Watch;
     sleep: typeof sleep;
     Tree: typeof Tree;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, add, _default as default, getAll, nextId, now, remove, removeAll, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, _default as default, nextId, now, sleep, version };

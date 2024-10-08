@@ -1,3 +1,7 @@
+html {
+	background-color: #f4f4f4;
+}
+
 pre,
 code {
 	font-size: 14px;
@@ -90,6 +94,14 @@ button:hover {
 	font-weight: bold;
 }
 
+.log-error {
+	color: red;
+	background-color: #fcebeb;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+}
+
 .log-warn {
 	background-color: #fef6d5;
 	font-weight: bold;
@@ -98,8 +110,16 @@ button:hover {
 }
 
 /* Styling for the warning icon */
+
+.log-error::before {
+	content: '⛔';
+	margin-right: 8px;
+	font-size: 1.2em;
+	transform: translateY(-2px);
+}
+
 .log-warn::before {
-	content: '⚠️'; /* Unicode for warning symbol */
+	content: '⚠️';
 	margin-right: 8px;
 	font-size: 1.2em;
 	transform: translateY(-2px);

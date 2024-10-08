@@ -12,6 +12,7 @@
 		<script type="module" src="./js/index-parallel.js"></script>
 		<script type="module" src="./js/index-serial.js"></script>
 		<script type="module" src="./js/index-mixed.js"></script>
+		<script type="module" src="./js/tree.js"></script>
 		<script>
 			function show_code(url) {
 				window.open(url, 'popupWindow', 'width=600,height=400,scrollbars=yes');
@@ -23,15 +24,15 @@
 		<div class="button-container">
 			<div class="btn-wrapper">
 				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-parallel.js')"></i>
-				<button onclick="demo_parallel_execution()">Parallel Execution</button>
+				<button id="demo01" onclick="demo_parallel_execution()">Parallel Execution</button>
 			</div>
 			<div class="btn-wrapper">
 				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-serial.js')"></i>
-				<button onclick="demo_serial_execution()">Serial Execution</button>
+				<button id="demo02" onclick="demo_serial_execution()">Serial Execution</button>
 			</div>
 			<div class="btn-wrapper">
 				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-mixed.js')"></i>
-				<button onclick="demo_mixed_execution()">Mixed Example</button>
+				<button id="demo03" onclick="demo_mixed_execution()">Mixed Example</button>
 			</div>
 		</div>
 		<div id="console"></div>

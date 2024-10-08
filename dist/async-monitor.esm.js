@@ -203,7 +203,7 @@ var Watch = /** @class */ (function () {
         })
             .finally(function () {
             if (_breakOnRejected) {
-                console.warn('Afgebroken omwille van een afgewezen belofte...');
+                console.warn('Promise rejected...');
                 var fs0 = fs[0];
                 if (fs0.group && typeof fs0.group._onRejectedCallback === 'function')
                     fs0.group._onRejectedCallback();
@@ -219,7 +219,7 @@ var Watch = /** @class */ (function () {
                             console.warn('Watch.onRejectCallback is not critical:\n', error);
                         }
                     }
-                    console.warn(new Error(x.reason));
+                    console.warn('onRejectCallback not provided.');
                 });
                 // f_rejected for global watch
                 if (typeof fr === 'function')
@@ -253,6 +253,7 @@ function WatchAll(group, callback, callback_error) {
 }
 function _watchAllInternal(group, parent, callback, callback_error) {
     var watches = group._functions;
+    debugger;
     if (watches.every(function (f) { return f._isFinished; })) {
         // All watches are finished
         group._stopTime = Date.now();
@@ -282,6 +283,13 @@ function _watchAllInternal(group, parent, callback, callback_error) {
             child._isRunning = true;
             child._startTime = Date.now();
             child.sequence = _sequence;
+            if (typeof child.onStartCallback === 'function')
+                try {
+                    child.onStartCallback();
+                }
+                catch (error) {
+                    console.warn("Watch: onStartCallback failed (sequence: ".concat(child.sequence, "):\n"), error);
+                }
             try {
                 child.promise = child.f();
             }
@@ -333,6 +341,173 @@ function _watchAllInternal(group, parent, callback, callback_error) {
     }
 }
 
+// Example Usage
+// const data: TreeData[] = [
+// 	{name: undefined, parent: undefined, child: 'a'},
+// 	{name: 'fetch data a', parent: 'a', child: 'b'},
+// 	{name: 'fetch data b', parent: 'a', child: 'b'},
+// 	{name: 'make snow flake', parent: 'b', child: 3},
+// 	{name: 'publish to s3', parent: 3, child: 'y'},
+// 	{name: 'publish to s4', parent: 3, child: undefined},
+// 	{name: 'do quality check', parent: 'b', child: 'd'},
+// 	{name: 'on s3', parent: 'd', child: 'z'},
+// ];
+var Tree = /** @class */ (function () {
+    function Tree() {
+        this.map = {};
+        this.roots = [];
+        this.consoleLogText = '';
+    }
+    // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
+    Tree.prototype.buildTree = function (arr) {
+        var _this = this;
+        arr.forEach(function (_a) {
+            var parent = _a.parent, child = _a.child, name = _a.name;
+            // Ensure that 'child' is not undefined before using it as an index
+            if (child !== undefined) {
+                if (!_this.map[child]) {
+                    _this.map[child] = {
+                        name: child,
+                        description: name || String(child),
+                        children: [],
+                    };
+                }
+                else {
+                    if (name && !_this.map[child].description.includes(name)) {
+                        _this.map[child].description += ", ".concat(name);
+                    }
+                }
+            }
+            if (parent === undefined) {
+                if (child !== undefined) {
+                    if (!_this.map[child]) {
+                        _this.map[child] = {
+                            name: child,
+                            description: name || String(child),
+                            children: [],
+                        };
+                    }
+                    _this.roots.push(_this.map[child]);
+                }
+            }
+            else {
+                if (!_this.map[parent]) {
+                    _this.map[parent] = {
+                        name: parent,
+                        description: String(parent),
+                        children: [],
+                    };
+                }
+                if (child !== undefined) {
+                    var existingChild = _this.map[parent].children.find(function (c) { return c.name === child; });
+                    if (!existingChild) {
+                        _this.map[parent].children.push(_this.map[child]);
+                    }
+                }
+                else {
+                    if (!_this.map[parent].children.some(function (c) { return c.description === name; })) {
+                        _this.map[parent].children.push({
+                            name: '',
+                            description: name || '',
+                            children: [],
+                        });
+                    }
+                }
+            }
+        });
+        return this.roots;
+    };
+    // Step 2: Collect all terminal nodes (nodes without children)
+    Tree.prototype.collectTerminalNodes = function (node, terminalNodes) {
+        var _this = this;
+        if (terminalNodes === void 0) { terminalNodes = []; }
+        if (node.children.length === 0) {
+            terminalNodes.push(node);
+        }
+        node.children.forEach(function (child) { return _this.collectTerminalNodes(child, terminalNodes); });
+        return terminalNodes;
+    };
+    // Step 3: Function to calculate the longest line length (dry run without output)
+    Tree.prototype.calculateMaxLength = function (node, prefix, isFirst, isLast, maxLengthObj) {
+        var _this = this;
+        if (prefix === void 0) { prefix = ''; }
+        if (isFirst === void 0) { isFirst = true; }
+        if (isLast === void 0) { isLast = true; }
+        if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
+        var line = "".concat(isFirst ? '──' : prefix).concat(isLast && !isFirst ? '└─' : '├─', " ").concat(node.description);
+        // Calculate the longest line length during this dry run
+        if (line.length > maxLengthObj.maxLength) {
+            maxLengthObj.maxLength = line.length;
+        }
+        var newPrefix = prefix + (isLast ? '   ' : '│  ');
+        node.children.forEach(function (child, index) {
+            var isLastChild = index === node.children.length - 1;
+            _this.calculateMaxLength(child, newPrefix, false, isLastChild, maxLengthObj);
+        });
+    };
+    // Step 4: Function to display the tree and include longest line length at terminal nodes
+    Tree.prototype.displayTreeWithLineLength = function (node, prefix, isFirst, isLast, terminalIndex, maxLength, encounteredTerminalRef) {
+        var _this = this;
+        if (prefix === void 0) { prefix = ''; }
+        if (isFirst === void 0) { isFirst = true; }
+        if (isLast === void 0) { isLast = true; }
+        var isTerminal = node.children.length === 0;
+        var terminalLabel = '';
+        var line = "".concat(isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+        if (isTerminal) {
+            var index = terminalIndex.current++;
+            terminalLabel = index === 0 ? '─┐' : '─┤';
+            // Pad terminal lines with '─'
+            var paddingNeeded = maxLength - (line.length + terminalLabel.length);
+            if (paddingNeeded > 0) {
+                line += ' ' + '─'.repeat(paddingNeeded + 1);
+            }
+            line += terminalLabel;
+            encounteredTerminalRef.value = true; // Set the flag to true once a terminal node is encountered
+        }
+        else {
+            // Pad non-terminal lines with spaces and check if it appears after a terminal node
+            var paddingNeeded = maxLength - line.length;
+            if (paddingNeeded > 0) {
+                line += ' '.repeat(paddingNeeded + 1);
+            }
+            if (encounteredTerminalRef.value) {
+                line += '│'; // Pad non-terminal nodes that appear after the first terminal node with '│'
+            }
+        }
+        this.consoleLogText += line.trimEnd() + '\r\n';
+        var newPrefix = prefix + (isLast ? '   ' : '│  ');
+        node.children.forEach(function (child, index) {
+            var isLastChild = index === node.children.length - 1;
+            _this.displayTreeWithLineLength(child, newPrefix, false, isLastChild, terminalIndex, maxLength, encounteredTerminalRef);
+        });
+    };
+    // Method to initiate the tree processing and display
+    Tree.prototype.processTree = function (data) {
+        var _this = this;
+        // Step 1: Build tree
+        var tree = this.buildTree(data);
+        // Step 2: Dry run to calculate the longest line
+        var maxLengthObj = { maxLength: 0 };
+        tree.forEach(function (root) { return _this.calculateMaxLength(root, '', true, true, maxLengthObj); });
+        // Step 3: Track terminal node indices
+        var terminalNodes = [];
+        tree.forEach(function (root) { return _this.collectTerminalNodes(root, terminalNodes); });
+        var terminalIndex = { current: 0, total: terminalNodes.length };
+        // Step 4: Track whether we've encountered a terminal node
+        var encounteredTerminalRef = { value: false };
+        // Step 5: Display the tree with the longest line length added to terminal nodes and padded
+        tree.forEach(function (root) {
+            return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
+        });
+        // Step 6: Add final completion line
+        this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
+        // Return the console output as string
+        return this.consoleLogText;
+    };
+    return Tree;
+}());
+
 var _group_id = 0;
 var Group = /** @class */ (function () {
     function Group() {
@@ -361,6 +536,7 @@ var Group = /** @class */ (function () {
         this._abort = new AbortController(); // Declare abort controller
         // Add a watch function
         this.addWatch = function (addWatchFunction) {
+            debugger;
             var watchFunction;
             if (typeof addWatchFunction === 'function') {
                 watchFunction = new Element(addWatchFunction);
@@ -468,6 +644,17 @@ var Group = /** @class */ (function () {
         // Pass the array to the WatchAll function
         return WatchAll(this, callback, callback_error);
     };
+    Object.defineProperty(Group.prototype, "consoleTree", {
+        get: function () {
+            var treeData = this._functions.map(function (f) {
+                return { name: f.name, parent: f.parent, child: f.child };
+            });
+            var treeBuilder = new Tree();
+            return treeBuilder.processTree(treeData);
+        },
+        enumerable: false,
+        configurable: true
+    });
     Group.prototype.onRejected = function (callback) {
         this._onRejectedCallback = callback;
         return this;
@@ -505,185 +692,9 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var Tree = /** @class */ (function () {
-    function Tree() {
-        this.map = {};
-        this.roots = [];
-        this.consoleLogText = '';
-    }
-    // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
-    Tree.prototype.buildTree = function (arr) {
-        var _this = this;
-        arr.forEach(function (_a) {
-            var parent = _a.parent, child = _a.child, name = _a.name;
-            // Ensure that 'child' is not undefined before using it as an index
-            if (child !== undefined) {
-                if (!_this.map[child]) {
-                    _this.map[child] = {
-                        name: child,
-                        description: name || String(child),
-                        children: [],
-                    };
-                }
-                else {
-                    if (name && !_this.map[child].description.includes(name)) {
-                        _this.map[child].description += ", ".concat(name);
-                    }
-                }
-            }
-            if (parent === undefined) {
-                if (child !== undefined) {
-                    if (!_this.map[child]) {
-                        _this.map[child] = {
-                            name: child,
-                            description: name || String(child),
-                            children: [],
-                        };
-                    }
-                    _this.roots.push(_this.map[child]);
-                }
-            }
-            else {
-                if (!_this.map[parent]) {
-                    _this.map[parent] = {
-                        name: parent,
-                        description: String(parent),
-                        children: [],
-                    };
-                }
-                if (child !== undefined) {
-                    var existingChild = _this.map[parent].children.find(function (c) { return c.name === child; });
-                    if (!existingChild) {
-                        _this.map[parent].children.push(_this.map[child]);
-                    }
-                }
-                else {
-                    if (!_this.map[parent].children.some(function (c) { return c.description === name; })) {
-                        _this.map[parent].children.push({
-                            name: '',
-                            description: name || '',
-                            children: [],
-                        });
-                    }
-                }
-            }
-        });
-        return this.roots;
-    };
-    // Step 2: Collect all terminal nodes (nodes without children)
-    Tree.prototype.collectTerminalNodes = function (node, terminalNodes) {
-        var _this = this;
-        if (terminalNodes === void 0) { terminalNodes = []; }
-        if (node.children.length === 0) {
-            terminalNodes.push(node);
-        }
-        node.children.forEach(function (child) { return _this.collectTerminalNodes(child, terminalNodes); });
-        return terminalNodes;
-    };
-    // Step 3: Function to calculate the longest line length (dry run without output)
-    Tree.prototype.calculateMaxLength = function (node, prefix, isLast, maxLengthObj) {
-        var _this = this;
-        if (prefix === void 0) { prefix = ''; }
-        if (isLast === void 0) { isLast = true; }
-        if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
-        var line = "".concat(prefix).concat(isLast ? '└─' : '├─', " ").concat(node.description);
-        // Calculate the longest line length during this dry run
-        if (line.length > maxLengthObj.maxLength) {
-            maxLengthObj.maxLength = line.length;
-        }
-        var newPrefix = prefix + (isLast ? '   ' : '│  ');
-        node.children.forEach(function (child, index) {
-            var isLastChild = index === node.children.length - 1;
-            _this.calculateMaxLength(child, newPrefix, isLastChild, maxLengthObj);
-        });
-    };
-    // Step 4: Function to display the tree and include longest line length at terminal nodes
-    Tree.prototype.displayTreeWithLineLength = function (node, prefix, isLast, terminalIndex, maxLength, encounteredTerminalRef) {
-        var _this = this;
-        if (prefix === void 0) { prefix = ''; }
-        if (isLast === void 0) { isLast = true; }
-        var isTerminal = node.children.length === 0;
-        var terminalLabel = '';
-        var line = "".concat(prefix).concat(isLast ? '└─' : '├─', " ").concat(node.description);
-        if (isTerminal) {
-            var index = terminalIndex.current++;
-            terminalLabel = index === 0 ? '─┐' : '─┤';
-            // Pad terminal lines with '─'
-            var paddingNeeded = maxLength - (line.length + terminalLabel.length);
-            if (paddingNeeded > 0) {
-                line += ' ' + '─'.repeat(paddingNeeded);
-            }
-            line += terminalLabel;
-            encounteredTerminalRef.value = true; // Set the flag to true once a terminal node is encountered
-        }
-        else {
-            // Pad non-terminal lines with dots and check if it appears after a terminal node
-            var paddingNeeded = maxLength - line.length;
-            if (paddingNeeded > 0) {
-                line += ' '.repeat(paddingNeeded);
-            }
-            if (encounteredTerminalRef.value) {
-                line += '│'; // Pad non-terminal nodes that appear after the first terminal node with '│'
-            }
-        }
-        this.consoleLogText += line.trimEnd() + '\r\n';
-        var newPrefix = prefix + (isLast ? '   ' : '│  ');
-        node.children.forEach(function (child, index) {
-            var isLastChild = index === node.children.length - 1;
-            _this.displayTreeWithLineLength(child, newPrefix, isLastChild, terminalIndex, maxLength, encounteredTerminalRef);
-        });
-    };
-    // Method to initiate the tree processing and display
-    Tree.prototype.processTree = function (data) {
-        var _this = this;
-        // Step 1: Build tree
-        var tree = this.buildTree(data);
-        // Step 2: Dry run to calculate the longest line
-        var maxLengthObj = { maxLength: 0 };
-        tree.forEach(function (root) { return _this.calculateMaxLength(root, '', true, maxLengthObj); });
-        // Step 3: Track terminal node indices
-        var terminalNodes = [];
-        tree.forEach(function (root) { return _this.collectTerminalNodes(root, terminalNodes); });
-        var terminalIndex = { current: 0, total: terminalNodes.length };
-        // Step 4: Track whether we've encountered a terminal node
-        var encounteredTerminalRef = { value: false };
-        // Step 5: Display the tree with the longest line length added to terminal nodes and padded
-        tree.forEach(function (root) {
-            return _this.displayTreeWithLineLength(root, '', true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
-        });
-        // Step 6: Add final completion line
-        this.consoleLogText += ' '.repeat(maxLengthObj.maxLength) + '└─ completed';
-        // Return the console output as string
-        return this.consoleLogText;
-    };
-    return Tree;
-}());
-// Example Usage
-// const data: TreeData[] = [
-// 	{name: undefined, parent: undefined, child: 'a'},
-// 	{name: 'fetch data a', parent: 'a', child: 'b'},
-// 	{name: 'fetch data b', parent: 'a', child: 'b'},
-// 	{name: 'make snow flake', parent: 'b', child: 3},
-// 	{name: 'publish to s3', parent: 3, child: 'y'},
-// 	{name: 'publish to s4', parent: 3, child: undefined},
-// 	{name: 'do quality check', parent: 'b', child: 'd'},
-// 	{name: 'on s3', parent: 'd', child: 'z'},
-// ];
-// Usage:
-// const treeBuilder = new Tree();
-// const treeOutput = treeBuilder.processTree(data);
-// console.log(treeOutput);
-
 var version = '1.0.5';
 
-var mainGroup = new Group();
-
 var nextId = Sequence.nextId;
-var MONITOR = mainGroup;
-var getAll = MONITOR.getAll.bind(MONITOR);
-var removeAll = MONITOR.removeAll.bind(MONITOR);
-var add = MONITOR.add.bind(MONITOR);
-var remove = MONITOR.remove.bind(MONITOR);
 // Use default export if necessary
 var Index = {
     Group: Group,
@@ -692,13 +703,9 @@ var Index = {
     nextId: nextId,
     Monitor: Monitor,
     version: version,
-    getAll: getAll,
-    removeAll: removeAll,
-    add: add,
-    remove: remove,
     Watch: Watch,
     sleep: sleep,
     Tree: Tree,
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, add, Index as default, getAll, nextId, now, remove, removeAll, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, Index as default, nextId, now, sleep, version };

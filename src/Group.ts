@@ -1,5 +1,6 @@
 import Element from './Element';
 import {Watch, WatchAll} from './Watch';
+import Tree from './Tree';
 
 export interface WatchFunction {
 	name: string;
@@ -65,6 +66,7 @@ export default class Group {
 
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
+		debugger;
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
 			watchFunction = new Element(addWatchFunction);
@@ -151,6 +153,15 @@ export default class Group {
 
 		// Pass the array to the WatchAll function
 		return WatchAll(this, callback, callback_error);
+	}
+
+	get consoleTree(): string {
+		const treeData = this._functions.map(f => {
+			return {name: f.name, parent: f.parent, child: f.child};
+		});
+
+		const treeBuilder = new Tree();
+		return treeBuilder.processTree(treeData);
 	}
 
 	onRejected(callback: () => void) {

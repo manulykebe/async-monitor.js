@@ -3,15 +3,16 @@ import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
 const mixedWatches = new Group();
 
-const function_to_watch1 = () => sleep(1, /*fail:*/ false);
-const function_to_watch2 = () => sleep(2, /*fail:*/ false);
-const function_to_watch3 = () => sleep(3, /*fail:*/ false);
-
 mixedWatches.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
-	f: function_to_watch1,
+	f: () => sleep(undefined, false),
+	onStartCallback: function () {
+		const button = document.getElementById('demo03');
+		button.disabled = true;
+		button.innerText = 'Executing...';
+	},
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("preparation step")');
 	},
@@ -21,7 +22,7 @@ mixedWatches.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
-	f: function_to_watch2,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 	},
@@ -31,7 +32,7 @@ mixedWatches.addWatch({
 	name: 'fetch data from ETL store: s2',
 	parent: 'a',
 	child: 'b',
-	f: function_to_watch2,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 	},
@@ -41,9 +42,19 @@ mixedWatches.addWatch({
 	name: 'build snowflake',
 	parent: 'b',
 	child: 'c',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("build snowflake from s1 & s2")');
+	},
+});
+
+mixedWatches.addWatch({
+	name: 'publish snowflake',
+	parent: 'c',
+	child: undefined,
+	f: () => sleep(undefined, false),
+	onCompleteCallback: function () {
+		console.log('++++onCompleteCallback("publish snowflake")');
 	},
 });
 
@@ -51,7 +62,7 @@ mixedWatches.addWatch({
 	name: 'fetch data from ETL store: s3',
 	parent: 'a',
 	child: 'd',
-	f: function_to_watch2,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 	},
@@ -61,7 +72,7 @@ mixedWatches.addWatch({
 	name: 'build snowflake',
 	parent: 'd',
 	child: 'e',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("build snowflake from s3")');
 	},
@@ -71,7 +82,7 @@ mixedWatches.addWatch({
 	name: 'publish snowflake',
 	parent: 'e',
 	child: 'f',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("publish snowflake")');
 	},
@@ -88,15 +99,30 @@ function demo_mixed_execution() {
 	console.log(treeOutput);
 
 	mixedWatches.reset();
-	mixedWatches.WatchAll(() => {
-		console.table(
-			mixedWatches._functions.map((f, i) => {
-				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
-			}),
-		);
-	});
+	mixedWatches.WatchAll(
+		() => {
+			const button = document.getElementById('demo03');
+			button.disabled = false;
+			button.innerText = 'Mixed Execution';
+			console.table(
+				mixedWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+		() => {
+			const button = document.getElementById('demo03');
+			button.disabled = false;
+			button.innerText = 'Mixed Execution (aborted)';
+			console.table(
+				mixedWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+	);
 }
 
 // Make the functions available in the global scope
 window.demo_mixed_execution = demo_mixed_execution;
-// document['mixedWatches'] = mixedWatches;
+document['mixedWatches'] = mixedWatches;

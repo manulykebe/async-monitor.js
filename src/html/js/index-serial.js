@@ -3,15 +3,16 @@ import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
 const serialWatches = new Group();
 
-const function_to_watch1 = () => sleep(1, /*fail:*/ false);
-const function_to_watch2 = () => sleep(2, /*fail:*/ false);
-const function_to_watch3 = () => sleep(3, /*fail:*/ false);
-
 serialWatches.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
-	f: function_to_watch1,
+	f: () => sleep(undefined, false),
+	onStartCallback: function () {
+		const button = document.getElementById('demo02');
+		button.disabled = true;
+		button.innerText = 'Executing...';
+	},
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("preparation step")');
 	},
@@ -21,7 +22,7 @@ serialWatches.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
-	f: function_to_watch2,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 	},
@@ -31,7 +32,7 @@ serialWatches.addWatch({
 	name: 'fetch data from ETL store: s2',
 	parent: 'b',
 	child: 'c',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 	},
@@ -41,7 +42,7 @@ serialWatches.addWatch({
 	name: 'fetch data from ETL store: s3',
 	parent: 'c',
 	child: 'd',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 	},
@@ -50,32 +51,41 @@ serialWatches.addWatch({
 serialWatches.addWatch({
 	name: 'build snowflake',
 	parent: 'd',
-	f: function_to_watch3,
+	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("build snowflake")');
 	},
 });
 
 function demo_serial_execution() {
-	const treeData = serialWatches._functions.map(f => {
-		return {name: f.name, parent: f.parent, child: f.child};
-	});
-
-	const treeBuilder = new Tree();
-	const treeOutput = treeBuilder.processTree(treeData);
 	console.clear();
-	console.log(treeOutput);
+	console.log(serialWatches.consoleTree);
 
 	serialWatches.reset();
-	serialWatches.WatchAll(() => {
-		console.table(
-			serialWatches._functions.map((f, i) => {
-				return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
-			}),
-		);
-	});
+	serialWatches.WatchAll(
+		() => {
+			const button = document.getElementById('demo02');
+			button.disabled = false;
+			button.innerText = 'Serial Execution';
+			console.table(
+				serialWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+		() => {
+			const button = document.getElementById('demo02');
+			button.disabled = false;
+			button.innerText = 'Serial Execution (aborted)';
+			console.table(
+				serialWatches._functions.map((f, i) => {
+					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
+				}),
+			);
+		},
+	);
 }
 
 // Make the functions available in the global scope
 window.demo_serial_execution = demo_serial_execution;
-// document['serialWatches'] = serialWatches;
+document['serialWatches'] = serialWatches;
