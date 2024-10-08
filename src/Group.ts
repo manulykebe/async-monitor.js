@@ -2,6 +2,17 @@ import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
 
+type Metric = {
+	index: number;
+	name: string;
+	start: number | undefined;
+	duration: number | undefined;
+	f: string;
+	isRunning: boolean;
+	isFinished: boolean;
+	sequence: number;
+};
+
 export interface WatchFunction {
 	name: string;
 	parent?: string | undefined;
@@ -9,7 +20,7 @@ export interface WatchFunction {
 	group?: Group | undefined;
 	sequence?: number | undefined;
 	promise?: Promise<any> | void;
-	f: () => void;
+	f: () => Promise<any> | void;
 	onStartCallback?: (() => void) | undefined;
 	onCompleteCallback?: (() => void) | undefined;
 	onRejectCallback?: (() => void) | undefined;
@@ -66,7 +77,6 @@ export default class Group {
 
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
-		debugger;
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
 			watchFunction = new Element(addWatchFunction);
@@ -164,6 +174,33 @@ export default class Group {
 		return treeBuilder.processTree(treeData);
 	}
 
+	get metrics(): Metric[] {
+		return [
+			...this._functions.map((f, i) => {
+				return {
+					index: i,
+					name: f.name,
+					sequence: f.sequence ?? 0,
+					start: f.group ? f._startTime - f.group._startTime : undefined,
+					duration: f._duration,
+					f: f.f.toString(),
+					isRunning: f._isRunning ?? false,
+					isFinished: f._isFinished ?? false,
+				};
+			}),
+			{
+				index: 0,
+				name: '',
+				sequence: 0,
+				start: 0,
+				duration: this._duration,
+				f: '',
+				isRunning: this._isRunning ?? false,
+				isFinished: this._isFinished ?? false,
+			},
+		];
+	}
+
 	onRejected(callback: () => void) {
 		this._onRejectedCallback = callback;
 		return this;
@@ -174,7 +211,6 @@ export default class Group {
 		return this;
 	}
 	onComplete(callback: () => void) {
-		debugger;
 		this._stopTime = Date.now(); //#m
 		this._onCompleteCallback = callback;
 		return this;

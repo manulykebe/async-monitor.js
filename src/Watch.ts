@@ -90,12 +90,10 @@ function _watchAllInternal(
 	callback_error?: () => void,
 ): void {
 	const watches = group._functions;
-	debugger;
 	if (watches.every(f => f._isFinished)) {
 		// All watches are finished
 		group._stopTime = Date.now();
 		group._duration = group._stopTime - group._startTime;
-
 		if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
 		return;
 	}
@@ -119,69 +117,98 @@ function _watchAllInternal(
 	}
 
 	if (children.length > 0) {
-		children.forEach(child => {
-			child._isRunning = true;
-			child._startTime = Date.now();
-			child.sequence = _sequence;
-			if (typeof child.onStartCallback === 'function')
-				try {
-					child.onStartCallback();
-				} catch (error) {
-					console.warn(`Watch: onStartCallback failed (sequence: ${child.sequence}):\n`, error);
-				}
+		const grandChildren = children
+			.map(x => x.child)
+			.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index);
+		grandChildren.forEach(gc => {
+			_sequence++;
+			children
+				.filter(c => c.child === gc)
+				.forEach(child => {
+					child._isRunning = true;
+					child._startTime = Date.now();
+					child.sequence = _sequence;
+					(console as any).highlight(child.name, 'start');
 
-			try {
-				child.promise = child.f();
-			} catch (error) {
-				console.warn('Watch: critical! error in call to (async) function:\n', error);
-				child._stopTime = Date.now();
-				child._duration = child._stopTime - child._startTime;
-				child._isRunning = false;
-				if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
-				return;
-			}
-		});
-
-		if (!group._isFinished) {
-			const onCompleteCallback: (() => void)[] = children
-				.map(child => child.onCompleteCallback)
-				.filter(child => !!child);
-
-			// Modify this part to ensure promises are provided in the expected format.
-			const validChildren = children.map(child => ({
-				promise: child.promise ?? Promise.resolve(), // Ensure promise is always defined
-				onRejectCallback: child.onRejectCallback,
-				group: child.group,
-			}));
-
-			new Watch(
-				validChildren,
-				[
-					...onCompleteCallback,
-					() => {
-						children.forEach((child: WatchFunction) => {
-							child._isRunning = false;
-							child._isFinished = true;
-							child._stopTime = Date.now();
-							child._duration = child._stopTime - (child._startTime || 0);
-						});
-
-						if (!watches.some(x => x._isRunning) && watches.every(x => x._isFinished)) {
-							if (typeof callback === 'function') callback();
+					if (typeof child.onStartCallback === 'function') {
+						try {
+							child.onStartCallback();
+						} catch (error) {
+							console.warn(`Watch: onStartCallback failed (sequence: ${child.sequence}):\n`, error);
 						}
+					}
 
-						_sequence++;
+					try {
+						if (typeof child.f === 'function') {
+							const result = child.f();
+							// If result is void (undefined), log a warning or handle it accordingly
+							if (result === undefined || result === null) {
+								console.warn('Function returned void');
+							}
+							// Check if result is a promise by checking the presence of the then method
+							else if (typeof result.then === 'function') {
+								child.promise = result;
+								child.promise.then(() => {
+									if (typeof child.onCompleteCallback === 'function') {
+										child.onCompleteCallback();
+									} else {
+										console.warn('onCompleteCallback is not defined or not a function');
+									}
+									child._isRunning = false;
+									child._isFinished = true;
+									child._stopTime = Date.now();
+									child._duration = child._stopTime - (child._startTime || 0);
+									(console as any).highlight(child.name, 'complete');
+								});
+							}
+							// Handle any other unexpected return values
+							else {
+								console.warn('Function did not return a promise');
+							}
+						}
+					} catch (error) {
+						console.warn('Watch: critical! error in call to (async) function:\n', error);
+						child._stopTime = Date.now();
+						child._duration = child._stopTime - child._startTime;
+						child._isRunning = false;
+						if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
+						return;
+					}
+				});
+		});
+		if (!group._isFinished) {
+			grandChildren.forEach(gc => {
+				const validChildren = children
+					.filter(c => c.child === gc)
+					.map(child => ({
+						promise: child.promise ?? Promise.resolve(),
+						onRejectCallback: child.onRejectCallback,
+						group: child.group,
+					}));
 
-						watches
-							.filter(x => x.parent === parent)
-							.map(x => x.child)
-							.forEach(x => {
-								_watchAllInternal(group, x, callback, callback_error);
-							});
-					},
-				],
-				callback_error,
-			);
+				new Watch(
+					validChildren,
+					[
+						() => {
+							if (!watches.some(x => x._isRunning) && watches.every(x => x._isFinished)) {
+								if (typeof callback === 'function') callback();
+							}
+
+							watches
+								.filter(x => x.parent === parent)
+								.filter(function (c) {
+									return c.child === gc;
+								}) // && !x._isRunning && !x._isFinished)
+								.map(x => x.child)
+								.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index)
+								.forEach(x => {
+									_watchAllInternal(group, x, callback, callback_error);
+								});
+						},
+					],
+					callback_error,
+				);
+			});
 		}
 	}
 }

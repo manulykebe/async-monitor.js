@@ -67,6 +67,42 @@ function sleep() {
     });
 }
 
+(this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+(this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var Element = /** @class */ (function () {
     function Element(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, _startTime, _stopTime, _duration) {
         if (name === void 0) { name = ''; }
@@ -169,15 +205,6 @@ var Monitor = /** @class */ (function () {
     return Monitor;
 }());
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 var Watch = /** @class */ (function () {
     function Watch(fs, f, fr) {
         var _breakOnRejected = false;
@@ -257,7 +284,6 @@ function WatchAll(group, callback, callback_error) {
 }
 function _watchAllInternal(group, parent, callback, callback_error) {
     var watches = group._functions;
-    debugger;
     if (watches.every(function (f) { return f._isFinished; })) {
         // All watches are finished
         group._stopTime = Date.now();
@@ -283,64 +309,98 @@ function _watchAllInternal(group, parent, callback, callback_error) {
         watches.forEach(function (x, i) { return (x._index = i); });
     }
     if (children.length > 0) {
-        children.forEach(function (child) {
-            child._isRunning = true;
-            child._startTime = Date.now();
-            child.sequence = _sequence;
-            if (typeof child.onStartCallback === 'function')
+        var grandChildren = children
+            .map(function (x) { return x.child; })
+            .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; });
+        grandChildren.forEach(function (gc) {
+            _sequence++;
+            children
+                .filter(function (c) { return c.child === gc; })
+                .forEach(function (child) {
+                child._isRunning = true;
+                child._startTime = Date.now();
+                child.sequence = _sequence;
+                console.highlight(child.name, 'start');
+                if (typeof child.onStartCallback === 'function') {
+                    try {
+                        child.onStartCallback();
+                    }
+                    catch (error) {
+                        console.warn("Watch: onStartCallback failed (sequence: ".concat(child.sequence, "):\n"), error);
+                    }
+                }
                 try {
-                    child.onStartCallback();
+                    if (typeof child.f === 'function') {
+                        var result = child.f();
+                        // If result is void (undefined), log a warning or handle it accordingly
+                        if (result === undefined || result === null) {
+                            console.warn('Function returned void');
+                        }
+                        // Check if result is a promise by checking the presence of the then method
+                        else if (typeof result.then === 'function') {
+                            child.promise = result;
+                            child.promise.then(function () {
+                                if (typeof child.onCompleteCallback === 'function') {
+                                    child.onCompleteCallback();
+                                }
+                                else {
+                                    console.warn('onCompleteCallback is not defined or not a function');
+                                }
+                                child._isRunning = false;
+                                child._isFinished = true;
+                                child._stopTime = Date.now();
+                                child._duration = child._stopTime - (child._startTime || 0);
+                                console.highlight(child.name, 'complete');
+                            });
+                        }
+                        // Handle any other unexpected return values
+                        else {
+                            console.warn('Function did not return a promise');
+                        }
+                    }
                 }
                 catch (error) {
-                    console.warn("Watch: onStartCallback failed (sequence: ".concat(child.sequence, "):\n"), error);
+                    console.warn('Watch: critical! error in call to (async) function:\n', error);
+                    child._stopTime = Date.now();
+                    child._duration = child._stopTime - child._startTime;
+                    child._isRunning = false;
+                    if (typeof group._onUnCompleteCallback === 'function')
+                        group._onUnCompleteCallback();
+                    return;
                 }
-            try {
-                child.promise = child.f();
-            }
-            catch (error) {
-                console.warn('Watch: critical! error in call to (async) function:\n', error);
-                child._stopTime = Date.now();
-                child._duration = child._stopTime - child._startTime;
-                child._isRunning = false;
-                if (typeof group._onUnCompleteCallback === 'function')
-                    group._onUnCompleteCallback();
-                return;
-            }
+            });
         });
         if (!group._isFinished) {
-            var onCompleteCallback = children
-                .map(function (child) { return child.onCompleteCallback; })
-                .filter(function (child) { return !!child; });
-            // Modify this part to ensure promises are provided in the expected format.
-            var validChildren = children.map(function (child) {
-                var _a;
-                return ({
-                    promise: (_a = child.promise) !== null && _a !== void 0 ? _a : Promise.resolve(), // Ensure promise is always defined
-                    onRejectCallback: child.onRejectCallback,
-                    group: child.group,
+            grandChildren.forEach(function (gc) {
+                var validChildren = children
+                    .filter(function (c) { return c.child === gc; })
+                    .map(function (child) {
+                    var _a;
+                    return ({
+                        promise: (_a = child.promise) !== null && _a !== void 0 ? _a : Promise.resolve(),
+                        onRejectCallback: child.onRejectCallback,
+                        group: child.group,
+                    });
                 });
+                new Watch(validChildren, [
+                    function () {
+                        if (!watches.some(function (x) { return x._isRunning; }) && watches.every(function (x) { return x._isFinished; })) {
+                            if (typeof callback === 'function')
+                                callback();
+                        }
+                        watches
+                            .filter(function (x) { return x.parent === parent; })
+                            .filter(function (c) {
+                            return c.child === gc;
+                        }) // && !x._isRunning && !x._isFinished)
+                            .map(function (x) { return x.child; })
+                            .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; })
+                            .forEach(function (x) {
+                            _watchAllInternal(group, x, callback, callback_error);
+                        });
+                    },
+                ], callback_error);
             });
-            new Watch(validChildren, __spreadArray(__spreadArray([], onCompleteCallback, true), [
-                function () {
-                    children.forEach(function (child) {
-                        child._isRunning = false;
-                        child._isFinished = true;
-                        child._stopTime = Date.now();
-                        child._duration = child._stopTime - (child._startTime || 0);
-                    });
-                    if (!watches.some(function (x) { return x._isRunning; }) && watches.every(function (x) { return x._isFinished; })) {
-                        if (typeof callback === 'function')
-                            callback();
-                    }
-                    _sequence++;
-                    watches
-                        .filter(function (x) { return x.parent === parent; })
-                        .map(function (x) { return x.child; })
-                        .forEach(function (x) {
-                        _watchAllInternal(group, x, callback, callback_error);
-                    });
-                },
-            ], false), callback_error);
         }
     }
 }
@@ -512,6 +572,15 @@ var Tree = /** @class */ (function () {
     return Tree;
 }());
 
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var _group_id = 0;
 var Group = /** @class */ (function () {
     function Group() {
@@ -540,7 +609,6 @@ var Group = /** @class */ (function () {
         this._abort = new AbortController(); // Declare abort controller
         // Add a watch function
         this.addWatch = function (addWatchFunction) {
-            debugger;
             var watchFunction;
             if (typeof addWatchFunction === 'function') {
                 watchFunction = new Element(addWatchFunction);
@@ -659,6 +727,37 @@ var Group = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Group.prototype, "metrics", {
+        get: function () {
+            var _a, _b;
+            return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
+                var _a, _b, _c;
+                return {
+                    index: i,
+                    name: f.name,
+                    sequence: (_a = f.sequence) !== null && _a !== void 0 ? _a : 0,
+                    start: f.group ? f._startTime - f.group._startTime : undefined,
+                    duration: f._duration,
+                    f: f.f.toString(),
+                    isRunning: (_b = f._isRunning) !== null && _b !== void 0 ? _b : false,
+                    isFinished: (_c = f._isFinished) !== null && _c !== void 0 ? _c : false,
+                };
+            }), true), [
+                {
+                    index: 0,
+                    name: '',
+                    sequence: 0,
+                    start: 0,
+                    duration: this._duration,
+                    f: '',
+                    isRunning: (_a = this._isRunning) !== null && _a !== void 0 ? _a : false,
+                    isFinished: (_b = this._isFinished) !== null && _b !== void 0 ? _b : false,
+                },
+            ], false);
+        },
+        enumerable: false,
+        configurable: true
+    });
     Group.prototype.onRejected = function (callback) {
         this._onRejectedCallback = callback;
         return this;
@@ -669,7 +768,6 @@ var Group = /** @class */ (function () {
         return this;
     };
     Group.prototype.onComplete = function (callback) {
-        debugger;
         this._stopTime = Date.now(); //#m
         this._onCompleteCallback = callback;
         return this;

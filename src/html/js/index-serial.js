@@ -1,5 +1,5 @@
-import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-// import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
+// import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
 const serialWatches = new Group();
 
@@ -22,6 +22,7 @@ serialWatches.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
+	// f: () => console.log('not a promise'),
 	f: () => sleep(undefined, false),
 	onCompleteCallback: function () {
 		console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
@@ -77,11 +78,8 @@ function demo_serial_execution() {
 			const button = document.getElementById('demo02');
 			button.disabled = false;
 			button.innerText = 'Serial Execution (aborted)';
-			console.table(
-				serialWatches._functions.map((f, i) => {
-					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
-				}),
-			);
+			console.log('Metrics:');
+			console.table(parallelWatches.metrics);
 		},
 	);
 }

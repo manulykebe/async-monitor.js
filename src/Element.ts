@@ -8,7 +8,7 @@ export default class Element implements WatchFunction {
 	child: string | undefined;
 	group?: Group | undefined;
 	promise?: Promise<any>;
-	f: () => void;
+	f: () => Promise<any> | void;
 	onStartCallback: (() => void) | undefined = () => {};
 	onCompleteCallback: (() => void) | undefined = () => {};
 	onRejectCallback: (() => void) | undefined = () => {};
@@ -53,4 +53,15 @@ export default class Element implements WatchFunction {
 		this._isFinished = false;
 		this._isRunning = false;
 	}
+}
+
+export function makeAsync<T extends (...args: any[]) => any>(
+	fn: T,
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+	if (fn.constructor.name === 'AsyncFunction') {
+		return fn as (...args: Parameters<T>) => Promise<ReturnType<T>>;
+	}
+	return async function (this: unknown, ...args: Parameters<T>): Promise<ReturnType<T>> {
+		return fn.apply(this, args);
+	};
 }

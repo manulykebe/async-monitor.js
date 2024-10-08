@@ -16,6 +16,16 @@ declare class Watch {
     }>, f: (() => void) | Array<() => void>, fr?: () => void);
 }
 
+type Metric = {
+    index: number;
+    name: string;
+    start: number | undefined;
+    duration: number | undefined;
+    f: string;
+    isRunning: boolean;
+    isFinished: boolean;
+    sequence: number;
+};
 interface WatchFunction {
     name: string;
     parent?: string | undefined;
@@ -23,7 +33,7 @@ interface WatchFunction {
     group?: Group | undefined;
     sequence?: number | undefined;
     promise?: Promise<any> | void;
-    f: () => void;
+    f: () => Promise<any> | void;
     onStartCallback?: (() => void) | undefined;
     onCompleteCallback?: (() => void) | undefined;
     onRejectCallback?: (() => void) | undefined;
@@ -60,6 +70,7 @@ declare class Group {
     Watch(callback: () => void, callback_error: () => void): Watch;
     WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): void;
     get consoleTree(): string;
+    get metrics(): Metric[];
     onRejected(callback: () => void): this;
     onStart(callback: () => void): this;
     onComplete(callback: () => void): this;

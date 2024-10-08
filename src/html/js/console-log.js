@@ -120,7 +120,7 @@ console.clear = function () {
 
 console.log = function (message) {
 	originalConsoleLog(message);
-	appendLogToConsole(getCurrentTime(), message);
+	appendLogToConsole(getCurrentTime(), message, message.startsWith('──') ? 'tree' : undefined);
 };
 
 console.error = function (message) {
@@ -147,3 +147,33 @@ console.warn = function (message) {
 	originalConsoleWarn(message);
 	appendLogToConsole(getCurrentTime(), message, 'log-warn');
 };
+function escapeRegExp(text) {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+// Function to highlight text on the page
+console.highlight = function (text, className = 'start') {
+	// Clear any previous highlights
+	clearHighlights();
+
+	// Get the entire body text
+	const treeElement = document.querySelector('.tree');
+
+	// Create a regular expression to match the provided text
+	const regex = new RegExp(escapeRegExp(text), 'gi');
+
+	// Replace the matched text with a span to highlight it
+	const highlightedText = treeElement.innerHTML.replace(regex, match => {
+		return `<span class="highlight-${className}">${match}</span>`;
+	});
+
+	// Set the updated HTML back to the body
+	treeElement.innerHTML = highlightedText;
+};
+
+// Function to clear previous highlights
+function clearHighlights() {
+	// Remove all previously highlighted spans
+	document.querySelectorAll('.highlight').forEach(span => {
+		span.outerHTML = span.innerHTML;
+	});
+}

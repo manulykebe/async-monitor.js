@@ -144,3 +144,13 @@ button:hover {
 	border: 1px solid black;
 	padding: 4px;
 }
+
+.highlight-start {
+	background-color: lightyellow;
+	font-style: italic;
+}
+.highlight-complete {
+	background-color: lightgreen;
+	font-style: normal;
+	font-weight: bold;
+}
