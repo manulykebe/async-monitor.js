@@ -1,5 +1,5 @@
-// import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
+import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
+// import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
 const mixedWatches = new Group();
 

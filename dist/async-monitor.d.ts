@@ -104,7 +104,7 @@ declare class Monitor {
     }>;
 }
 
-declare const version = "1.0.5";
+declare const version = "1.0.6";
 
 declare const nextId: typeof Sequence.nextId;
 
