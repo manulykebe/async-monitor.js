@@ -51,7 +51,7 @@
 		"release:patch": "npm version patch --message 'v%s' && npm publish && npm run _release:push-branch",
 		"release:minor": "npm version minor --message 'v%s' && npm publish && npm run _release:push-branch",
 		"release:major": "npm version major --message 'v%s' && npm publish && npm run _release:push-branch",
-		"_release:push-branch": "git push --follow-tags --set-upstream origin $(git rev-parse --abbrev-ref HEAD)"
+		"_release:push-branch": "git push --follow-tags --set-upstream origin main"
 	},
 	"author": "monitor.js contributors (https://github.com/manulykebe/async-monitor.js/graphs/contributors)",
 	"devDependencies": {
