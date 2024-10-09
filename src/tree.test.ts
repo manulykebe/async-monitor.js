@@ -11,18 +11,18 @@ describe('Tree Structure Test', () => {
 			{name: 'grande finale', parent: 'final', child: undefined},
 		];
 
-		const expectedOutput = `── start
-   └─ fetch data a
-      └─ make snow flake
-         └─ publish to s3
-            └─ on s3
-               └─ grande finale─┐
-                                |
-                                └─ completed`.trim();
+		const expectedOutput =     [
+			'── start',
+			'   └─ fetch data a',
+			'      └─ make snow flake',
+			'         └─ publish to s3',
+			'            └─ on s3',
+			'               └─ grande finale─┐',
+			'                                └─ completed'
+		  ].join('\n')
 
 		const treeBuilder = new Tree();
-		const treeOutput = treeBuilder.processTree(data).trim();
-
-		expect(treeOutput).toBe(expectedOutput);
+		const treeOutput = treeBuilder.processTree(data);
+		expect(treeOutput.split('\r\n')).toEqual(expectedOutput.split('\n'));
 	});
 });

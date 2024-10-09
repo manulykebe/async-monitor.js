@@ -13,7 +13,7 @@
 // Usage:
 // const treeBuilder = new Tree();
 // const treeOutput = treeBuilder.processTree(data);
-// console.log(treeOutput);
+// useConsole && console.log(treeOutput);
 
 interface TreeNode {
 	name: string | number;

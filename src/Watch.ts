@@ -1,6 +1,8 @@
 import Group, {type WatchFunction} from './Group';
 import Monitor from './Monitor';
 
+export const useConsole = false;
+
 export class Watch {
 	constructor(
 		fs: Array<{promise: Promise<any> | void; onRejectCallback?: (reason: any) => void; group?: Group}>,
@@ -18,15 +20,15 @@ export class Watch {
 			.map(x => x.promise);
 		const monitorInstance = new Monitor(validFs);
 
-		(document as any)['monitorInstance'] = monitorInstance;
+		// (document as any)['monitorInstance'] = monitorInstance;
 
 		return monitorInstance
 			.monitorStatuses()
 			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
 				if (statuses.statusesPromise.length > 1) {
-					console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+					useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				} else {
-					console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+					useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				}
 				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
 				_statuses = statuses.statusesPromise
@@ -128,7 +130,7 @@ function _watchAllInternal(
 					child._isRunning = true;
 					child._startTime = Date.now();
 					child.sequence = _sequence;
-					(console as any).highlight(child.name, 'start');
+					useConsole && (console as any).highlight(child.name, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {
@@ -158,7 +160,7 @@ function _watchAllInternal(
 									child._isFinished = true;
 									child._stopTime = Date.now();
 									child._duration = child._stopTime - (child._startTime || 0);
-									(console as any).highlight(child.name, 'complete');
+									useConsole && (console as any).highlight(child.name, 'complete');
 								});
 							}
 							// Handle any other unexpected return values

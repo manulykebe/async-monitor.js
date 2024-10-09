@@ -205,6 +205,7 @@ var Monitor = /** @class */ (function () {
     return Monitor;
 }());
 
+var useConsole = false;
 var Watch = /** @class */ (function () {
     function Watch(fs, f, fr) {
         var _breakOnRejected = false;
@@ -320,7 +321,6 @@ function _watchAllInternal(group, parent, callback, callback_error) {
                 child._isRunning = true;
                 child._startTime = Date.now();
                 child.sequence = _sequence;
-                console.highlight(child.name, 'start');
                 if (typeof child.onStartCallback === 'function') {
                     try {
                         child.onStartCallback();
@@ -350,7 +350,7 @@ function _watchAllInternal(group, parent, callback, callback_error) {
                                 child._isFinished = true;
                                 child._stopTime = Date.now();
                                 child._duration = child._stopTime - (child._startTime || 0);
-                                console.highlight(child.name, 'complete');
+                                useConsole && console.highlight(child.name, 'complete');
                             });
                         }
                         // Handle any other unexpected return values

@@ -8,7 +8,6 @@ import version from './Version';
 import {Watch} from './Watch';
 
 const nextId = Sequence.nextId;
-
 // Directly export the items as named exports
 export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree};
 // Export types and interfaces.

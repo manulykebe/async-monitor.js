@@ -1,6 +1,7 @@
 import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
+import {useConsole} from './Watch';
 
 type Metric = {
 	index: number;
@@ -47,20 +48,20 @@ export default class Group {
 	// Default Callbacks
 	_onStartCallback: () => void = () => {
 		console.group('Group: ' + this._id);
-		console.log('*** START ***');
+		if (useConsole) console.log('*** START ***');
 	};
 
 	_onCompleteCallback: () => void = () => {
-		console.log('*** COMPLETE ***');
+		if (useConsole) console.log('*** COMPLETE ***');
 		console.groupEnd();
 	};
 
 	_onUnCompleteCallback: () => void = () => {
-		console.log('*** UNCOMPLETE! ***');
+		if (useConsole) console.log('*** UNCOMPLETE! ***');
 	};
 
 	_onRejectedCallback: () => void = () => {
-		console.log('*** REJECTED ***');
+		if (useConsole) console.log('*** REJECTED ***');
 	};
 
 	_abort: AbortController = new AbortController(); // Declare abort controller
