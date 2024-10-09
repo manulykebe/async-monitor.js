@@ -1,7 +1,7 @@
 import Group, {type WatchFunction} from './Group';
 import Monitor from './Monitor';
 
-export const useConsole = false;
+export const useConsole = true;
 
 export class Watch {
 	constructor(

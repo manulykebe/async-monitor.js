@@ -11,15 +11,15 @@ describe('Tree Structure Test', () => {
 			{name: 'grande finale', parent: 'final', child: undefined},
 		];
 
-		const expectedOutput =     [
+		const expectedOutput = [
 			'── start',
 			'   └─ fetch data a',
 			'      └─ make snow flake',
 			'         └─ publish to s3',
 			'            └─ on s3',
 			'               └─ grande finale─┐',
-			'                                └─ completed'
-		  ].join('\n')
+			'                                └─ completed',
+		].join('\n');
 
 		const treeBuilder = new Tree();
 		const treeOutput = treeBuilder.processTree(data);
