@@ -209,7 +209,6 @@ var useConsole = true;
 var Watch = /** @class */ (function () {
     function Watch(fs, f, fr) {
         var _breakOnRejected = false;
-        var _statuses = [];
         // Filter out entries where promise is undefined
         var validFs = fs
             .filter(function (x) { return x.promise instanceof Promise; })
@@ -226,7 +225,7 @@ var Watch = /** @class */ (function () {
                 console.log("status: ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
             }
             _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
-            _statuses = statuses.statusesPromise
+            statuses.statusesPromise
                 .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
                 .filter(function (v) { return v.reason !== undefined; });
         })
@@ -234,30 +233,7 @@ var Watch = /** @class */ (function () {
             console.warn('error:', err);
         })
             .finally(function () {
-            if (_breakOnRejected) {
-                console.warn('Promise rejected...');
-                var fs0 = fs[0];
-                if (fs0.group && typeof fs0.group._onRejectedCallback === 'function')
-                    fs0.group._onRejectedCallback();
-                if (fs0.group && typeof fs0.group._onCompleteCallback === 'function')
-                    fs0.group._onCompleteCallback();
-                // f_rejected for specific function
-                _statuses.forEach(function (x) {
-                    if (typeof x.onRejectCallback === 'function') {
-                        try {
-                            x.onRejectCallback(x.reason);
-                        }
-                        catch (error) {
-                            console.warn('Watch.onRejectCallback is not critical:\n', error);
-                        }
-                    }
-                    console.warn('onRejectCallback not provided.');
-                });
-                // f_rejected for global watch
-                if (typeof fr === 'function')
-                    fr();
-                return;
-            }
+            if (_breakOnRejected) ;
             else {
                 if (typeof f === 'function')
                     f();
@@ -352,6 +328,19 @@ function _watchAllInternal(group, parent, callback, callback_error) {
                                 child._stopTime = Date.now();
                                 child._duration = child._stopTime - (child._startTime || 0);
                                 useConsole && console.highlight(child.name, group._id, 'complete');
+                            });
+                            child.promise.catch(function () {
+                                if (typeof child.onRejectCallback === 'function') {
+                                    child.onRejectCallback();
+                                }
+                                else {
+                                    console.warn('onRejectCallback is not defined or not a function');
+                                }
+                                child._isRunning = false;
+                                child._isFinished = true;
+                                child._stopTime = Date.now();
+                                child._duration = child._stopTime - (child._startTime || 0);
+                                useConsole && console.highlight(child.name, group._id, 'rejected');
                             });
                         }
                         // Handle any other unexpected return values

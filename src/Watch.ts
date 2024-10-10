@@ -40,26 +40,23 @@ export class Watch {
 			})
 			.finally(() => {
 				if (_breakOnRejected) {
-					console.warn('Promise rejected...');
-					const fs0 = fs[0];
-					if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
-					if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
-
-					// f_rejected for specific function
-					_statuses.forEach(x => {
-						if (typeof x.onRejectCallback === 'function') {
-							try {
-								x.onRejectCallback(x.reason);
-							} catch (error) {
-								console.warn('Watch.onRejectCallback is not critical:\n', error);
-							}
-						}
-						console.warn('onRejectCallback not provided.');
-					});
-
-					// f_rejected for global watch
-					if (typeof fr === 'function') fr();
-					return;
+					// const fs0 = fs[0];
+					// if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
+					// if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
+					// // f_rejected for specific function
+					// _statuses.forEach(x => {
+					// 	if (typeof x.onRejectCallback === 'function') {
+					// 		try {
+					// 			x.onRejectCallback(x.reason);
+					// 		} catch (error) {
+					// 			console.warn('Watch.onRejectCallback is not critical:\n', error);
+					// 		}
+					// 	}
+					// 	// console.warn('onRejectCallback not provided.');
+					// });
+					// // f_rejected for global watch
+					// if (typeof fr === 'function') fr();
+					// return;
 				} else {
 					if (typeof f === 'function') f();
 					if (Array.isArray(f)) {
@@ -161,6 +158,19 @@ function _watchAllInternal(
 									child._stopTime = Date.now();
 									child._duration = child._stopTime - (child._startTime || 0);
 									useConsole && (console as any).highlight(child.name, group._id, 'complete');
+								});
+
+								child.promise.catch(() => {
+									if (typeof child.onRejectCallback === 'function') {
+										child.onRejectCallback();
+									} else {
+										console.warn('onRejectCallback is not defined or not a function');
+									}
+									child._isRunning = false;
+									child._isFinished = true;
+									child._stopTime = Date.now();
+									child._duration = child._stopTime - (child._startTime || 0);
+									useConsole && (console as any).highlight(child.name, group._id, 'rejected');
 								});
 							}
 							// Handle any other unexpected return values
