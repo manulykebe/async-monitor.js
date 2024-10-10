@@ -1,9 +1,9 @@
 import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 // import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
-const parallelWatches = new Group();
+const demo01 = new Group();
 
-parallelWatches.addWatch({
+demo01.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
@@ -19,7 +19,7 @@ parallelWatches.addWatch({
 	},
 });
 
-parallelWatches.addWatch({
+demo01.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
@@ -32,7 +32,7 @@ parallelWatches.addWatch({
 	},
 });
 
-parallelWatches.addWatch({
+demo01.addWatch({
 	name: 'fetch data from ETL store: s2',
 	parent: 'a',
 	child: 'b',
@@ -45,7 +45,7 @@ parallelWatches.addWatch({
 	},
 });
 
-parallelWatches.addWatch({
+demo01.addWatch({
 	name: 'fetch data from ETL store: s3',
 	parent: 'a',
 	child: 'b',
@@ -58,7 +58,7 @@ parallelWatches.addWatch({
 	},
 });
 
-parallelWatches.addWatch({
+demo01.addWatch({
 	name: 'build snowflake',
 	parent: 'b',
 	f: () => sleep(5, false),
@@ -70,29 +70,29 @@ parallelWatches.addWatch({
 	},
 });
 
-function demo_parallel_execution() {
+function demo_demo01() {
 	console.clear();
-	console.log(parallelWatches.consoleTree);
+	console.log(demo01.consoleTree);
 
-	parallelWatches.reset();
-	parallelWatches.WatchAll(
+	demo01.reset();
+	demo01.WatchAll(
 		() => {
 			const button = document.getElementById('demo01');
 			button.disabled = false;
-			button.innerText = 'Parallel Execution';
+			button.innerText = 'demo01';
 			console.log('Metrics:');
-			console.table(parallelWatches.metrics);
+			console.table(demo01.metrics);
 		},
 		() => {
 			const button = document.getElementById('demo01');
 			button.disabled = false;
-			button.innerText = 'Parallel Execution (aborted)';
+			button.innerText = 'demo01 (aborted)';
 			console.log('Metrics:');
-			console.table(parallelWatches.metrics);
+			console.table(demo01.metrics);
 		},
 	);
 }
 
 // Make the functions available in the global scope
-window.demo_parallel_execution = demo_parallel_execution;
-document['parallelWatches'] = parallelWatches;
+window.demo_demo01 = demo_demo01;
+document['demo01'] = demo01;

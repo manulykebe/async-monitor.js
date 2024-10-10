@@ -323,7 +323,7 @@
                     child._isRunning = true;
                     child._startTime = Date.now();
                     child.sequence = _sequence;
-                    console.highlight(child.name, 'start');
+                    console.highlight(child.name, group._id, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -353,7 +353,7 @@
                                     child._isFinished = true;
                                     child._stopTime = Date.now();
                                     child._duration = child._stopTime - (child._startTime || 0);
-                                    useConsole && console.highlight(child.name, 'complete');
+                                    useConsole && console.highlight(child.name, group._id, 'complete');
                                 });
                             }
                             // Handle any other unexpected return values

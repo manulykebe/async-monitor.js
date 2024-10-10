@@ -78,6 +78,7 @@ const originalConsoleTable = console.table;
 const originalConsoleWarn = console.warn;
 
 function appendLogToConsole(time, message, classname) {
+	debugger;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
 		const logEntry = document.createElement('div');
@@ -89,14 +90,15 @@ function appendLogToConsole(time, message, classname) {
 
 		const messageCol = document.createElement('div');
 		messageCol.classList.add('log-message');
-		if (classname) messageCol.classList.add(classname);
 
 		if (typeof message === 'object') {
 			const table = createTableFromObject(message);
 			messageCol.appendChild(table);
 		} else {
 			const pre = document.createElement('pre');
-			pre.classList.add('log-pre');
+			pre.classList.add('log-pre.' + classname ?? '');
+			// if (classname) pre.classList.add(classname);
+
 			pre.textContent = message;
 			messageCol.appendChild(pre);
 		}
@@ -115,12 +117,12 @@ console.clear = function () {
 		consoleDiv.innerHTML = '';
 	}
 
-	console.log(`async-monitor.js@${version}`);
+	console.log(`async-monitor.js@${'version'}`);
 };
 
-console.log = function (message) {
+console.log = function (message, className) {
 	originalConsoleLog(message);
-	appendLogToConsole(getCurrentTime(), message, message.startsWith('──') ? 'tree' : undefined);
+	appendLogToConsole(getCurrentTime(), message, className ? className : '');
 };
 
 console.error = function (message) {
@@ -151,13 +153,19 @@ function escapeRegExp(text) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 // Function to highlight text on the page
-console.highlight = function (text, className = 'start') {
+console.highlight = function (text, _id, className = 'start') {
 	// Clear any previous highlights
-	clearHighlights();
+	clearHighlights(_id);
 
 	// Get the entire body text
-	const treeElement = document.querySelector('.tree');
-
+	const treeElement = document.querySelector(`pre[class="log-pre.tree-${_id}"]`);
+	if (!treeElement) {
+		debugger;
+		console.log(text, _id, className);
+		console.warn(`.log-pre.tree-${_id} not found.`);
+		debugger;
+		return;
+	}
 	// Create a regular expression to match the provided text
 	const regex = new RegExp(escapeRegExp(text), 'gi');
 
@@ -171,9 +179,9 @@ console.highlight = function (text, className = 'start') {
 };
 
 // Function to clear previous highlights
-function clearHighlights() {
+function clearHighlights(_id) {
 	// Remove all previously highlighted spans
-	document.querySelectorAll('.highlight').forEach(span => {
+	document.querySelectorAll(`.tree-${_id}`).forEach(span => {
 		span.outerHTML = span.innerHTML;
 	});
 }

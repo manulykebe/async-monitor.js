@@ -1,9 +1,9 @@
 import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 // import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
-const mixedWatches = new Group();
+const demo03 = new Group();
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
@@ -19,7 +19,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
@@ -32,7 +32,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'fetch data from ETL store: s2',
 	parent: 'a',
 	child: 'b',
@@ -45,7 +45,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'build snowflake s1 and s2',
 	parent: 'b',
 	child: 'c',
@@ -58,7 +58,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'publish snowflake s1 and s2',
 	parent: 'c',
 	child: 'x',
@@ -71,7 +71,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'fetch data from ETL store: s3',
 	parent: 'a',
 	child: 'd',
@@ -84,7 +84,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'build snowflake from s3',
 	parent: 'd',
 	child: 'e',
@@ -97,7 +97,7 @@ mixedWatches.addWatch({
 	},
 });
 
-mixedWatches.addWatch({
+demo03.addWatch({
 	name: 'publish snowflake s3',
 	parent: 'e',
 	child: 'f',
@@ -110,35 +110,29 @@ mixedWatches.addWatch({
 	},
 });
 
-function demo_mixed_execution() {
-	const treeData = mixedWatches._functions.map(f => {
-		return {name: f.name, parent: f.parent, child: f.child};
-	});
-
-	const treeBuilder = new Tree();
-	const treeOutput = treeBuilder.processTree(treeData);
+function demo_demo03() {
 	console.clear();
-	console.log(treeOutput);
+	console.log(demo03.consoleTree);
 
-	mixedWatches.reset();
-	mixedWatches.WatchAll(
+	demo03.reset();
+	demo03.WatchAll(
 		() => {
 			const button = document.getElementById('demo03');
 			button.disabled = false;
-			button.innerText = 'Mixed Execution';
+			button.innerText = 'demo03';
 			console.log('Metrics:');
-			console.table(mixedWatches.metrics);
+			console.table(demo03.metrics);
 		},
 		() => {
 			const button = document.getElementById('demo03');
 			button.disabled = false;
-			button.innerText = 'Mixed Execution (aborted)';
+			button.innerText = 'demo03 (aborted)';
 			console.log('Metrics:');
-			console.table(mixedWatches.metrics);
+			console.table(demo03.metrics);
 		},
 	);
 }
 
 // Make the functions available in the global scope
-window.demo_mixed_execution = demo_mixed_execution;
-document['mixedWatches'] = mixedWatches;
+window.demo_demo03 = demo_demo03;
+document['demo03'] = demo03;

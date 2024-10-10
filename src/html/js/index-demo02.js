@@ -1,9 +1,9 @@
 import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 // import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
-const serialWatches = new Group();
+const demo02 = new Group();
 
-serialWatches.addWatch({
+demo02.addWatch({
 	name: 'preparation step',
 	parent: undefined,
 	child: 'a',
@@ -18,7 +18,7 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+demo02.addWatch({
 	name: 'fetch data from ETL store: s1',
 	parent: 'a',
 	child: 'b',
@@ -29,7 +29,7 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+demo02.addWatch({
 	name: 'fetch data from ETL store: s2',
 	parent: 'b',
 	child: 'c',
@@ -39,7 +39,7 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+demo02.addWatch({
 	name: 'fetch data from ETL store: s3',
 	parent: 'c',
 	child: 'd',
@@ -49,7 +49,7 @@ serialWatches.addWatch({
 	},
 });
 
-serialWatches.addWatch({
+demo02.addWatch({
 	name: 'build snowflake',
 	parent: 'd',
 	f: () => sleep(undefined, false),
@@ -58,32 +58,29 @@ serialWatches.addWatch({
 	},
 });
 
-function demo_serial_execution() {
+function demo_demo02() {
 	console.clear();
-	console.log(serialWatches.consoleTree);
+	console.log(demo02.consoleTree);
 
-	serialWatches.reset();
-	serialWatches.WatchAll(
+	demo02.reset();
+	demo02.WatchAll(
 		() => {
 			const button = document.getElementById('demo02');
 			button.disabled = false;
-			button.innerText = 'Serial Execution';
-			console.table(
-				serialWatches._functions.map((f, i) => {
-					return {index: i, start: f._startTime - f.group._startTime, duration: f._duration, f: f.f.toString()};
-				}),
-			);
+			button.innerText = 'demo02';
+			console.log('Metrics:');
+			console.table(demo02.metrics);
 		},
 		() => {
 			const button = document.getElementById('demo02');
 			button.disabled = false;
-			button.innerText = 'Serial Execution (aborted)';
+			button.innerText = 'demo02 (aborted)';
 			console.log('Metrics:');
-			console.table(parallelWatches.metrics);
+			console.table(demo02.metrics);
 		},
 	);
 }
 
 // Make the functions available in the global scope
-window.demo_serial_execution = demo_serial_execution;
-document['serialWatches'] = serialWatches;
+window.demo_demo02 = demo_demo02;
+document['demo02'] = demo02;

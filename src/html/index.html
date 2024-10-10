@@ -9,9 +9,10 @@
 
 		<script type="module" src="./js/console-log.js"></script>
 		<script type="module" src="./js/version.js"></script>
-		<script type="module" src="./js/index-parallel.js"></script>
-		<script type="module" src="./js/index-serial.js"></script>
-		<script type="module" src="./js/index-mixed.js"></script>
+		<script type="module" src="./js/index-demo01.js"></script>
+		<script type="module" src="./js/index-demo02.js"></script>
+		<script type="module" src="./js/index-demo03.js"></script>
+		<script type="module" src="./js/index-demo04.js"></script>
 		<script>
 			function show_code(url) {
 				window.open(url, 'popupWindow', 'width=600,height=400,scrollbars=yes');
@@ -22,16 +23,20 @@
 	<body>
 		<div class="button-container">
 			<div class="btn-wrapper">
-				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-parallel.js')"></i>
-				<button id="demo01" onclick="demo_parallel_execution()">Parallel Execution</button>
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-demo01.js')"></i>
+				<button id="demo01" onclick="demo_demo01()">demo01</button>
 			</div>
 			<div class="btn-wrapper">
-				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-serial.js')"></i>
-				<button id="demo02" onclick="demo_serial_execution()">Serial Execution</button>
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-demo02.js')"></i>
+				<button id="demo02" onclick="demo_demo02()">demo02</button>
 			</div>
 			<div class="btn-wrapper">
-				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-mixed.js')"></i>
-				<button id="demo03" onclick="demo_mixed_execution()">Mixed Example</button>
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-demo03.js')"></i>
+				<button id="demo03" onclick="demo_demo03()">demo03</button>
+			</div>
+			<div class="btn-wrapper">
+				<i class="fas fa-code" id="codeIcon" onclick="show_code('./js/index-demo04.js')"></i>
+				<button id="demo04" onclick="demo_demo04()">demo04</button>
 			</div>
 		</div>
 		<div id="console"></div>
