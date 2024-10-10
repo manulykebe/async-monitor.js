@@ -8,24 +8,19 @@
 ```html
 (pseudo code)
 <script>
-  const watches = new Group();
-  watches.addWatch({
-  		parent: undefined,
-  		child: 'a',
-  		f: function_to_watch
-  	});
-  ...watches.addWatch();
-  watches.WatchAll();
+	const watches = new Group();
+	watches.addWatch({
+			parent: undefined,
+			child: 'a',
+			f: function_to_watch
+		});
+	...watches.addWatch();
+	watches.WatchAll();
 </script>
 
-── preparation step
-   ├─ fetch data from ETL store: s1, fetch data from ETL store: s2
-   │  └─ build snowflake s1 and s2
-   │     └─ publish snowflake s1 and s2 ───────────────────────────┐
-   └─ fetch data from ETL store: s3                                │
-      └─ build snowflake from s3                                   │
-         └─ publish snowflake s3 ──────────────────────────────────┤
-                                                                   └─ completed
+── preparation step ├─ fetch data from ETL store: s1, fetch data from ETL store: s2 │ └─ build snowflake s1 and s2 │ └─
+publish snowflake s1 and s2 ───────────────────────────┐ └─ fetch data from ETL store: s3 │ └─ build snowflake from s3 │
+└─ publish snowflake s3 ──────────────────────────────────┤ └─ completed
 ```
 
 [Examples](https://manulykebe.github.io/async-monitor.js/src/html/index.html)
