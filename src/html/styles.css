@@ -27,7 +27,7 @@ code {
 	position: absolute;
 	right: 20px;
 	top: 20px;
-	width: 220px;
+	width: 150px;
 }
 
 .btn-wrapper {
@@ -42,7 +42,7 @@ code {
 	cursor: pointer;
 	color: grey;
 	transition: color 0.3s ease;
-	transform: translateX(189px);
+	transform: translateX(119px);
 }
 
 /* Change icon color on hover */

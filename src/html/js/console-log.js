@@ -78,7 +78,6 @@ const originalConsoleTable = console.table;
 const originalConsoleWarn = console.warn;
 
 function appendLogToConsole(time, message, classname) {
-	debugger;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
 		const logEntry = document.createElement('div');
@@ -117,7 +116,7 @@ console.clear = function () {
 		consoleDiv.innerHTML = '';
 	}
 
-	console.log(`async-monitor.js@${'version'}`);
+	console.log(`async-monitor.js@${version}`);
 };
 
 console.log = function (message, className) {
@@ -160,10 +159,8 @@ console.highlight = function (text, _id, className = 'start') {
 	// Get the entire body text
 	const treeElement = document.querySelector(`pre[class="log-pre.tree-${_id}"]`);
 	if (!treeElement) {
-		debugger;
 		console.log(text, _id, className);
 		console.warn(`.log-pre.tree-${_id} not found.`);
-		debugger;
 		return;
 	}
 	// Create a regular expression to match the provided text

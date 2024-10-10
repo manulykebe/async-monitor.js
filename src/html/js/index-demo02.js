@@ -1,3 +1,5 @@
+// https://www.npmjs.com/package/async-monitor.js
+
 import {Group, Tree, sleep, version} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
 // import {Group, Tree, sleep, version} from '/dist/async-monitor.esm.js';
 
@@ -60,7 +62,7 @@ demo02.addWatch({
 
 function demo_demo02() {
 	console.clear();
-	console.log(demo02.consoleTree);
+	console.log(demo02.consoleTree, `tree-${demo02._id}`);
 
 	demo02.reset();
 	demo02.WatchAll(
