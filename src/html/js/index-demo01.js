@@ -31,7 +31,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(2, true),
+		f: () => sleep(2, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
