@@ -6,38 +6,29 @@
 [![NPM Version][npm-image]][npm-url]
 
 ```html
-<script type="module">
-	import {Group, sleep} from 'https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js';
-
-	const watches = new Group();
-
-	const function_to_watch1 = () => sleep(5, /*fail:*/ false);
-	const function_to_watch2 = () => sleep(2, /*fail:*/ false);
-
-	watches.addWatch({
-		parent: undefined,
-		child: 'a',
-		f: function_to_watch1,
-		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback() after step 1');
-		},
-	});
-
-	watches.addWatch({
-		parent: 'a',
-		child: 'b',
-		f: function_to_watch2,
-		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback() after step 2');
-		},
-	});
-
-	watches.WatchAll();
+(pseudo code)
+<script>
+  const watches = new Group();
+  watches.addWatch({
+  		parent: undefined,
+  		child: 'a',
+  		f: function_to_watch
+  	});
+  ...watches.addWatch();
+  watches.WatchAll();
 </script>
+
+── preparation step
+   ├─ fetch data from ETL store: s1, fetch data from ETL store: s2
+   │  └─ build snowflake s1 and s2
+   │     └─ publish snowflake s1 and s2 ───────────────────────────┐
+   └─ fetch data from ETL store: s3                                │
+      └─ build snowflake from s3                                   │
+         └─ publish snowflake s3 ──────────────────────────────────┤
+                                                                   └─ completed
 ```
 
 [Examples](https://manulykebe.github.io/async-monitor.js/src/html/index.html)
-[CodePen](https://codepen.io/codepenatlykebe/pen/gOVPBEg)
 
 # Features
 
