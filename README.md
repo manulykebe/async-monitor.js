@@ -17,10 +17,16 @@
 	...watches.addWatch();
 	watches.WatchAll();
 </script>
-
-── preparation step ├─ fetch data from ETL store: s1, fetch data from ETL store: s2 │ └─ build snowflake s1 and s2 │ └─
-publish snowflake s1 and s2 ───────────────────────────┐ └─ fetch data from ETL store: s3 │ └─ build snowflake from s3 │
-└─ publish snowflake s3 ──────────────────────────────────┤ └─ completed
+<pre>
+── preparation step
+   ├─ fetch data from ETL store: s1, fetch data from ETL store: s2
+   │  └─ build snowflake s1 and s2
+   │     └─ publish snowflake s1 and s2 ───────────────────────────┐
+   └─ fetch data from ETL store: s3                                │
+      └─ build snowflake from s3                                   │
+         └─ publish snowflake s3 ──────────────────────────────────┤
+                                                                   └─ completed
+</pre>
 ```
 
 [Examples](https://manulykebe.github.io/async-monitor.js/src/html/index.html)
