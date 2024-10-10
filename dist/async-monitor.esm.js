@@ -791,7 +791,7 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var version = '1.0.8';
+var version = '1.0.9';
 
 var nextId = Sequence.nextId;
 // Use default export if necessary
