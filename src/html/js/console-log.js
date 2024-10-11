@@ -83,7 +83,8 @@ const importModule = async () => {
 	const originalConsoleTable = console.table;
 	const originalConsoleWarn = console.warn;
 
-	function appendLogToConsole(time, message, classname) {
+	function appendLogToConsole(message, classnames, _id) {
+		if (!message && message.trim() === '') return;
 		const consoleDiv = document.getElementById('console');
 		if (consoleDiv) {
 			const logEntry = document.createElement('div');
@@ -91,7 +92,7 @@ const importModule = async () => {
 
 			const timeCol = document.createElement('div');
 			timeCol.classList.add('log-time');
-			timeCol.textContent = time;
+			timeCol.textContent = getCurrentTime();
 
 			const messageCol = document.createElement('div');
 			messageCol.classList.add('log-message');
@@ -101,15 +102,22 @@ const importModule = async () => {
 				messageCol.appendChild(table);
 			} else {
 				const pre = document.createElement('pre');
-				pre.classList.add('log-pre.' + classname ?? '');
-				// if (classname) pre.classList.add(classname);
-
+				if (!Array.isArray(classnames)) classnames = [classnames];
+				if (!_id && typeof _id === 'number') {
+					classnames.push(`log-group-${_id}`);
+				}
+				classnames.forEach(c => {
+					if (typeof c === 'string' && c.trim() !== '') {
+						pre.classList.add(c.trim());
+					}
+				});
 				pre.textContent = message;
 				messageCol.appendChild(pre);
 			}
 
 			logEntry.appendChild(timeCol);
 			logEntry.appendChild(messageCol);
+
 			consoleDiv.appendChild(logEntry);
 		}
 	}
@@ -125,34 +133,38 @@ const importModule = async () => {
 		console.log(`async-monitor.js@${version}`);
 	};
 
-	console.log = function (message, className) {
+	console.log = function (message, classnames) {
+		if (typeof classnames === 'number') {
+			_id = classnames;
+			classnames = undefined;
+		}
 		originalConsoleLog(message);
-		appendLogToConsole(getCurrentTime(), message, className ? className : '');
+		appendLogToConsole(message, classnames);
 	};
 
-	console.error = function (message) {
+	console.error = function (message, _id) {
 		originalConsoleError(message);
-		appendLogToConsole(getCurrentTime(), message, 'log-error');
+		appendLogToConsole(message, 'log-error', _id);
 	};
 
-	console.group = function (label) {
+	console.group = function (label, _id) {
 		originalConsoleGroup(label);
-		appendLogToConsole(getCurrentTime(), `${label}`, 'log-group');
+		appendLogToConsole(`${label}`, 'log-group', _id);
 	};
 
-	console.groupEnd = function () {
+	console.groupEnd = function (_id) {
 		originalConsoleGroupEnd();
-		appendLogToConsole('', '', 'log-group');
+		// appendLogToConsole('--------------', 'log-group-end', _id);
 	};
 
 	console.table = function (data) {
 		originalConsoleTable(data);
-		appendLogToConsole(getCurrentTime(), data);
+		appendLogToConsole(data);
 	};
 
-	console.warn = function (message) {
+	console.warn = function (message, _id) {
 		originalConsoleWarn(message);
-		appendLogToConsole(getCurrentTime(), message, 'log-warn');
+		appendLogToConsole(message, 'log-warn', _id);
 	};
 	function escapeRegExp(text) {
 		return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
@@ -160,13 +172,11 @@ const importModule = async () => {
 	// Function to highlight text on the page
 	console.highlight = function (text, _id, className = 'start') {
 		// Clear any previous highlights
-		clearHighlights(_id);
 
 		// Get the entire body text
-		const treeElement = document.querySelector(`pre[class="log-pre.tree-${_id}"]`);
+		const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 		if (!treeElement) {
-			console.log(text, _id, className);
-			console.warn(`.log-pre.tree-${_id} not found.`);
+			console.warn(`could not highlight tree-${_id}.`);
 			return;
 		}
 		// Create a regular expression to match the provided text
@@ -183,10 +193,12 @@ const importModule = async () => {
 
 	// Function to clear previous highlights
 	function clearHighlights(_id) {
-		// Remove all previously highlighted spans
-		document.querySelectorAll(`.tree-${_id}`).forEach(span => {
-			span.outerHTML = span.innerHTML;
-		});
+		document
+			.querySelector(`pre[class="tree-${_id}"]`)
+			.querySelectorAll(`span`)
+			.forEach(span => {
+				span.outerHTML = span.innerHTML;
+			});
 	}
 };
 importModule();

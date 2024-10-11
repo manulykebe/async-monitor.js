@@ -25,11 +25,11 @@ export class Watch {
 		return monitorInstance
 			.monitorStatuses()
 			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
-				if (statuses.statusesPromise.length > 1) {
-					useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-				} else {
-					useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-				}
+				// if (statuses.statusesPromise.length > 1) {
+				// 	useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+				// } else {
+				// 	useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+				// }
 				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
 				_statuses = statuses.statusesPromise
 					.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
@@ -65,7 +65,7 @@ export class Watch {
 								try {
 									callback();
 								} catch (error) {
-									console.warn('Watch.onCompleteCallback is not critical:\n', error);
+									console.warn('Error while executing callback.', error);
 								}
 							}
 						});

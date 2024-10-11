@@ -15,7 +15,7 @@ const importModule = async () => {
 		name: 'preparation step',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(5, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo03');
 			button.disabled = true;
@@ -31,7 +31,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(5, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
@@ -44,7 +44,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s2',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(10, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
@@ -57,7 +57,7 @@ const importModule = async () => {
 		name: 'build snowflake s1 and s2',
 		parent: 'b',
 		child: 'c',
-		f: () => sleep(5, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("build snowflake from s1 and s2")');
 		},
@@ -70,7 +70,7 @@ const importModule = async () => {
 		name: 'publish snowflake s1 and s2',
 		parent: 'c',
 		child: 'x',
-		f: () => sleep(5, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("publish snowflake s1 and s2")');
 		},
@@ -83,7 +83,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s3',
 		parent: 'a',
 		child: 'd',
-		f: () => sleep(7, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s3")');
 		},
@@ -96,7 +96,7 @@ const importModule = async () => {
 		name: 'build snowflake from s3',
 		parent: 'd',
 		child: 'e',
-		f: () => sleep(7, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("build snowflake from s3")');
 		},
@@ -109,7 +109,7 @@ const importModule = async () => {
 		name: 'publish snowflake s3',
 		parent: 'e',
 		child: 'f',
-		f: () => sleep(7, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("publish snowflake s3")');
 		},
@@ -120,9 +120,12 @@ const importModule = async () => {
 
 	function demo_demo03() {
 		console.clear();
-		console.log(demo03.consoleTree, `tree-${demo03._id}`);
+		console.log(demo03.consoleTree, ['tree', `tree-${demo03._id}`]);
 
 		demo03.reset();
+		// demo03._onCompleteCallback = () => {
+		// 	alert('kiekeboe');
+		// };
 		demo03.WatchAll(
 			() => {
 				const button = document.getElementById('demo03');

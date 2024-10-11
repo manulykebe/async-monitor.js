@@ -214,12 +214,11 @@ var Watch = /** @class */ (function () {
         return monitorInstance
             .monitorStatuses()
             .then(function (statuses) {
-            if (statuses.statusesPromise.length > 1) {
-                console.log("statuses: ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
-            }
-            else {
-                console.log("status: ".concat(statuses.statusesPromise.map(function (x) { return x.status.toString(); }).join(',')));
-            }
+            // if (statuses.statusesPromise.length > 1) {
+            // 	useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+            // } else {
+            // 	useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+            // }
             _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
             statuses.statusesPromise
                 .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
@@ -240,7 +239,7 @@ var Watch = /** @class */ (function () {
                                 callback();
                             }
                             catch (error) {
-                                console.warn('Watch.onCompleteCallback is not critical:\n', error);
+                                console.warn('Error while executing callback.', error);
                             }
                         }
                     });
@@ -391,17 +390,6 @@ function _watchAllInternal(group, parent, callback, callback_error) {
     }
 }
 
-// Example Usage
-// const data: TreeData[] = [
-// 	{name: undefined, parent: undefined, child: 'a'},
-// 	{name: 'fetch data a', parent: 'a', child: 'b'},
-// 	{name: 'fetch data b', parent: 'a', child: 'b'},
-// 	{name: 'make snow flake', parent: 'b', child: 3},
-// 	{name: 'publish to s3', parent: 3, child: 'y'},
-// 	{name: 'publish to s4', parent: 3, child: undefined},
-// 	{name: 'do quality check', parent: 'b', child: 'd'},
-// 	{name: 'on s3', parent: 'd', child: 'z'},
-// ];
 var Tree = /** @class */ (function () {
     function Tree() {
         this.map = {};
@@ -489,7 +477,7 @@ var Tree = /** @class */ (function () {
         if (line.length > maxLengthObj.maxLength) {
             maxLengthObj.maxLength = line.length;
         }
-        var newPrefix = prefix + (isLast ? '   ' : '│  ');
+        var newPrefix = prefix + (isLast ? '    ' : ' │  ');
         node.children.forEach(function (child, index) {
             var isLastChild = index === node.children.length - 1;
             _this.calculateMaxLength(child, newPrefix, false, isLastChild, maxLengthObj);
@@ -510,9 +498,9 @@ var Tree = /** @class */ (function () {
             // Pad terminal lines with '─'
             var paddingNeeded = maxLength - (line.length + terminalLabel.length);
             if (paddingNeeded > 0) {
-                line += ' ' + '─'.repeat(paddingNeeded + 1);
+                line += '─'.repeat(paddingNeeded + 1);
             }
-            line += terminalLabel;
+            line += '─' + terminalLabel;
             encounteredTerminalRef.value = true; // Set the flag to true once a terminal node is encountered
         }
         else {
@@ -579,18 +567,22 @@ var Group = /** @class */ (function () {
         this._seq = 0;
         // Default Callbacks
         this._onStartCallback = function () {
-            console.group('Group: ' + _this._id);
-            console.log('*** START ***');
+            console.group('Group: ' + _this._id, _this._id);
+            console.log("*** START ".concat(_this._id, " ***"));
+            console.highlight('completed', _this._id, 'start');
         };
         this._onCompleteCallback = function () {
-            console.log('*** COMPLETE ***');
+            {
+                console.log("*** COMPLETE ".concat(_this._id, " ***"));
+                console.highlight('completed', _this._id, 'complete');
+            }
             console.groupEnd();
         };
         this._onUnCompleteCallback = function () {
-            console.log('*** UNCOMPLETE! ***');
+            console.log("*** ABORTED? ".concat(_this._id, " ***"));
         };
         this._onRejectedCallback = function () {
-            console.log('*** REJECTED ***');
+            console.log("*** REJECTED? ".concat(_this._id, " ***"));
         };
         this._abort = new AbortController(); // Declare abort controller
         // Add a watch function

@@ -15,7 +15,7 @@ const importModule = async () => {
 		name: 'preparation step',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(1, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo01');
 			button.disabled = true;
@@ -31,7 +31,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(2, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
@@ -47,7 +47,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s2',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(3, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
@@ -60,7 +60,7 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s3',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(4, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s3")');
 		},
@@ -72,7 +72,7 @@ const importModule = async () => {
 	demo01.addWatch({
 		name: 'build snowflake',
 		parent: 'b',
-		f: () => sleep(5, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("build snowflake")');
 		},
@@ -83,7 +83,7 @@ const importModule = async () => {
 
 	function demo_demo01() {
 		console.clear();
-		console.log(demo01.consoleTree, `tree-${demo01._id}`);
+		console.log(demo01.consoleTree, ['tree', `tree-${demo01._id}`]);
 
 		demo01.reset();
 		demo01.WatchAll(

@@ -1,20 +1,3 @@
-// Example Usage
-// const data: TreeData[] = [
-// 	{name: undefined, parent: undefined, child: 'a'},
-// 	{name: 'fetch data a', parent: 'a', child: 'b'},
-// 	{name: 'fetch data b', parent: 'a', child: 'b'},
-// 	{name: 'make snow flake', parent: 'b', child: 3},
-// 	{name: 'publish to s3', parent: 3, child: 'y'},
-// 	{name: 'publish to s4', parent: 3, child: undefined},
-// 	{name: 'do quality check', parent: 'b', child: 'd'},
-// 	{name: 'on s3', parent: 'd', child: 'z'},
-// ];
-
-// Usage:
-// const treeBuilder = new Tree();
-// const treeOutput = treeBuilder.processTree(data);
-// useConsole && console.log(treeOutput);
-
 interface TreeNode {
 	name: string | number;
 	description: string;
@@ -114,7 +97,7 @@ export default class Tree {
 			maxLengthObj.maxLength = line.length;
 		}
 
-		const newPrefix = prefix + (isLast ? '   ' : '│  ');
+		const newPrefix = prefix + (isLast ? '    ' : ' │  ');
 
 		node.children.forEach((child, index) => {
 			const isLastChild = index === node.children.length - 1;
@@ -143,9 +126,9 @@ export default class Tree {
 			// Pad terminal lines with '─'
 			const paddingNeeded = maxLength - (line.length + terminalLabel.length);
 			if (paddingNeeded > 0) {
-				line += ' ' + '─'.repeat(paddingNeeded + 1);
+				line += '─'.repeat(paddingNeeded + 1);
 			}
-			line += terminalLabel;
+			line += '─' + terminalLabel;
 
 			encounteredTerminalRef.value = true; // Set the flag to true once a terminal node is encountered
 		} else {

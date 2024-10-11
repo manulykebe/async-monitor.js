@@ -4,7 +4,7 @@ html {
 
 pre,
 code {
-	font-size: 14px;
+	font-size: 10px;
 	font-family: monospace;
 	margin: 0px;
 }
@@ -69,13 +69,13 @@ button:hover {
 /* Styling for the log entries */
 .log-entry {
 	display: flex;
-	margin-bottom: 4px;
 }
 
 /* Styling for the time column */
 .log-time {
-	color: dimgray;
-	width: 60px;
+	color: lightgray;
+	width: 45px;
+	font-size: 10px;
 }
 
 /* Styling for the message column */
@@ -86,15 +86,16 @@ button:hover {
 
 /* Styling for the <pre> tag within the message column */
 .log-pre {
-	white-space: pre-wrap; /* Allows multiline handling */
+	white-space: pre-wrap;
+	font-size: 16px; /* Allows multiline handling */
 }
 
 /* Styling for the <pre> tag within the message column */
-.log-pre\.log-group {
+.log-group {
 	font-weight: bold;
 }
 
-.log-pre\.log-error {
+.log-error {
 	color: red;
 	background-color: #fcebeb;
 	font-weight: bold;
@@ -102,7 +103,7 @@ button:hover {
 	align-items: center;
 }
 
-.log-pre\.log-warn {
+.log-warn {
 	background-color: #fef6d5;
 	font-weight: bold;
 	display: flex;
@@ -111,14 +112,14 @@ button:hover {
 
 /* Styling for the warning icon */
 
-.log-pre\.log-error::before {
+.log-error::before {
 	content: '⛔';
 	margin-right: 8px;
 	font-size: 1.2em;
 	transform: translateY(-2px);
 }
 
-.log-pre\.log-warn::before {
+.log-warn::before {
 	content: '⚠️';
 	margin-right: 8px;
 	font-size: 1.2em;
@@ -153,4 +154,10 @@ button:hover {
 	background-color: lightgreen;
 	font-style: normal;
 	font-weight: bold;
+}
+
+.tree {
+	padding: 2px 0;
+	border: 1px solid #ccc;
+	margin: 0 0 2px 0;
 }

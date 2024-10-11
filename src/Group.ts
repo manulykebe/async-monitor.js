@@ -47,21 +47,25 @@ export default class Group {
 
 	// Default Callbacks
 	_onStartCallback: () => void = () => {
-		console.group('Group: ' + this._id);
-		if (useConsole) console.log('*** START ***');
+		console.group('Group: ' + this._id, this._id);
+		if (useConsole) console.log(`*** START ${this._id} ***`);
+		(console as any).highlight('completed', this._id, 'start');
 	};
 
 	_onCompleteCallback: () => void = () => {
-		if (useConsole) console.log('*** COMPLETE ***');
+		if (useConsole) {
+			console.log(`*** COMPLETE ${this._id} ***`);
+			(console as any).highlight('completed', this._id, 'complete');
+		}
 		console.groupEnd();
 	};
 
 	_onUnCompleteCallback: () => void = () => {
-		if (useConsole) console.log('*** UNCOMPLETE! ***');
+		if (useConsole) console.log(`*** ABORTED? ${this._id} ***`);
 	};
 
 	_onRejectedCallback: () => void = () => {
-		if (useConsole) console.log('*** REJECTED ***');
+		if (useConsole) console.log(`*** REJECTED? ${this._id} ***`);
 	};
 
 	_abort: AbortController = new AbortController(); // Declare abort controller
