@@ -4,7 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
-    var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,7 +13,7 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
-    var __generator$1 = (this && this.__generator) || function (thisArg, body) {
+    var __generator$2 = (this && this.__generator) || function (thisArg, body) {
         var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
         return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
@@ -49,9 +49,9 @@
      * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
      */
     function sleep() {
-        return __awaiter$1(this, arguments, void 0, function (seconds, fail) {
+        return __awaiter$2(this, arguments, void 0, function (seconds, fail) {
             if (seconds === void 0) { seconds = Math.random() * 3; }
-            return __generator$1(this, function (_a) {
+            return __generator$2(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds * 4 < 1;
                 seconds = seconds * 1000;
@@ -69,7 +69,7 @@
         });
     }
 
-    (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -78,7 +78,7 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
-    (this && this.__generator) || function (thisArg, body) {
+    var __generator$1 = (this && this.__generator) || function (thisArg, body) {
         var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
         return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
@@ -146,6 +146,22 @@
         }
         return Element;
     }());
+    function makeAsync(fn) {
+        if (fn.constructor.name === 'AsyncFunction') {
+            return fn;
+        }
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return __awaiter$1(this, void 0, void 0, function () {
+                return __generator$1(this, function (_a) {
+                    return [2 /*return*/, fn.apply(this, args)];
+                });
+            });
+        };
+    }
 
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -207,7 +223,11 @@
         return Monitor;
     }());
 
-    var useConsole = true;
+    var now = function () { return parseFloat(performance.now().toFixed(2)); };
+    function calcDuration(start, end) {
+        return parseFloat((end - start).toFixed(2));
+    }
+
     var Watch = /** @class */ (function () {
         function Watch(fs, f, fr) {
             var _breakOnRejected = false;
@@ -221,9 +241,9 @@
                 .monitorStatuses()
                 .then(function (statuses) {
                 // if (statuses.statusesPromise.length > 1) {
-                // 	useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+                // 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
                 // } else {
-                // 	useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+                // 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
                 // }
                 _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
                 statuses.statusesPromise
@@ -262,10 +282,11 @@
     }
     function _watchAllInternal(group, parent, callback, callback_error) {
         var watches = group._functions;
+        var useConsoleLog = group.useConsoleLog;
         if (watches.every(function (f) { return f._isFinished; })) {
             // All watches are finished
-            group._stopTime = Date.now();
-            group._duration = group._stopTime - group._startTime;
+            group._stopTime = now();
+            group._duration = calcDuration(group._startTime, group._stopTime);
             if (typeof group._onCompleteCallback === 'function')
                 group._onCompleteCallback();
             return;
@@ -296,9 +317,9 @@
                     .filter(function (c) { return c.child === gc; })
                     .forEach(function (child) {
                     child._isRunning = true;
-                    child._startTime = Date.now();
+                    child._startTime = now();
                     child.sequence = _sequence;
-                    console.highlight(child.name, group._id, 'start');
+                    useConsoleLog && console.highlight(child.name, group._id, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -326,9 +347,9 @@
                                     }
                                     child._isRunning = false;
                                     child._isFinished = true;
-                                    child._stopTime = Date.now();
-                                    child._duration = child._stopTime - (child._startTime || 0);
-                                    useConsole && console.highlight(child.name, group._id, 'complete');
+                                    child._stopTime = now();
+                                    child._duration = calcDuration(child._startTime, child._stopTime);
+                                    useConsoleLog && console.highlight(child.name, group._id, 'complete');
                                 });
                                 child.promise.catch(function () {
                                     if (typeof child.onRejectCallback === 'function') {
@@ -339,9 +360,9 @@
                                     }
                                     child._isRunning = false;
                                     child._isFinished = true;
-                                    child._stopTime = Date.now();
-                                    child._duration = child._stopTime - (child._startTime || 0);
-                                    useConsole && console.highlight(child.name, group._id, 'rejected');
+                                    child._stopTime = now();
+                                    child._duration = calcDuration(child._startTime, child._stopTime);
+                                    useConsoleLog && console.highlight(child.name, group._id, 'rejected');
                                 });
                             }
                             // Handle any other unexpected return values
@@ -352,8 +373,8 @@
                     }
                     catch (error) {
                         console.warn('Watch: critical! error in call to (async) function:\n', error);
-                        child._stopTime = Date.now();
-                        child._duration = child._stopTime - child._startTime;
+                        child._stopTime = now();
+                        child._duration = calcDuration(child._startTime, child._stopTime);
                         child._isRunning = false;
                         if (typeof group._onUnCompleteCallback === 'function')
                             group._onUnCompleteCallback();
@@ -565,6 +586,7 @@
     var Group = /** @class */ (function () {
         function Group() {
             var _this = this;
+            this.useConsoleLog = true;
             this._id = _group_id++;
             this._functions = [];
             this._startTime = 0;
@@ -574,21 +596,25 @@
             // Default Callbacks
             this._onStartCallback = function () {
                 console.group('Group: ' + _this._id, _this._id);
-                console.log("*** START ".concat(_this._id, " ***"));
-                console.highlight('completed', _this._id, 'start');
+                if (_this.useConsoleLog) {
+                    console.log("*** START ".concat(_this._id, " ***"));
+                    console.highlight('completed', _this._id, 'start');
+                }
             };
             this._onCompleteCallback = function () {
-                {
+                if (_this.useConsoleLog) {
                     console.log("*** COMPLETE ".concat(_this._id, " ***"));
                     console.highlight('completed', _this._id, 'complete');
                 }
                 console.groupEnd();
             };
             this._onUnCompleteCallback = function () {
-                console.log("*** ABORTED? ".concat(_this._id, " ***"));
+                if (_this.useConsoleLog)
+                    console.log("*** ABORTED? ".concat(_this._id, " ***"));
             };
             this._onRejectedCallback = function () {
-                console.log("*** REJECTED? ".concat(_this._id, " ***"));
+                if (_this.useConsoleLog)
+                    console.log("*** REJECTED? ".concat(_this._id, " ***"));
             };
             this._abort = new AbortController(); // Declare abort controller
             // Add a watch function
@@ -684,7 +710,7 @@
                     this._onCompleteCallback();
                 return;
             }
-            this._startTime = Date.now();
+            this._startTime = now();
             if (typeof this._onStartCallback === 'function')
                 this._onStartCallback();
             // Create an array of valid watch objects from the group's functions
@@ -694,7 +720,7 @@
                     promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
                     onRejectCallback: fn.onRejectCallback, // The callback for rejection
                     group: _this, // The current group,
-                    _startTime: Date.now(),
+                    _startTime: now(),
                 });
             });
             // Pass the array to the WatchAll function
@@ -747,19 +773,17 @@
             return this;
         };
         Group.prototype.onStart = function (callback) {
-            this._startTime = Date.now(); //#m
+            this._startTime = now(); //#m
             this._onStartCallback = callback;
             return this;
         };
         Group.prototype.onComplete = function (callback) {
-            this._stopTime = Date.now(); //#m
+            this._stopTime = now(); //#m
             this._onCompleteCallback = callback;
             return this;
         };
         return Group;
     }());
-
-    var now = function () { return performance.now(); };
 
     /**
      * Sequence
@@ -792,6 +816,7 @@
         Watch: Watch,
         sleep: sleep,
         Tree: Tree,
+        makeAsync: makeAsync,
     };
 
     exports.Group = Group;
@@ -800,6 +825,7 @@
     exports.Tree = Tree;
     exports.Watch = Watch;
     exports.default = Index;
+    exports.makeAsync = makeAsync;
     exports.nextId = nextId;
     exports.now = now;
     exports.sleep = sleep;

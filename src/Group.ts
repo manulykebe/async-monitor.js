@@ -1,7 +1,7 @@
 import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
-import {useConsole} from './Watch';
+import now from './Now';
 
 type Metric = {
 	index: number;
@@ -35,6 +35,7 @@ export interface WatchFunction {
 
 let _group_id: number = 0;
 export default class Group {
+	useConsoleLog: boolean = true;
 	_id = _group_id++;
 	_functions: WatchFunction[] = [];
 	_startTime: number = 0;
@@ -48,12 +49,14 @@ export default class Group {
 	// Default Callbacks
 	_onStartCallback: () => void = () => {
 		console.group('Group: ' + this._id, this._id);
-		if (useConsole) console.log(`*** START ${this._id} ***`);
-		(console as any).highlight('completed', this._id, 'start');
+		if (this.useConsoleLog) {
+			console.log(`*** START ${this._id} ***`);
+			(console as any).highlight('completed', this._id, 'start');
+		}
 	};
 
 	_onCompleteCallback: () => void = () => {
-		if (useConsole) {
+		if (this.useConsoleLog) {
 			console.log(`*** COMPLETE ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'complete');
 		}
@@ -61,11 +64,11 @@ export default class Group {
 	};
 
 	_onUnCompleteCallback: () => void = () => {
-		if (useConsole) console.log(`*** ABORTED? ${this._id} ***`);
+		if (this.useConsoleLog) console.log(`*** ABORTED? ${this._id} ***`);
 	};
 
 	_onRejectedCallback: () => void = () => {
-		if (useConsole) console.log(`*** REJECTED? ${this._id} ***`);
+		if (this.useConsoleLog) console.log(`*** REJECTED? ${this._id} ***`);
 	};
 
 	_abort: AbortController = new AbortController(); // Declare abort controller
@@ -155,7 +158,7 @@ export default class Group {
 			return;
 		}
 
-		this._startTime = Date.now();
+		this._startTime = now();
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
 
 		// Create an array of valid watch objects from the group's functions
@@ -163,7 +166,7 @@ export default class Group {
 			promise: fn.promise ?? undefined, // Use the promise if it exists, otherwise undefined
 			onRejectCallback: fn.onRejectCallback, // The callback for rejection
 			group: this, // The current group,
-			_startTime: Date.now(),
+			_startTime: now(),
 		}));
 
 		// Pass the array to the WatchAll function
@@ -211,12 +214,12 @@ export default class Group {
 		return this;
 	}
 	onStart(callback: () => void) {
-		this._startTime = Date.now(); //#m
+		this._startTime = now(); //#m
 		this._onStartCallback = callback;
 		return this;
 	}
 	onComplete(callback: () => void) {
-		this._stopTime = Date.now(); //#m
+		this._stopTime = now(); //#m
 		this._onCompleteCallback = callback;
 		return this;
 	}

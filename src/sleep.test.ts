@@ -5,7 +5,7 @@ describe('sleep function', () => {
 
 	// Test that it resolves correctly with default parameters
 	it('should resolve after a random amount of time', async () => {
-		const result = await sleep();
+		const result = await sleep(undefined, false); // Default parameters
 		expect(result).toBeGreaterThanOrEqual(0); // Check if the result is a positive number
 		expect(result).toBeLessThanOrEqual(3000); // Should be less than or equal to 3 seconds (3000 ms)
 	});

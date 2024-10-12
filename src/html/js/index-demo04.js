@@ -8,9 +8,11 @@ const importModule = async () => {
 		module = await import('/dist/async-monitor.esm.js');
 	}
 
-	const {Group, Tree, sleep, version} = module;
+	const {makeAsync, Group, Tree, sleep, version} = module;
 	const demo04 = new Group();
 	const demo05 = new Group();
+	demo04.useConsoleLog = true;
+	demo05.useConsoleLog = true;
 
 	demo04.addWatch({
 		name: 'preparation step',
@@ -142,12 +144,17 @@ const importModule = async () => {
 		});
 	const wrapped04 = () =>
 		new Promise((resolve, reject) => {
-			debugger;
 			demo04.WatchAll(
 				() => resolve(),
 				() => reject(),
 			);
 		});
+	// const wrapped04 = makeAsync(() =>
+	// 	demo04.WatchAll(
+	// 		() => {},
+	// 		() => {},
+	// 	)()
+	// );
 
 	demo05.addWatch({
 		name: 'demo05 initiator',

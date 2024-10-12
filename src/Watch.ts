@@ -1,7 +1,6 @@
 import Group, {type WatchFunction} from './Group';
 import Monitor from './Monitor';
-
-export const useConsole = true;
+import now, {calcDuration} from './Now';
 
 export class Watch {
 	constructor(
@@ -26,9 +25,9 @@ export class Watch {
 			.monitorStatuses()
 			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
 				// if (statuses.statusesPromise.length > 1) {
-				// 	useConsole && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+				// 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				// } else {
-				// 	useConsole && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
+				// 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				// }
 				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
 				_statuses = statuses.statusesPromise
@@ -89,10 +88,11 @@ function _watchAllInternal(
 	callback_error?: () => void,
 ): void {
 	const watches = group._functions;
+	const useConsoleLog = group.useConsoleLog;
 	if (watches.every(f => f._isFinished)) {
 		// All watches are finished
-		group._stopTime = Date.now();
-		group._duration = group._stopTime - group._startTime;
+		group._stopTime = now();
+		group._duration = calcDuration(group._startTime, group._stopTime);
 		if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
 		return;
 	}
@@ -125,9 +125,9 @@ function _watchAllInternal(
 				.filter(c => c.child === gc)
 				.forEach(child => {
 					child._isRunning = true;
-					child._startTime = Date.now();
+					child._startTime = now();
 					child.sequence = _sequence;
-					useConsole && (console as any).highlight(child.name, group._id, 'start');
+					useConsoleLog && (console as any).highlight(child.name, group._id, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {
@@ -155,9 +155,9 @@ function _watchAllInternal(
 									}
 									child._isRunning = false;
 									child._isFinished = true;
-									child._stopTime = Date.now();
-									child._duration = child._stopTime - (child._startTime || 0);
-									useConsole && (console as any).highlight(child.name, group._id, 'complete');
+									child._stopTime = now();
+									child._duration = calcDuration(child._startTime, child._stopTime);
+									useConsoleLog && (console as any).highlight(child.name, group._id, 'complete');
 								});
 
 								child.promise.catch(() => {
@@ -168,9 +168,9 @@ function _watchAllInternal(
 									}
 									child._isRunning = false;
 									child._isFinished = true;
-									child._stopTime = Date.now();
-									child._duration = child._stopTime - (child._startTime || 0);
-									useConsole && (console as any).highlight(child.name, group._id, 'rejected');
+									child._stopTime = now();
+									child._duration = calcDuration(child._startTime, child._stopTime);
+									useConsoleLog && (console as any).highlight(child.name, group._id, 'rejected');
 								});
 							}
 							// Handle any other unexpected return values
@@ -180,8 +180,8 @@ function _watchAllInternal(
 						}
 					} catch (error) {
 						console.warn('Watch: critical! error in call to (async) function:\n', error);
-						child._stopTime = Date.now();
-						child._duration = child._stopTime - child._startTime;
+						child._stopTime = now();
+						child._duration = calcDuration(child._startTime, child._stopTime);
 						child._isRunning = false;
 						if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
 						return;

@@ -45,6 +45,7 @@ interface WatchFunction {
     _duration: number;
 }
 declare class Group {
+    useConsoleLog: boolean;
     _id: number;
     _functions: WatchFunction[];
     _startTime: number;
@@ -117,6 +118,8 @@ declare class Monitor {
 
 declare const version = "1.0.9";
 
+declare function makeAsync<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => Promise<ReturnType<T>>;
+
 declare const nextId: typeof Sequence.nextId;
 
 declare const _default: {
@@ -129,6 +132,7 @@ declare const _default: {
     Watch: typeof Watch;
     sleep: typeof sleep;
     Tree: typeof Tree;
+    makeAsync: typeof makeAsync;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, _default as default, nextId, now, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, _default as default, makeAsync, nextId, now, sleep, version };

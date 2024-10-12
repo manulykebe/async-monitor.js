@@ -6,10 +6,11 @@ import Tree from './Tree';
 import Monitor from './Monitor';
 import version from './Version';
 import {Watch} from './Watch';
+import {makeAsync} from './Element';
 
 const nextId = Sequence.nextId;
 // Directly export the items as named exports
-export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree};
+export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree, makeAsync};
 // Export types and interfaces.
 export {WatchFunction};
 
@@ -24,4 +25,5 @@ export default {
 	Watch,
 	sleep,
 	Tree,
+	makeAsync,
 };
