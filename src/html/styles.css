@@ -130,6 +130,12 @@ button:hover {
 .log-table {
 	width: 100%;
 	border-collapse: collapse;
+	font-size: 10px;
+}
+
+.log-table td,
+.log-table th {
+	padding: 0px;
 }
 
 /* Styling for table headers */
@@ -160,4 +166,8 @@ button:hover {
 	padding: 2px 0;
 	border: 1px solid #ccc;
 	margin: 0 0 2px 0;
+}
+
+.log-table {
+	border-collapse: collapse;
 }
