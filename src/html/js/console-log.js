@@ -1,6 +1,6 @@
 const importModule = async () => {
 	let module;
-	if (window.location.hostname === 'localhost') {
+	if (window.location.hostname !== 'localhost') {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js');
 	} else {
 		module = await import('/dist/async-monitor.esm.js');
