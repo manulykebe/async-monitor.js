@@ -37,7 +37,8 @@
 	],
 	"scripts": {
 		"dev": "(npm run tsc-watch -- --preserveWatchOutput & p1=$!; npm run rollup-build -- --watch & p2=$!; wait $p1 $p2)",
-		"build": "rimraf dist .tmp && node scripts/write-version.js && npm run prettier -- --write && npm run tsc && npm run rollup-build",
+		"build": "rimraf dist .tmp && node scripts/write-version.js && npm run prettier -- --write && npm run tsc && npm run rollup-build && npm run minify",
+		"minify": "terser dist/async-monitor.cjs -o dist/async-monitor.min.cjs && terser dist/async-monitor.esm.js -o dist/async-monitor.min.esm.js && terser dist/async-monitor.amd.js -o dist/async-monitor.min.amd.js && terser dist/async-monitor.umd.js -o dist/async-monitor.min.umd.js",
 		"rollup-build": "rollup -c ./rollup.config.js",
 		"tsc": "tsc",
 		"tsc-watch": "tsc --watch",
@@ -63,6 +64,7 @@
 		"rimraf": "^6.0.1",
 		"rollup": "^4.23.0",
 		"rollup-plugin-dts": "^6.1.1",
+		"terser": "^5.34.1",
 		"ts-jest": "^29.2.5",
 		"tslib": "^2.7.0",
 		"typescript": "^5.6.2"
