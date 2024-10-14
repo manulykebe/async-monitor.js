@@ -1,11 +1,10 @@
 const importModule = async () => {
 	let module;
-	if (window.location.hostname !== 'localhost') {
-		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js');
+	if (window.location.hostname === '127.0.0.1') {
+		module = await import('/dist/async-monitor.min.esm.js');
 	} else {
-		module = await import('/dist/async-monitor.esm.js');
+		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
-
 	const {Group, Tree, sleep, version} = module;
 	// Helper function to get current time in hh:mm:ss format
 	function getCurrentTime() {

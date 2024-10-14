@@ -2,10 +2,10 @@
 
 const importModule = async () => {
 	let module;
-	if (window.location.hostname !== 'localhost') {
-		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.esm.js');
+	if (window.location.hostname === '127.0.0.1') {
+		module = await import('/dist/async-monitor.min.esm.js');
 	} else {
-		module = await import('/dist/async-monitor.esm.js');
+		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
 	const {makeAsync, Group, Tree, sleep, version} = module;
@@ -232,15 +232,19 @@ const importModule = async () => {
 		demo05.reset();
 		demo05.WatchAll(
 			() => {
-				const button = document.getElementById('demo04');
-				button.disabled = false;
-				button.innerText = 'demo04';
+				['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+					const button = document.getElementById(key);
+					button.disabled = false;
+					button.innerText = key;
+				});
 				console.table(demo05.metrics);
 			},
 			() => {
-				const button = document.getElementById('demo04');
-				button.disabled = false;
-				button.innerText = 'demo04 (aborted)';
+				['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+					const button = document.getElementById(key);
+					button.disabled = false;
+					button.innerText = key;
+				});
 				console.table(demo05.metrics);
 			},
 		);
