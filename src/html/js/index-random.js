@@ -216,6 +216,10 @@ const importModule = async () => {
 
 	function demo_demo00() {
 		console.clear();
+		demo00.reset();
+		demo97.reset();
+		demo98.reset();
+		demo99.reset();
 		console.log(demo00.consoleTree, ['tree', `tree-${demo00._id}`]);
 		console.log(demo97.consoleTree, ['tree', `tree-${demo97._id}`]);
 		console.log(demo98.consoleTree, ['tree', `tree-${demo98._id}`]);
