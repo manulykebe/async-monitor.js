@@ -72,7 +72,25 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 
 	function generateLetterSequence(startLetter, offset) {
-		return String.fromCharCode(startLetter.charCodeAt(0) + offset);
+		const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		const base = letters.length;
+
+		// Helper function to convert a number into a letter sequence
+		function numberToLetters(num) {
+			let sequence = '';
+			while (num >= 0) {
+				sequence = letters[num % base] + sequence;
+				num = Math.floor(num / base) - 1;
+			}
+			return sequence;
+		}
+
+		const startIndex = letters.indexOf(startLetter);
+		if (startIndex === -1) {
+			throw new Error('Invalid start letter.');
+		}
+
+		return numberToLetters(startIndex + offset);
 	}
 
 	function buildTree(numberOfNodes, demo) {
@@ -90,7 +108,6 @@ const importModule = async () => {
 			let parent;
 			let childLetter = generateLetterSequence(startLetter, currentLetterIndex + 1);
 
-			// If it's not the first node, consider random duplication (1 in 3 chance)
 			if (i > 0) {
 				const parentNodeIndex = Math.floor(Math.random() * nodes.length);
 				parent = nodes[parentNodeIndex].child;
@@ -119,7 +136,9 @@ const importModule = async () => {
 			nodes.push(node);
 			currentLetterIndex++; // Move to next letter in the sequence
 		}
-		demo._functions.filter(f => f.child === undefined).forEach(f => (f.child = 'zz'));
+		demo._functions
+			.filter(f => f.child === undefined)
+			.forEach(f => (f.child = generateLetterSequence(startLetter, currentLetterIndex + 1)));
 		return nodes;
 	}
 
@@ -135,9 +154,9 @@ const importModule = async () => {
 	const demo97 = new Group();
 	const demo98 = new Group();
 	const demo99 = new Group();
-	buildTree(17, demo97);
-	buildTree(17, demo98);
-	buildTree(17, demo99);
+	buildTree(12, demo97);
+	buildTree(13, demo98);
+	buildTree(14, demo99);
 
 	const wrapped97 = () =>
 		new Promise((resolve, reject) => {
