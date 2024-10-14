@@ -5,7 +5,6 @@ const importModule = async () => {
 	} else {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
-	
 
 	const {version} = module;
 

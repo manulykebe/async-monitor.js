@@ -14,6 +14,7 @@ export default class Element implements WatchFunction {
 	onRejectCallback: (() => void) | undefined = () => {};
 	_isFinished: boolean = false;
 	_isRunning: boolean = false;
+	_isRejected: boolean = false;
 	_index?: number | undefined;
 	_startTime: number = 0;
 	_stopTime: number = 0;

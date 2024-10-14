@@ -39,6 +39,7 @@ interface WatchFunction {
     onRejectCallback?: (() => void) | undefined;
     _isRunning?: boolean;
     _isFinished?: boolean;
+    _isRejected?: boolean;
     _index?: number | undefined;
     _startTime: number;
     _stopTime: number;
@@ -61,6 +62,7 @@ declare class Group {
     _abort: AbortController;
     get _isRunning(): boolean;
     get _isFinished(): boolean;
+    get _isRejected(): boolean;
     addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
     abort(): void;
     reset(): void;
@@ -69,7 +71,7 @@ declare class Group {
     add(): void;
     remove(): void;
     Watch(callback: () => void, callback_error: () => void): Watch;
-    WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): void;
+    WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): Promise<void> | undefined;
     get consoleTree(): string;
     get metrics(): Metric[];
     onRejected(callback: () => void): this;
