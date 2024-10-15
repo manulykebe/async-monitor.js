@@ -1,3 +1,5 @@
+import './Console';
+
 import {sleep} from './Sleep';
 import Group, {type WatchFunction} from './Group';
 import now from './Now';

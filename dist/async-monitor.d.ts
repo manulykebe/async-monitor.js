@@ -1,3 +1,9 @@
+declare global {
+    interface Console {
+        highlight(text: string, _id: number, className?: string): void;
+    }
+}
+
 /**
  * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
  * has a random option when param fail is not set.

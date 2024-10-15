@@ -4,6 +4,183 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
+    var version = '1.0.10';
+
+    function getCurrentTime() {
+        var now = new Date();
+        return now.toTimeString().split(' ')[0];
+    }
+    function createTableFromObject(data) {
+        var table = document.createElement('table');
+        table.classList.add('log-table');
+        if (Array.isArray(data) && data.length > 0) {
+            var headerRow_1 = document.createElement('tr');
+            var keys_1 = Object.keys(data[0]);
+            keys_1.forEach(function (key) {
+                var th = document.createElement('th');
+                th.textContent = key;
+                th.classList.add('log-table-header');
+                headerRow_1.appendChild(th);
+            });
+            table.appendChild(headerRow_1);
+            data.forEach(function (item) {
+                var row = document.createElement('tr');
+                keys_1.forEach(function (key) {
+                    var td = document.createElement('td');
+                    td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    td.classList.add('log-table-cell');
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+        }
+        else if (typeof data === 'object') {
+            var headerRow = document.createElement('tr');
+            var thKey = document.createElement('th');
+            thKey.textContent = 'Property';
+            thKey.classList.add('log-table-header');
+            var thValue = document.createElement('th');
+            thValue.textContent = 'Value';
+            thValue.classList.add('log-table-header');
+            headerRow.appendChild(thKey);
+            headerRow.appendChild(thValue);
+            table.appendChild(headerRow);
+            Object.keys(data).forEach(function (key) {
+                var row = document.createElement('tr');
+                var keyCell = document.createElement('td');
+                keyCell.textContent = key;
+                keyCell.classList.add('log-table-cell');
+                var valueCell = document.createElement('td');
+                valueCell.textContent =
+                    typeof data[key] === 'object'
+                        ? JSON.stringify(data[key], undefined, 4)
+                        : data[key];
+                valueCell.classList.add('log-table-cell');
+                row.appendChild(keyCell);
+                row.appendChild(valueCell);
+                table.appendChild(row);
+            });
+        }
+        return table;
+    }
+    var originalConsoleClear = console.clear;
+    var originalConsoleError = console.error;
+    var originalConsoleGroup = console.group;
+    var originalConsoleGroupEnd = console.groupEnd;
+    var originalConsoleLog = console.log;
+    var originalConsoleTable = console.table;
+    var originalConsoleWarn = console.warn;
+    function appendLogToConsole(message, classnames, _id) {
+        if (!message && message.trim() === '')
+            return;
+        var consoleDiv = document.getElementById('console');
+        if (consoleDiv) {
+            var logEntry = document.createElement('div');
+            logEntry.classList.add('log-entry');
+            var timeCol = document.createElement('div');
+            timeCol.classList.add('log-time');
+            timeCol.textContent = getCurrentTime();
+            var messageCol = document.createElement('div');
+            messageCol.classList.add('log-message');
+            if (typeof message === 'object') {
+                var table = createTableFromObject(message);
+                messageCol.appendChild(table);
+            }
+            else {
+                var pre_1 = document.createElement('pre');
+                if (!Array.isArray(classnames))
+                    classnames = [classnames];
+                if (!_id && typeof _id === 'number') {
+                    classnames.push("log-group-".concat(_id));
+                }
+                classnames.forEach(function (c) {
+                    if (typeof c === 'string' && c.trim() !== '') {
+                        pre_1.classList.add(c.trim());
+                    }
+                });
+                pre_1.textContent = message;
+                messageCol.appendChild(pre_1);
+            }
+            logEntry.appendChild(timeCol);
+            logEntry.appendChild(messageCol);
+            consoleDiv.appendChild(logEntry);
+        }
+    }
+    console.clear = function () {
+        originalConsoleClear();
+        var consoleDiv = document.getElementById('console');
+        if (consoleDiv) {
+            consoleDiv.innerHTML = '';
+        }
+        console.log("async-monitor.js$".concat(version));
+    };
+    console.log = function (message, classnames) {
+        var _id;
+        if (typeof classnames === 'number') {
+            _id = classnames;
+            classnames = undefined;
+        }
+        originalConsoleLog(message);
+        appendLogToConsole(message, classnames, _id);
+    };
+    console.error = function (message, _id) {
+        originalConsoleError(message);
+        appendLogToConsole(message, 'log-error', _id);
+    };
+    console.group = function (label, _id) {
+        originalConsoleGroup(label);
+        appendLogToConsole("".concat(label), 'log-group', _id);
+    };
+    console.groupEnd = function () {
+        originalConsoleGroupEnd();
+    };
+    console.table = function (data) {
+        originalConsoleTable(data);
+        appendLogToConsole(data, 'log-table');
+    };
+    console.warn = function (message, _id) {
+        originalConsoleWarn(message);
+        appendLogToConsole(message, 'log-warn', _id);
+    };
+    function escapeRegExp(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    function findSpanElementWithClassAndText(text, _id, className) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (!treeElement)
+            return null;
+        var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
+        for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
+            var span = _a[_i];
+            if (span.textContent === text) {
+                return span;
+            }
+        }
+        return null;
+    }
+    console.highlight = function (text, _id, className) {
+        if (className === void 0) { className = 'start'; }
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (!treeElement) {
+            console.warn("could not highlight tree-".concat(_id, "."));
+            return;
+        }
+        if (className === 'start') {
+            var regex = new RegExp(escapeRegExp(text), 'gi');
+            var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
+                return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
+            });
+            treeElement.innerHTML = highlightedText;
+        }
+        else {
+            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+            if (spanElement) {
+                spanElement.classList.remove("highlight-start");
+                spanElement.classList.add("highlight-".concat(className));
+            }
+        }
+    };
+
     var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
@@ -316,8 +493,8 @@
                     return;
                 }
                 else {
-                    if (typeof f === 'function')
-                        f();
+                    if (!Array.isArray(f))
+                        f = [f];
                     if (Array.isArray(f)) {
                         f.forEach(function (callback) {
                             if (typeof callback === 'function') {
@@ -876,8 +1053,6 @@
         Sequence._nextId = 0;
         return Sequence;
     }());
-
-    var version = '1.0.10';
 
     var nextId = Sequence.nextId;
     // Use default export if necessary

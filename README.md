@@ -15,7 +15,9 @@
 			f: function_to_watch
 		});
 	...watches.addWatch();
-	watches.WatchAll();
+	watches.WatchAll()
+	   .then(()=>console.log('All went well!'))
+	   .catch(()=>console.log('Oops, at least 1 promise was rejected!'));
 </script>
 <pre>
 ── preparation step
@@ -35,9 +37,21 @@
 
 A lightweight and efficient monitoring engine designed to seamlessly track and manage hierarchically organized asynchronous JavaScript functions. Perfect for developers looking to streamline and gain insights into complex async workflows, ensuring reliable performance and easy debugging.
 
+## new in v1.1
+
+The `WatchAll` function is now an `async` function. This enhancement allows you to nest groups as needed and utilize `then`, `catch`, and `finally` for improved functionality and better control over your asynchronous workflows.
+
 # Examples
 
-# Work in progress!
+Explore various examples showcasing random hierarchies of asynchronous functions, graphically represented for better understanding and visualization. These examples demonstrate the flexibility and robustness of the monitoring engine in handling complex async workflows, making it easier to debug and optimize your code.
+
+For demonstration purposes, an asynchronous function `sleep(seconds, fail)` is used to simulate an async operation. This function helps illustrate how the monitoring engine handles asynchronous tasks.
+
+- `seconds`: The number of seconds to wait before resolving (default is a random number between 0 and 3).
+- `fail`: A boolean indicating whether the function should reject (default is `false`). If undefined, there is a 50% chance of rejection.
+- `returns`: A promise that resolves after the specified `seconds` or rejects based on the `fail` condition.
+
+In example 'demo04', descriptions ending with double exclamation marks (!!) contain a `sleep` function that is likely to reject. This highlights the monitoring engine's ability to handle and report failed asynchronous operations effectively.
 
 # Tests
 
