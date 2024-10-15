@@ -189,10 +189,15 @@ const importModule = async () => {
 
 	function demo_demo04() {
 		console.clear();
+		console.log(`Tree: demo05 : ${demo05._id}`);
 		console.log(demo05.consoleTree, ['tree', `tree-${demo05._id}`]);
+		console.log(`Tree: demo01 : ${document['demo01']._id}`);
 		console.log(document['demo01'].consoleTree, `tree-${document['demo01']._id}`);
+		console.log(`Tree: demo02 : ${document['demo02']._id}`);
 		console.log(document['demo02'].consoleTree, `tree-${document['demo02']._id}`);
+		console.log(`Tree: demo03 : ${document['demo03']._id}`);
 		console.log(document['demo03'].consoleTree, `tree-${document['demo03']._id}`);
+		console.log(`Tree: demo4 : ${demo04._id}`);
 		console.log(demo04.consoleTree, ['tree', `tree-${demo04._id}`]);
 
 		document['demo01'].reset();
@@ -200,24 +205,34 @@ const importModule = async () => {
 		document['demo03'].reset();
 		demo04.reset();
 		demo05.reset();
-		demo05.WatchAll(
-			() => {
-				['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
-					const button = document.getElementById(key);
-					button.disabled = false;
-					button.innerText = key;
-				});
-				console.table(demo05.metrics);
-			},
-			() => {
-				['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
-					const button = document.getElementById(key);
-					button.disabled = false;
-					button.innerText = key;
-				});
-				console.table(demo05.metrics);
-			},
-		);
+		demo05
+			.WatchAll(
+				() => {
+					['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+						const button = document.getElementById(key);
+						button.disabled = false;
+						button.innerText = key;
+					});
+					console.table(demo05.metrics);
+				},
+				() => {
+					['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+						const button = document.getElementById(key);
+						button.disabled = false;
+						button.innerText = key;
+					});
+					console.table(demo05.metrics);
+				},
+			)
+			.then(() => {
+				console.clear();
+			})
+			.catch(() => {
+				console.warn('catch on WatchAll: rejected promise!');
+			})
+			.finally(() => {
+				console.log(`async-monitor.js@${version}`);
+			});
 	}
 
 	// Make the functions available in the global scope
