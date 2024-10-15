@@ -168,6 +168,21 @@ const importModule = async () => {
 	function escapeRegExp(text) {
 		return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 	}
+	function findSpanElementWithClassAndText(text, _id, className = 'start') {
+		// Get all span elements with the specified class name
+		const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
+		const spanElements = treeElement.querySelectorAll(`span.highlight-${className}`);
+
+		// Iterate through the elements to find the one with the matching text content
+		for (let span of spanElements) {
+			if (span.textContent === text) {
+				return span; // Return the matching span element
+			}
+		}
+
+		// If no matching span is found, return null
+		return null;
+	}
 	// Function to highlight text on the page
 	console.highlight = function (text, _id, className = 'start') {
 		// Clear any previous highlights
@@ -178,16 +193,25 @@ const importModule = async () => {
 			console.warn(`could not highlight tree-${_id}.`);
 			return;
 		}
-		// Create a regular expression to match the provided text
-		const regex = new RegExp(escapeRegExp(text), 'gi');
 
-		// Replace the matched text with a span to highlight it
-		const highlightedText = treeElement.innerHTML.replace(regex, match => {
-			return `<span class="highlight-${className}">${match}</span>`;
-		});
+		if (className === 'start') {
+			// Create a regular expression to match the provided text
+			const regex = new RegExp(escapeRegExp(text), 'gi');
 
-		// Set the updated HTML back to the body
-		treeElement.innerHTML = highlightedText;
+			// Replace the matched text with a span to highlight it
+			const highlightedText = treeElement.innerHTML.replace(regex, match => {
+				return `<span class="highlight-${className}">${match}</span>`;
+			});
+
+			// Set the updated HTML back to the body
+			treeElement.innerHTML = highlightedText;
+		} else {
+			const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+			if (spanElement) {
+				spanElement.classList.remove(`highlight-start`);
+				spanElement.classList.add(`highlight-${className}`);
+			}
+		}
 	};
 
 	// Function to clear previous highlights
