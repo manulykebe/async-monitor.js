@@ -60,7 +60,7 @@ export class Watch {
 					console.warn('Some watch was rejected xxx');
 					return;
 				} else {
-					if (typeof f === 'function') f();
+					if (!Array.isArray(f)) f=[f];
 					if (Array.isArray(f)) {
 						f.forEach(callback => {
 							if (typeof callback === 'function') {
