@@ -4,7 +4,184 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
-    var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    var version = '1.0.10';
+
+    function getCurrentTime() {
+        var now = new Date();
+        return now.toTimeString().split(' ')[0];
+    }
+    function createTableFromObject(data) {
+        var table = document.createElement('table');
+        table.classList.add('log-table');
+        if (Array.isArray(data) && data.length > 0) {
+            var headerRow_1 = document.createElement('tr');
+            var keys_1 = Object.keys(data[0]);
+            keys_1.forEach(function (key) {
+                var th = document.createElement('th');
+                th.textContent = key;
+                th.classList.add('log-table-header');
+                headerRow_1.appendChild(th);
+            });
+            table.appendChild(headerRow_1);
+            data.forEach(function (item) {
+                var row = document.createElement('tr');
+                keys_1.forEach(function (key) {
+                    var td = document.createElement('td');
+                    td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    td.classList.add('log-table-cell');
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+        }
+        else if (typeof data === 'object') {
+            var headerRow = document.createElement('tr');
+            var thKey = document.createElement('th');
+            thKey.textContent = 'Property';
+            thKey.classList.add('log-table-header');
+            var thValue = document.createElement('th');
+            thValue.textContent = 'Value';
+            thValue.classList.add('log-table-header');
+            headerRow.appendChild(thKey);
+            headerRow.appendChild(thValue);
+            table.appendChild(headerRow);
+            Object.keys(data).forEach(function (key) {
+                var row = document.createElement('tr');
+                var keyCell = document.createElement('td');
+                keyCell.textContent = key;
+                keyCell.classList.add('log-table-cell');
+                var valueCell = document.createElement('td');
+                valueCell.textContent =
+                    typeof data[key] === 'object'
+                        ? JSON.stringify(data[key], undefined, 4)
+                        : data[key];
+                valueCell.classList.add('log-table-cell');
+                row.appendChild(keyCell);
+                row.appendChild(valueCell);
+                table.appendChild(row);
+            });
+        }
+        return table;
+    }
+    var originalConsoleClear = console.clear;
+    var originalConsoleError = console.error;
+    var originalConsoleGroup = console.group;
+    var originalConsoleGroupEnd = console.groupEnd;
+    var originalConsoleLog = console.log;
+    var originalConsoleTable = console.table;
+    var originalConsoleWarn = console.warn;
+    function appendLogToConsole(message, classnames, _id) {
+        if (!message && message.trim() === '')
+            return;
+        var consoleDiv = document.getElementById('console');
+        if (consoleDiv) {
+            var logEntry = document.createElement('div');
+            logEntry.classList.add('log-entry');
+            var timeCol = document.createElement('div');
+            timeCol.classList.add('log-time');
+            timeCol.textContent = getCurrentTime();
+            var messageCol = document.createElement('div');
+            messageCol.classList.add('log-message');
+            if (typeof message === 'object') {
+                var table = createTableFromObject(message);
+                messageCol.appendChild(table);
+            }
+            else {
+                var pre_1 = document.createElement('pre');
+                if (!Array.isArray(classnames))
+                    classnames = [classnames];
+                if (!_id && typeof _id === 'number') {
+                    classnames.push("log-group-".concat(_id));
+                }
+                classnames.forEach(function (c) {
+                    if (typeof c === 'string' && c.trim() !== '') {
+                        pre_1.classList.add(c.trim());
+                    }
+                });
+                pre_1.textContent = message;
+                messageCol.appendChild(pre_1);
+            }
+            logEntry.appendChild(timeCol);
+            logEntry.appendChild(messageCol);
+            consoleDiv.appendChild(logEntry);
+        }
+    }
+    console.clear = function () {
+        originalConsoleClear();
+        var consoleDiv = document.getElementById('console');
+        if (consoleDiv) {
+            consoleDiv.innerHTML = '';
+        }
+        console.log("async-monitor.js$".concat(version));
+    };
+    console.log = function (message, classnames) {
+        var _id;
+        if (typeof classnames === 'number') {
+            _id = classnames;
+            classnames = undefined;
+        }
+        originalConsoleLog(message);
+        appendLogToConsole(message, classnames, _id);
+    };
+    console.error = function (message, _id) {
+        originalConsoleError(message);
+        appendLogToConsole(message, 'log-error', _id);
+    };
+    console.group = function (label, _id) {
+        originalConsoleGroup(label);
+        appendLogToConsole("".concat(label), 'log-group', _id);
+    };
+    console.groupEnd = function () {
+        originalConsoleGroupEnd();
+    };
+    console.table = function (data) {
+        originalConsoleTable(data);
+        appendLogToConsole(data, 'log-table');
+    };
+    console.warn = function (message, _id) {
+        originalConsoleWarn(message);
+        appendLogToConsole(message, 'log-warn', _id);
+    };
+    function escapeRegExp(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    function findSpanElementWithClassAndText(text, _id, className) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (!treeElement)
+            return null;
+        var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
+        for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
+            var span = _a[_i];
+            if (span.textContent === text) {
+                return span;
+            }
+        }
+        return null;
+    }
+    console.highlight = function (text, _id, className) {
+        if (className === void 0) { className = 'start'; }
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (!treeElement) {
+            console.warn("could not highlight tree-".concat(_id, "."));
+            return;
+        }
+        if (className === 'start') {
+            var regex = new RegExp(escapeRegExp(text), 'gi');
+            var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
+                return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
+            });
+            treeElement.innerHTML = highlightedText;
+        }
+        else {
+            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+            if (spanElement) {
+                spanElement.classList.remove("highlight-start");
+                spanElement.classList.add("highlight-".concat(className));
+            }
+        }
+    };
+
+    var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,7 +190,7 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
-    var __generator$2 = (this && this.__generator) || function (thisArg, body) {
+    var __generator$3 = (this && this.__generator) || function (thisArg, body) {
         var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
         return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
@@ -49,11 +226,11 @@
      * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
      */
     function sleep() {
-        return __awaiter$2(this, arguments, void 0, function (seconds, fail) {
+        return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
             if (seconds === void 0) { seconds = Math.random() * 3; }
-            return __generator$2(this, function (_a) {
+            return __generator$3(this, function (_a) {
                 if (fail === undefined)
-                    fail = seconds * 4 < 1;
+                    fail = seconds / 3 < 0.5;
                 seconds = seconds * 1000;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         setTimeout(function () {
@@ -69,7 +246,7 @@
         });
     }
 
-    var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -78,7 +255,7 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
-    var __generator$1 = (this && this.__generator) || function (thisArg, body) {
+    var __generator$2 = (this && this.__generator) || function (thisArg, body) {
         var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
         return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
@@ -119,6 +296,7 @@
             this.onRejectCallback = function () { };
             this._isFinished = false;
             this._isRunning = false;
+            this._isRejected = false;
             this._startTime = 0;
             this._stopTime = 0;
             this._duration = 0;
@@ -155,12 +333,77 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return __awaiter$1(this, void 0, void 0, function () {
-                return __generator$1(this, function (_a) {
+            return __awaiter$2(this, void 0, void 0, function () {
+                return __generator$2(this, function (_a) {
                     return [2 /*return*/, fn.apply(this, args)];
                 });
             });
         };
+    }
+
+    var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    };
+    var __generator$1 = (this && this.__generator) || function (thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (g && (g = 0, op[0] && (_ = 0)), _) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    };
+    var Monitor = /** @class */ (function () {
+        function Monitor(fs) {
+            this.fs = fs;
+        }
+        // Method to handle the async operation
+        Monitor.prototype.monitorStatuses = function () {
+            return __awaiter$1(this, void 0, void 0, function () {
+                var statusesPromise;
+                return __generator$1(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, Promise.allSettled(this.fs)];
+                        case 1:
+                            statusesPromise = _a.sent();
+                            return [2 /*return*/, {
+                                    performance: performance.now(),
+                                    statusesPromise: statusesPromise,
+                                }];
+                    }
+                });
+            });
+        };
+        return Monitor;
+    }());
+
+    var now = function () { return parseFloat(performance.now().toFixed(2)); };
+    function calcDuration(start, end) {
+        return parseFloat((end - start).toFixed(2));
     }
 
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -199,35 +442,6 @@
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var Monitor = /** @class */ (function () {
-        function Monitor(fs) {
-            this.fs = fs;
-        }
-        // Method to handle the async operation
-        Monitor.prototype.monitorStatuses = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var statusesPromise;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4 /*yield*/, Promise.allSettled(this.fs)];
-                        case 1:
-                            statusesPromise = _a.sent();
-                            return [2 /*return*/, {
-                                    performance: performance.now(),
-                                    statusesPromise: statusesPromise,
-                                }];
-                    }
-                });
-            });
-        };
-        return Monitor;
-    }());
-
-    var now = function () { return parseFloat(performance.now().toFixed(2)); };
-    function calcDuration(start, end) {
-        return parseFloat((end - start).toFixed(2));
-    }
-
     var Watch = /** @class */ (function () {
         function Watch(fs, f, fr) {
             var _breakOnRejected = false;
@@ -254,10 +468,33 @@
                 console.warn('error:', err);
             })
                 .finally(function () {
-                if (_breakOnRejected) ;
+                var _a;
+                if (_breakOnRejected) {
+                    debugger;
+                    var fs0 = fs[0];
+                    if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
+                        fs0.group.__callback_error();
+                    // if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
+                    // if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
+                    // // f_rejected for specific function
+                    // _statuses.forEach(x => {
+                    // 	if (typeof x.onRejectCallback === 'function') {
+                    // 		try {
+                    // 			x.onRejectCallback(x.reason);
+                    // 		} catch (error) {
+                    // 			console.warn('Watch.onRejectCallback is not critical:\n', error);
+                    // 		}
+                    // 	}
+                    // 	// console.warn('onRejectCallback not provided.');
+                    // });
+                    // // f_rejected for global watch
+                    // if (typeof fr === 'function') fr();
+                    console.warn('Some watch was rejected xxx');
+                    return;
+                }
                 else {
-                    if (typeof f === 'function')
-                        f();
+                    if (!Array.isArray(f))
+                        f = [f];
                     if (Array.isArray(f)) {
                         f.forEach(function (callback) {
                             if (typeof callback === 'function') {
@@ -277,18 +514,32 @@
     }());
     var _sequence = 0;
     function WatchAll(group, callback, callback_error) {
-        // Call the private function with the default parent value as undefined
-        _watchAllInternal(group, undefined, callback, callback_error);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                // Call the private function with the default parent value as undefined
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _watchAllInternal(group, undefined, callback, callback_error, resolve, reject);
+                    })];
+            });
+        });
     }
-    function _watchAllInternal(group, parent, callback, callback_error) {
+    function _watchAllInternal(group, parent, callback, callback_error, resolve, reject) {
         var watches = group._functions;
         var useConsoleLog = group.useConsoleLog;
         if (watches.every(function (f) { return f._isFinished; })) {
             // All watches are finished
             group._stopTime = now();
             group._duration = calcDuration(group._startTime, group._stopTime);
-            if (typeof group._onCompleteCallback === 'function')
+            if (typeof group._onCompleteCallback === 'function') {
                 group._onCompleteCallback();
+                resolve && resolve();
+            }
+            return;
+        }
+        if (watches.some(function (f) { return f._isRejected; })) {
+            // Some watch was rejected
+            console.warn('Some watch was rejected');
+            reject && reject();
             return;
         }
         if (typeof parent === 'function') {
@@ -299,6 +550,7 @@
         var children = watches.filter(function (x) { return x.parent === parent; });
         if (parent === undefined) {
             if (children.length === 0) {
+                console.warn('Nothing to do.');
                 console.warn('Nothing to do.');
                 if (typeof group._onCompleteCallback === 'function')
                     group._onCompleteCallback();
@@ -360,9 +612,14 @@
                                     }
                                     child._isRunning = false;
                                     child._isFinished = true;
+                                    child._isRejected = true;
                                     child._stopTime = now();
                                     child._duration = calcDuration(child._startTime, child._stopTime);
-                                    useConsoleLog && console.highlight(child.name, group._id, 'rejected');
+                                    if (useConsoleLog) {
+                                        console.highlight(child.name, group._id, 'rejected');
+                                        console.highlight('completed', group._id, 'rejected');
+                                    }
+                                    reject && reject();
                                 });
                             }
                             // Handle any other unexpected return values
@@ -408,7 +665,7 @@
                                 .map(function (x) { return x.child; })
                                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; })
                                 .forEach(function (x) {
-                                _watchAllInternal(group, x, callback, callback_error);
+                                _watchAllInternal(group, x, callback, callback_error, resolve, reject);
                             });
                         },
                     ], callback_error);
@@ -605,8 +862,8 @@
                 if (_this.useConsoleLog) {
                     console.log("*** COMPLETE ".concat(_this._id, " ***"));
                     console.highlight('completed', _this._id, 'complete');
+                    console.groupEnd();
                 }
-                console.groupEnd();
             };
             this._onUnCompleteCallback = function () {
                 if (_this.useConsoleLog)
@@ -641,7 +898,6 @@
             };
         }
         Object.defineProperty(Group.prototype, "_isRunning", {
-            // Check if any function in the group is running
             get: function () {
                 return !!this._functions.map(function (x) { return x._isRunning; }).reduce(function (a, b) { return a || b; }, false);
             },
@@ -649,9 +905,15 @@
             configurable: true
         });
         Object.defineProperty(Group.prototype, "_isFinished", {
-            // Check if any function in the group is running
             get: function () {
                 return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, true);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "_isRejected", {
+            get: function () {
+                return !!this._functions.map(function (x) { return x._isRejected; }).reduce(function (a, b) { return a || b; }, true);
             },
             enumerable: false,
             configurable: true
@@ -662,8 +924,11 @@
         };
         // Reset all watch functions in the group
         Group.prototype.reset = function () {
-            this._functions.forEach(function (x) { return (x._isRunning = false); });
-            this._functions.forEach(function (x) { return (x._isFinished = false); });
+            this._functions.forEach(function (fn) {
+                fn._isRunning = false;
+                fn._isFinished = false;
+                fn._isRejected = false;
+            });
         };
         // Get all functions in the group
         Group.prototype.getAll = function () {
@@ -692,28 +957,15 @@
             var _this = this;
             this.__callback = callback !== null && callback !== void 0 ? callback : (function () { });
             this.__callback_error = callback_error !== null && callback_error !== void 0 ? callback_error : (function () { });
-            if (callback !== undefined) {
-                this.__callback = callback;
-            }
-            else {
-                callback = this.__callback;
-            }
-            if (callback_error !== undefined) {
-                this.__callback_error = callback_error;
-            }
-            else {
-                callback_error = this.__callback_error;
-            }
+            callback = this.__callback;
+            callback_error = this.__callback_error;
             if (this._isRunning) {
                 console.warn('This WatchAll group is already being monitored.');
-                if (typeof this._onCompleteCallback === 'function')
-                    this._onCompleteCallback();
                 return;
             }
             this._startTime = now();
             if (typeof this._onStartCallback === 'function')
                 this._onStartCallback();
-            // Create an array of valid watch objects from the group's functions
             this._functions.map(function (fn) {
                 var _a;
                 return ({
@@ -739,9 +991,9 @@
         });
         Object.defineProperty(Group.prototype, "metrics", {
             get: function () {
-                var _a, _b;
+                var _a, _b, _c;
                 return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
-                    var _a, _b, _c;
+                    var _a, _b, _c, _d;
                     return {
                         index: i,
                         name: f.name,
@@ -751,6 +1003,7 @@
                         f: f.f.toString(),
                         isRunning: (_b = f._isRunning) !== null && _b !== void 0 ? _b : false,
                         isFinished: (_c = f._isFinished) !== null && _c !== void 0 ? _c : false,
+                        isRejected: (_d = f._isRejected) !== null && _d !== void 0 ? _d : false,
                     };
                 }), true), [
                     {
@@ -762,6 +1015,7 @@
                         f: '',
                         isRunning: (_a = this._isRunning) !== null && _a !== void 0 ? _a : false,
                         isFinished: (_b = this._isFinished) !== null && _b !== void 0 ? _b : false,
+                        isRejected: (_c = this._isRejected) !== null && _c !== void 0 ? _c : false,
                     },
                 ], false);
             },
@@ -773,12 +1027,10 @@
             return this;
         };
         Group.prototype.onStart = function (callback) {
-            this._startTime = now(); //#m
             this._onStartCallback = callback;
             return this;
         };
         Group.prototype.onComplete = function (callback) {
-            this._stopTime = now(); //#m
             this._onCompleteCallback = callback;
             return this;
         };
@@ -801,8 +1053,6 @@
         Sequence._nextId = 0;
         return Sequence;
     }());
-
-    var version = '1.0.10';
 
     var nextId = Sequence.nextId;
     // Use default export if necessary

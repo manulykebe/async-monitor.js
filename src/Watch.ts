@@ -39,7 +39,9 @@ export class Watch {
 			})
 			.finally(() => {
 				if (_breakOnRejected) {
-					// const fs0 = fs[0];
+					debugger;
+					const fs0 = fs[0];
+					if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
 					// if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
 					// if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
 					// // f_rejected for specific function
@@ -55,9 +57,10 @@ export class Watch {
 					// });
 					// // f_rejected for global watch
 					// if (typeof fr === 'function') fr();
-					// return;
+					console.warn('Some watch was rejected xxx');
+					return;
 				} else {
-					if (typeof f === 'function') f();
+					if (!Array.isArray(f)) f = [f];
 					if (Array.isArray(f)) {
 						f.forEach(callback => {
 							if (typeof callback === 'function') {
@@ -76,9 +79,15 @@ export class Watch {
 
 let _sequence = 0;
 
-export function WatchAll(group: Group, callback: (() => void) | undefined, callback_error?: () => void): void {
+export async function WatchAll(
+	group: Group,
+	callback: (() => void) | undefined,
+	callback_error?: () => void,
+): Promise<void> {
 	// Call the private function with the default parent value as undefined
-	_watchAllInternal(group, undefined, callback, callback_error);
+	return new Promise<void>((resolve, reject) => {
+		_watchAllInternal(group, undefined, callback, callback_error, resolve, reject);
+	});
 }
 
 function _watchAllInternal(
@@ -86,6 +95,8 @@ function _watchAllInternal(
 	parent: string | undefined,
 	callback: (() => void) | undefined,
 	callback_error?: () => void,
+	resolve?: () => void,
+	reject?: () => void,
 ): void {
 	const watches = group._functions;
 	const useConsoleLog = group.useConsoleLog;
@@ -93,7 +104,16 @@ function _watchAllInternal(
 		// All watches are finished
 		group._stopTime = now();
 		group._duration = calcDuration(group._startTime, group._stopTime);
-		if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
+		if (typeof group._onCompleteCallback === 'function') {
+			group._onCompleteCallback();
+			resolve && resolve();
+		}
+		return;
+	}
+	if (watches.some(f => f._isRejected)) {
+		// Some watch was rejected
+		console.warn('Some watch was rejected');
+		reject && reject();
 		return;
 	}
 
@@ -107,6 +127,7 @@ function _watchAllInternal(
 
 	if (parent === undefined) {
 		if (children.length === 0) {
+			console.warn('Nothing to do.');
 			console.warn('Nothing to do.');
 			if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
 			return;
@@ -168,9 +189,14 @@ function _watchAllInternal(
 									}
 									child._isRunning = false;
 									child._isFinished = true;
+									child._isRejected = true;
 									child._stopTime = now();
 									child._duration = calcDuration(child._startTime, child._stopTime);
-									useConsoleLog && (console as any).highlight(child.name, group._id, 'rejected');
+									if (useConsoleLog) {
+										(console as any).highlight(child.name, group._id, 'rejected');
+										(console as any).highlight('completed', group._id, 'rejected');
+									}
+									reject && reject();
 								});
 							}
 							// Handle any other unexpected return values
@@ -214,7 +240,7 @@ function _watchAllInternal(
 								.map(x => x.child)
 								.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index)
 								.forEach(x => {
-									_watchAllInternal(group, x, callback, callback_error);
+									_watchAllInternal(group, x, callback, callback_error, resolve, reject);
 								});
 						},
 					],

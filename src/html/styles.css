@@ -161,6 +161,11 @@ button:hover {
 	font-style: normal;
 	font-weight: bold;
 }
+.highlight-rejected {
+	background-color: rgba(255, 0, 0, 0.2);
+	font-style: normal;
+	font-weight: bold;
+}
 
 .tree {
 	padding: 2px 0;

@@ -12,10 +12,10 @@ const importModule = async () => {
 	const demo01 = new Group();
 
 	demo01.addWatch({
-		name: 'preparation step',
+		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(undefined, false),
+		f: () => sleep(2, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo01');
 			button.disabled = true;
@@ -86,22 +86,33 @@ const importModule = async () => {
 		console.log(demo01.consoleTree, ['tree', `tree-${demo01._id}`]);
 
 		demo01.reset();
-		demo01.WatchAll(
-			() => {
-				const button = document.getElementById('demo01');
-				button.disabled = false;
-				button.innerText = 'demo01';
-				console.log('Metrics:');
-				console.table(demo01.metrics);
-			},
-			() => {
-				const button = document.getElementById('demo01');
-				button.disabled = false;
-				button.innerText = 'demo01 (aborted)';
-				console.log('Metrics:');
-				console.table(demo01.metrics);
-			},
-		);
+		demo01
+			.WatchAll(
+				() => {
+					debugger;
+					const button = document.getElementById('demo01');
+					button.disabled = false;
+					button.innerText = 'demo01';
+					console.log('Metrics:');
+					console.table(demo01.metrics);
+				},
+				() => {
+					const button = document.getElementById('demo01');
+					button.disabled = false;
+					button.innerText = 'demo01 (aborted)';
+					console.log('Metrics:');
+					console.table(demo01.metrics);
+				},
+			)
+			.then(() => {
+				console.log('++++onCompleteCallback("demo01")-> THEN');
+			})
+			.catch(() => {
+				console.log('++++onCompleteCallback("demo01")-> CATCH');
+			})
+			.finally(() => {
+				console.log('++++onCompleteCallback("demo01")-> FINALLY');
+			});
 	}
 
 	// Make the functions available in the global scope

@@ -27,6 +27,7 @@ export interface WatchFunction {
 	onRejectCallback?: (() => void) | undefined;
 	_isRunning?: boolean;
 	_isFinished?: boolean;
+	_isRejected?: boolean;
 	_index?: number | undefined;
 	_startTime: number;
 	_stopTime: number;
@@ -59,8 +60,8 @@ export default class Group {
 		if (this.useConsoleLog) {
 			console.log(`*** COMPLETE ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'complete');
+			console.groupEnd();
 		}
-		console.groupEnd();
 	};
 
 	_onUnCompleteCallback: () => void = () => {
@@ -73,14 +74,16 @@ export default class Group {
 
 	_abort: AbortController = new AbortController(); // Declare abort controller
 
-	// Check if any function in the group is running
 	get _isRunning(): boolean {
 		return !!this._functions.map(x => x._isRunning).reduce((a, b) => a || b, false);
 	}
 
-	// Check if any function in the group is running
 	get _isFinished(): boolean {
 		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, true);
+	}
+
+	get _isRejected(): boolean {
+		return !!this._functions.map(x => x._isRejected).reduce((a, b) => a || b, true);
 	}
 
 	// Add a watch function
@@ -109,8 +112,11 @@ export default class Group {
 	}
 	// Reset all watch functions in the group
 	reset(): void {
-		this._functions.forEach(x => (x._isRunning = false));
-		this._functions.forEach(x => (x._isFinished = false));
+		this._functions.forEach(fn => {
+			fn._isRunning = false;
+			fn._isFinished = false;
+			fn._isRejected = false;
+		});
 	}
 
 	// Get all functions in the group
@@ -141,27 +147,17 @@ export default class Group {
 		this.__callback = callback ?? (() => {});
 		this.__callback_error = callback_error ?? (() => {});
 
-		if (callback !== undefined) {
-			this.__callback = callback;
-		} else {
-			callback = this.__callback;
-		}
-		if (callback_error !== undefined) {
-			this.__callback_error = callback_error;
-		} else {
-			callback_error = this.__callback_error;
-		}
+		callback = this.__callback;
+		callback_error = this.__callback_error;
 
 		if (this._isRunning) {
 			console.warn('This WatchAll group is already being monitored.');
-			if (typeof this._onCompleteCallback === 'function') this._onCompleteCallback();
 			return;
 		}
 
 		this._startTime = now();
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
 
-		// Create an array of valid watch objects from the group's functions
 		const watchArray = this._functions.map(fn => ({
 			promise: fn.promise ?? undefined, // Use the promise if it exists, otherwise undefined
 			onRejectCallback: fn.onRejectCallback, // The callback for rejection
@@ -194,6 +190,7 @@ export default class Group {
 					f: f.f.toString(),
 					isRunning: f._isRunning ?? false,
 					isFinished: f._isFinished ?? false,
+					isRejected: f._isRejected ?? false,
 				};
 			}),
 			{
@@ -205,6 +202,7 @@ export default class Group {
 				f: '',
 				isRunning: this._isRunning ?? false,
 				isFinished: this._isFinished ?? false,
+				isRejected: this._isRejected ?? false,
 			},
 		];
 	}
@@ -214,12 +212,10 @@ export default class Group {
 		return this;
 	}
 	onStart(callback: () => void) {
-		this._startTime = now(); //#m
 		this._onStartCallback = callback;
 		return this;
 	}
 	onComplete(callback: () => void) {
-		this._stopTime = now(); //#m
 		this._onCompleteCallback = callback;
 		return this;
 	}
