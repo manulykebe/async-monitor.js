@@ -225,7 +225,7 @@ const importModule = async () => {
 				},
 			)
 			.then(() => {
-				console.clear();
+				console.log('success on WatchAll: resolved all promises!');
 			})
 			.catch(() => {
 				console.warn('catch on WatchAll: rejected promise!');
