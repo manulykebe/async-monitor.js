@@ -1,4 +1,4 @@
-var version = '1.0.10';
+var version = '1.1.0';
 
 function getCurrentTime() {
     var now = new Date();
