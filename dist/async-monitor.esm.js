@@ -47,7 +47,7 @@ function sleep() {
         if (seconds === void 0) { seconds = Math.random() * 3; }
         return __generator$3(this, function (_a) {
             if (fail === undefined)
-                fail = seconds * 4 < 1;
+                fail = seconds / 3 < 0.5;
             seconds = seconds * 1000;
             return [2 /*return*/, new Promise(function (resolve, reject) {
                     setTimeout(function () {
@@ -285,7 +285,30 @@ var Watch = /** @class */ (function () {
             console.warn('error:', err);
         })
             .finally(function () {
-            if (_breakOnRejected) ;
+            var _a;
+            if (_breakOnRejected) {
+                debugger;
+                var fs0 = fs[0];
+                if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
+                    fs0.group.__callback_error();
+                // if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
+                // if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
+                // // f_rejected for specific function
+                // _statuses.forEach(x => {
+                // 	if (typeof x.onRejectCallback === 'function') {
+                // 		try {
+                // 			x.onRejectCallback(x.reason);
+                // 		} catch (error) {
+                // 			console.warn('Watch.onRejectCallback is not critical:\n', error);
+                // 		}
+                // 	}
+                // 	// console.warn('onRejectCallback not provided.');
+                // });
+                // // f_rejected for global watch
+                // if (typeof fr === 'function') fr();
+                console.warn('Some watch was rejected xxx');
+                return;
+            }
             else {
                 if (typeof f === 'function')
                     f();
@@ -330,6 +353,12 @@ function _watchAllInternal(group, parent, callback, callback_error, resolve, rej
         }
         return;
     }
+    if (watches.some(function (f) { return f._isRejected; })) {
+        // Some watch was rejected
+        console.warn('Some watch was rejected');
+        reject && reject();
+        return;
+    }
     if (typeof parent === 'function') {
         callback_error = callback;
         callback = parent;
@@ -339,7 +368,7 @@ function _watchAllInternal(group, parent, callback, callback_error, resolve, rej
     if (parent === undefined) {
         if (children.length === 0) {
             console.warn('Nothing to do.');
-            alert('Nothing to do.');
+            console.warn('Nothing to do.');
             if (typeof group._onCompleteCallback === 'function')
                 group._onCompleteCallback();
             return;
@@ -712,8 +741,11 @@ var Group = /** @class */ (function () {
     };
     // Reset all watch functions in the group
     Group.prototype.reset = function () {
-        this._functions.forEach(function (x) { return (x._isRunning = false); });
-        this._functions.forEach(function (x) { return (x._isFinished = false); });
+        this._functions.forEach(function (fn) {
+            fn._isRunning = false;
+            fn._isFinished = false;
+            fn._isRejected = false;
+        });
     };
     // Get all functions in the group
     Group.prototype.getAll = function () {
@@ -751,7 +783,6 @@ var Group = /** @class */ (function () {
         this._startTime = now();
         if (typeof this._onStartCallback === 'function')
             this._onStartCallback();
-        // Create an array of valid watch objects from the group's functions
         this._functions.map(function (fn) {
             var _a;
             return ({

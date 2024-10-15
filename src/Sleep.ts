@@ -7,7 +7,7 @@
  * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
  */
 export async function sleep(seconds: number = Math.random() * 3, fail?: boolean | undefined): Promise<number> {
-	if (fail === undefined) fail = seconds * 4 < 1;
+	if (fail === undefined) fail = seconds / 3 < 0.5;
 	seconds = seconds * 1000;
 
 	return new Promise<number>((resolve, reject) => {

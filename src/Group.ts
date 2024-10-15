@@ -112,8 +112,11 @@ export default class Group {
 	}
 	// Reset all watch functions in the group
 	reset(): void {
-		this._functions.forEach(x => (x._isRunning = false));
-		this._functions.forEach(x => (x._isFinished = false));
+		this._functions.forEach(fn => {
+			fn._isRunning = false;
+			fn._isFinished = false;
+			fn._isRejected = false;
+		});
 	}
 
 	// Get all functions in the group

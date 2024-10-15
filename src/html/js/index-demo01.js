@@ -12,10 +12,10 @@ const importModule = async () => {
 	const demo01 = new Group();
 
 	demo01.addWatch({
-		name: 'preparation step',
+		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(2, true),
+		f: () => sleep(2, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo01');
 			button.disabled = true;

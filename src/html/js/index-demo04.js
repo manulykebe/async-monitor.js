@@ -15,7 +15,7 @@ const importModule = async () => {
 	demo05.useConsoleLog = true;
 
 	demo04.addWatch({
-		name: 'preparation step',
+		name: 'preparation step 04',
 		parent: undefined,
 		child: 'a',
 		f: () => sleep(undefined, false),
@@ -44,10 +44,10 @@ const importModule = async () => {
 	});
 
 	demo04.addWatch({
-		name: 'fetch data from ETL store: s2',
+		name: 'fetch data from ETL store: s2 !!',
 		parent: 'a',
 		child: 'b',
-		f: () => sleep(undefined, false),
+		f: () => sleep(undefined, undefined),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
@@ -70,10 +70,10 @@ const importModule = async () => {
 	});
 
 	demo04.addWatch({
-		name: 'publish snowflake s1 and s2',
+		name: 'publish snowflake s1 and s2 !!',
 		parent: 'c',
 		child: 'x',
-		f: () => sleep(undefined, false),
+		f: () => sleep(undefined, undefined),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("publish snowflake s1 and s2")');
 		},
@@ -121,40 +121,10 @@ const importModule = async () => {
 		},
 	});
 
-	const wrapped01 = () =>
-		new Promise((resolve, reject) => {
-			document['demo01'].WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	const wrapped02 = () =>
-		new Promise((resolve, reject) => {
-			document['demo02'].WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	const wrapped03 = () =>
-		new Promise((resolve, reject) => {
-			document['demo03'].WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	const wrapped04 = () =>
-		new Promise((resolve, reject) => {
-			demo04.WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	// const wrapped04 = makeAsync(() =>
-	// 	demo04.WatchAll(
-	// 		() => {},
-	// 		() => {},
-	// 	)()
-	// );
+	const wrapped01 = () => document['demo01'].WatchAll();
+	const wrapped02 = () => document['demo02'].WatchAll();
+	const wrapped03 = () => document['demo03'].WatchAll();
+	const wrapped04 = () => demo04.WatchAll();
 
 	demo05.addWatch({
 		name: 'demo05 initiator',
