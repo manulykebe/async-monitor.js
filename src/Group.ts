@@ -117,7 +117,8 @@ export default class Group {
 				const signal = watchFunction.abortController?.signal;
 				// If the signal is aborted before execution
 				signal?.addEventListener('abort', () => {
-					reject(new Error(`"${watchFunction.name}" was aborted.`));
+					watchFunction._isAborted = true;
+					console.error(new Error(`"${watchFunction.name}" was aborted.`));
 				});
 				// Execute the original function and resolve/reject accordingly
 				const result = originalFunction();
@@ -135,6 +136,7 @@ export default class Group {
 		const watchFunction = this._functions.find(fn => fn.name === name);
 		if (watchFunction?.abortController) {
 			watchFunction.abortController.abort();
+			// watchFunction._isAborted = true;
 			console.log(`+++ Aborted watch function "${name}"`);
 		} else {
 			console.warn(`+++ No watch function found with name "${name}"`);
@@ -142,7 +144,10 @@ export default class Group {
 	}
 	// Abort the entire group
 	abort(): void {
-		this._functions.forEach(fn => fn.abortController?.abort());
+		this._functions.forEach(fn => {
+			// fn._isAborted = true;
+			fn.abortController?.abort();
+		});
 	}
 	// Reset all watch functions in the group
 	reset(): void {
@@ -225,7 +230,7 @@ export default class Group {
 					index: i,
 					name: f.name,
 					sequence: f.sequence ?? 0,
-					start: f.group ? f._startTime - f.group._startTime : undefined,
+					start: Math.max(0, f.group ? f._startTime - f.group._startTime : 0),
 					duration: f._duration,
 					isRunning: f._isRunning ?? false,
 					isFinished: f._isFinished ?? false,
