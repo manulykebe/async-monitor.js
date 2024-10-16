@@ -15,6 +15,7 @@
 			f: function_to_watch
 		});
 	...watches.addWatch();
+  console.log(watches.tree);
 	watches.WatchAll()
 	   .then(()=>console.log('All went well!'))
 	   .catch(()=>console.log('Oops, at least 1 promise was rejected!'));
