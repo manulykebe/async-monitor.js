@@ -263,22 +263,6 @@ function sleep() {
         });
     });
 }
-/**
- * Generating documentation during the build step:
- *
- * 1. Install TypeDoc (a documentation generator for TypeScript):
- *    npm install typedoc --save-dev
- *
- * 2. Add a script to your `package.json` to generate documentation:
- *    "scripts": {
- *      "build-docs": "typedoc --out docs src"
- *    }
- *
- * 3. Run the script to generate documentation:
- *    npm run build-docs
- *
- * This will generate documentation in the `docs` folder for your TypeScript code.
- */
 
 var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -907,7 +891,6 @@ var Group = /** @class */ (function () {
             if (_this.useConsoleLog)
                 console.log("*** REJECTED? ".concat(_this._id, " ***"));
         };
-        this._abort = new AbortController(); // Declare abort controller
         // Add a watch function
         this.addWatch = function (addWatchFunction) {
             var watchFunction;
@@ -927,7 +910,29 @@ var Group = /** @class */ (function () {
                 // Create a new Element and add it to the group
                 watchFunction = new Element(addWatchFunction);
             }
+            // Assign an AbortController to the watch function
+            watchFunction.abortController = new AbortController();
             watchFunction.group = _this;
+            // Wrap the function with the abort signal
+            var originalFunction = watchFunction.f;
+            watchFunction.f = function () {
+                return new Promise(function (resolve, reject) {
+                    var _a;
+                    var signal = (_a = watchFunction.abortController) === null || _a === void 0 ? void 0 : _a.signal;
+                    // If the signal is aborted before execution
+                    signal === null || signal === void 0 ? void 0 : signal.addEventListener('abort', function () {
+                        reject(new Error("\"".concat(watchFunction.name, "\" was aborted.")));
+                    });
+                    // Execute the original function and resolve/reject accordingly
+                    var result = originalFunction();
+                    if (result instanceof Promise) {
+                        result.then(resolve).catch(reject);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+            };
             _this._functions.push(watchFunction);
         };
     }
@@ -952,9 +957,20 @@ var Group = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    // Abort the group TODO
+    // Abort a specific watch function by name
+    Group.prototype.abortWatch = function (name) {
+        var watchFunction = this._functions.find(function (fn) { return fn.name === name; });
+        if (watchFunction === null || watchFunction === void 0 ? void 0 : watchFunction.abortController) {
+            watchFunction.abortController.abort();
+            console.log("+++ Aborted watch function \"".concat(name, "\""));
+        }
+        else {
+            console.warn("+++ No watch function found with name \"".concat(name, "\""));
+        }
+    };
+    // Abort the entire group
     Group.prototype.abort = function () {
-        this._abort.abort();
+        this._functions.forEach(function (fn) { var _a; return (_a = fn.abortController) === null || _a === void 0 ? void 0 : _a.abort(); });
     };
     // Reset all watch functions in the group
     Group.prototype.reset = function () {
@@ -980,9 +996,9 @@ var Group = /** @class */ (function () {
         var watchArray = this._functions.map(function (fn) {
             var _a;
             return ({
-                promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
-                onRejectCallback: fn.onRejectCallback, // The callback if the function fails
-                group: _this, // The current group
+                promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined,
+                onRejectCallback: fn.onRejectCallback,
+                group: _this,
             });
         });
         return new Watch(watchArray, callback, callback_error);
@@ -1003,13 +1019,12 @@ var Group = /** @class */ (function () {
         this._functions.map(function (fn) {
             var _a;
             return ({
-                promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
-                onRejectCallback: fn.onRejectCallback, // The callback for rejection
-                group: _this, // The current group,
+                promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined,
+                onRejectCallback: fn.onRejectCallback,
+                group: _this,
                 _startTime: now(),
             });
         });
-        // Pass the array to the WatchAll function
         return WatchAll(this, callback, callback_error);
     };
     Object.defineProperty(Group.prototype, "consoleTree", {

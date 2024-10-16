@@ -61,6 +61,7 @@ interface WatchFunction {
     _startTime: number;
     _stopTime: number;
     _duration: number;
+    abortController?: AbortController;
 }
 declare class Group {
     useConsoleLog: boolean;
@@ -76,11 +77,11 @@ declare class Group {
     _onCompleteCallback: () => void;
     _onUnCompleteCallback: () => void;
     _onRejectedCallback: () => void;
-    _abort: AbortController;
     get _isRunning(): boolean;
     get _isFinished(): boolean;
     get _isRejected(): boolean;
     addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
+    abortWatch(name: string): void;
     abort(): void;
     reset(): void;
     getAll(): Array<WatchFunction>;

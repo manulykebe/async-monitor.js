@@ -95,17 +95,6 @@ describe('Monitor Group Class', () => {
 		expect(onRejectedCallback).toHaveBeenCalled();
 	});
 
-	it('should abort the group', () => {
-		// Spy on the AbortController's abort method
-		const abortSpy = jest.spyOn(group._abort, 'abort');
-
-		// Call the abort method
-		group.abort();
-
-		// Ensure the abort method was called
-		expect(abortSpy).toHaveBeenCalled();
-	});
-
 	// it('should call Watch with correct arguments', () => {
 	// 	const callback = jest.fn();
 	// 	const callback_error = jest.fn();

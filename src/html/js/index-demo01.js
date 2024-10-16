@@ -15,7 +15,7 @@ const importModule = async () => {
 		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(2, false),
+		f: () => sleep(20, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo01');
 			button.disabled = true;

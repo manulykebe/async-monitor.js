@@ -43,20 +43,3 @@ export async function sleep(seconds: number = Math.random() * 3, fail?: boolean 
 
 	return promise;
 }
-
-/**
- * Generating documentation during the build step:
- *
- * 1. Install TypeDoc (a documentation generator for TypeScript):
- *    npm install typedoc --save-dev
- *
- * 2. Add a script to your `package.json` to generate documentation:
- *    "scripts": {
- *      "build-docs": "typedoc --out docs src"
- *    }
- *
- * 3. Run the script to generate documentation:
- *    npm run build-docs
- *
- * This will generate documentation in the `docs` folder for your TypeScript code.
- */
