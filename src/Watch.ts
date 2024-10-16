@@ -66,9 +66,11 @@ export class Watch {
 						f.forEach(callback => {
 							if (typeof callback === 'function') {
 								try {
+									debugger;
 									callback();
 								} catch (error) {
 									console.warn('Error while executing callback.', error);
+									console.log(callback);
 								}
 							}
 						});
@@ -146,9 +148,6 @@ function _watchAllInternal(
 			children
 				.filter(c => c.child === gc)
 				.forEach(child => {
-					// child.isRunning = true;
-					// child._startTime = now();
-					// child.sequence = _sequence;
 					useConsoleLog && (console as any).highlight(child.name, group._id, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
@@ -175,10 +174,6 @@ function _watchAllInternal(
 									} else {
 										console.warn('onCompleteCallback is not defined or not a function');
 									}
-									// child._isRunning = false;
-									// child._isFinished = true;
-									// child._stopTime = now();
-									// child._duration = calcDuration(child._startTime, child._stopTime);
 									useConsoleLog && (console as any).highlight(child.name, group._id, 'complete');
 								});
 
@@ -188,11 +183,6 @@ function _watchAllInternal(
 									} else {
 										console.warn('onRejectCallback is not defined or not a function');
 									}
-									// child._isRunning = false;
-									// child._isFinished = true;
-									// child._isRejected = true;
-									// child._stopTime = now();
-									// child._duration = calcDuration(child._startTime, child._stopTime);
 									if (useConsoleLog) {
 										(console as any).highlight(child.name, group._id, 'rejected');
 										(console as any).highlight('completed', group._id, 'rejected');
@@ -207,9 +197,6 @@ function _watchAllInternal(
 						}
 					} catch (error) {
 						console.warn('Watch: critical! error in call to (async) function:\n', error);
-						// child._stopTime = now();
-						// child._duration = calcDuration(child._startTime, child._stopTime);
-						// child._isRunning = false;
 						if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
 						return;
 					}

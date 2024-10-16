@@ -177,14 +177,9 @@ export default class Group {
 	}
 
 	get metrics(): Metric[] {
-		return [
-			...this._functions.map((f, i) => {
-				return {
-					...f.metrics,
-				};
-			}),
-			...this.metrics,
-		];
+		return this._functions.map(f => {
+			return f.metrics;
+		});
 	}
 
 	onRejected(callback: () => void) {

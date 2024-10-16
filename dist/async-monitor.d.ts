@@ -34,7 +34,7 @@ declare class Watch {
 }
 
 type Metric = {
-    index: number;
+    id: number;
     name: string;
     start: number | undefined;
     duration: number | undefined;
@@ -45,8 +45,8 @@ type Metric = {
     sequence: number;
 };
 declare class WatchFunction {
-    private _sequence;
-    get sequence(): number;
+    private _id;
+    get id(): number;
     private _isAborted;
     get isAborted(): boolean;
     private _isFinished;
@@ -71,6 +71,7 @@ declare class WatchFunction {
     onCompleteCallback?: () => void;
     onRejectCallback?: () => void;
     onAbortCallback?: () => void;
+    sequence: number;
     reset: () => void;
     'promise': Promise<any>;
     get metrics(): Metric;

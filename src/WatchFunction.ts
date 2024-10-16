@@ -1,8 +1,9 @@
 import Group from './Group';
 import now, {calcDuration} from './Now';
+import Sequence from './Sequence';
 
 export type Metric = {
-	index: number;
+	id: number;
 	name: string;
 	start: number | undefined;
 	duration: number | undefined;
@@ -14,9 +15,9 @@ export type Metric = {
 };
 
 export default class WatchFunction {
-	private _sequence: number | undefined;
-	get sequence(): number {
-		return this._sequence!;
+	private _id: number = Sequence.nextId();
+	get id(): number {
+		return this._id!;
 	}
 	private _isAborted: boolean = false;
 	get isAborted(): boolean {
@@ -38,6 +39,7 @@ export default class WatchFunction {
 	private _startTime: number = 0;
 	private _stopTime: number = 0;
 	private _duration: number = 0;
+
 	private abortController: AbortController = new AbortController();
 	abort = () => this.abortController.abort();
 	signal: AbortSignal = this.abortController.signal;
@@ -52,6 +54,7 @@ export default class WatchFunction {
 	onRejectCallback?: () => void;
 	onAbortCallback?: () => void;
 
+	sequence: number = 0;
 	reset = () => {
 		this._isAborted = false;
 		this._isFinished = false;
@@ -61,6 +64,7 @@ export default class WatchFunction {
 		this._startTime = 0;
 		this._stopTime = 0;
 		this._duration = 0;
+		this.sequence = 0;
 		this.abortController = new AbortController();
 		this.signal = this.abortController.signal;
 		this.abort = () => this.abortController.abort();
@@ -69,7 +73,7 @@ export default class WatchFunction {
 	'promise': Promise<any>;
 	get metrics(): Metric {
 		return {
-			index: this._index!,
+			id: this._id!,
 			name: this.name,
 			start: this.group ? this._startTime - this.group._startTime : 0,
 			duration: this._duration,
@@ -77,7 +81,7 @@ export default class WatchFunction {
 			isFinished: this._isFinished,
 			isRejected: this._isRejected,
 			isAborted: this._isAborted,
-			sequence: this._sequence!,
+			sequence: this.sequence,
 		};
 	}
 
@@ -108,40 +112,39 @@ export default class WatchFunction {
 			this.parent = arg.parent;
 			this.child = arg.child;
 
-			if (arg.onStartCallback)
-				this.onStartCallback = () => {
-					this._isRunning = true;
-					this._startTime = now();
-					console.log(`"${this.name}" has started.`);
-					arg.onStartCallback!();
-				};
-			if (arg.onCompleteCallback)
-				this.onCompleteCallback = () => {
-					this._isFinished = true;
-					this._isRunning = false;
-					this._stopTime = now();
-					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.log(`"${this.name}" has completed.`);
-					arg.onCompleteCallback!();
-				};
-			if (arg.onRejectCallback)
-				this.onRejectCallback = () => {
-					this._isRejected = true;
-					this._isRunning = false;
-					this._stopTime = now();
-					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.warn(`"${this.name}" was rejected.`);
-					arg.onRejectCallback!();
-				};
-			if (arg.onAbortCallback)
-				this.onAbortCallback = () => {
-					this._isAborted = true;
-					this._isRunning = false;
-					this._stopTime = now();
-					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.warn(`"${this.name}" was aborted.`);
-					arg.onAbortCallback!();
-				};
+			this.onStartCallback = () => {
+				this._isRunning = true;
+				this._startTime = now();
+				console.log(`"${this.name}" has started.`);
+				if (arg.onStartCallback) arg.onStartCallback!();
+			};
+
+			this.onCompleteCallback = () => {
+				this._isFinished = true;
+				this._isRunning = false;
+				this._stopTime = now();
+				this._duration = calcDuration(this._startTime, this._stopTime);
+				console.log(`"${this.name}" has completed.`);
+				if (arg.onCompleteCallback) arg.onCompleteCallback!();
+			};
+
+			this.onRejectCallback = () => {
+				if (this._isAborted) return;
+				this._isRejected = true;
+				this._isRunning = false;
+				this._stopTime = now();
+				this._duration = calcDuration(this._startTime, this._stopTime);
+				console.warn(`"${this.name}" was rejected.`);
+				if (arg.onRejectCallback) arg.onRejectCallback!();
+			};
+			this.onAbortCallback = () => {
+				this._isAborted = true;
+				this._isRunning = false;
+				this._stopTime = now();
+				this._duration = calcDuration(this._startTime, this._stopTime);
+				console.warn(`"${this.name}" was aborted.`);
+				if (arg.onAbortCallback) arg.onAbortCallback!();
+			};
 		} else {
 			this.f = arg;
 			this.name = name!;

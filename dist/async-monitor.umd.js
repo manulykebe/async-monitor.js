@@ -424,10 +424,12 @@
                         f.forEach(function (callback) {
                             if (typeof callback === 'function') {
                                 try {
+                                    debugger;
                                     callback();
                                 }
                                 catch (error) {
                                     console.warn('Error while executing callback.', error);
+                                    console.log(callback);
                                 }
                             }
                         });
@@ -752,9 +754,27 @@
         return Tree;
     }());
 
+    /**
+     * Sequence
+     *
+     * A utility class that provides sequential unique IDs.
+     * It maintains a static counter that increments with each call to `nextId()`,
+     * ensuring that each ID is unique within the runtime of the application.
+     */
+    var Sequence = /** @class */ (function () {
+        function Sequence() {
+        }
+        Sequence.nextId = function () {
+            return Sequence._nextId++;
+        };
+        Sequence._nextId = 0;
+        return Sequence;
+    }());
+
     var WatchFunction = /** @class */ (function () {
         function WatchFunction(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
             var _this = this;
+            this._id = Sequence.nextId();
             this._isAborted = false;
             this._isFinished = false;
             this._isRejected = false;
@@ -765,6 +785,7 @@
             this.abortController = new AbortController();
             this.abort = function () { return _this.abortController.abort(); };
             this.signal = this.abortController.signal;
+            this.sequence = 0;
             this.reset = function () {
                 _this._isAborted = false;
                 _this._isFinished = false;
@@ -774,6 +795,7 @@
                 _this._startTime = 0;
                 _this._stopTime = 0;
                 _this._duration = 0;
+                _this.sequence = 0;
                 _this.abortController = new AbortController();
                 _this.signal = _this.abortController.signal;
                 _this.abort = function () { return _this.abortController.abort(); };
@@ -783,40 +805,42 @@
                 this.name = arg.name;
                 this.parent = arg.parent;
                 this.child = arg.child;
-                if (arg.onStartCallback)
-                    this.onStartCallback = function () {
-                        _this._isRunning = true;
-                        _this._startTime = now();
-                        console.log("\"".concat(_this.name, "\" has started."));
+                this.onStartCallback = function () {
+                    _this._isRunning = true;
+                    _this._startTime = now();
+                    console.log("\"".concat(_this.name, "\" has started."));
+                    if (arg.onStartCallback)
                         arg.onStartCallback();
-                    };
-                if (arg.onCompleteCallback)
-                    this.onCompleteCallback = function () {
-                        _this._isFinished = true;
-                        _this._isRunning = false;
-                        _this._stopTime = now();
-                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                        console.log("\"".concat(_this.name, "\" has completed."));
+                };
+                this.onCompleteCallback = function () {
+                    _this._isFinished = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.log("\"".concat(_this.name, "\" has completed."));
+                    if (arg.onCompleteCallback)
                         arg.onCompleteCallback();
-                    };
-                if (arg.onRejectCallback)
-                    this.onRejectCallback = function () {
-                        _this._isRejected = true;
-                        _this._isRunning = false;
-                        _this._stopTime = now();
-                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                        console.warn("\"".concat(_this.name, "\" was rejected."));
+                };
+                this.onRejectCallback = function () {
+                    if (_this._isAborted)
+                        return;
+                    _this._isRejected = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.warn("\"".concat(_this.name, "\" was rejected."));
+                    if (arg.onRejectCallback)
                         arg.onRejectCallback();
-                    };
-                if (arg.onAbortCallback)
-                    this.onAbortCallback = function () {
-                        _this._isAborted = true;
-                        _this._isRunning = false;
-                        _this._stopTime = now();
-                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                        console.warn("\"".concat(_this.name, "\" was aborted."));
+                };
+                this.onAbortCallback = function () {
+                    _this._isAborted = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.warn("\"".concat(_this.name, "\" was aborted."));
+                    if (arg.onAbortCallback)
                         arg.onAbortCallback();
-                    };
+                };
             }
             else {
                 this.f = arg;
@@ -858,20 +882,14 @@
                         onAbortCallback();
                     };
             }
-            var originalFunction = this.f;
             var self = this;
+            var originalFunction = this.f;
             this.f = function () {
                 return new Promise(function (resolve, reject) {
                     self.signal.addEventListener('abort', function () {
-                        // self._isAborted = true;
-                        // self._isRunning = false;
-                        // self._stopTime = now();
-                        // self._duration = calcDuration(self._startTime, self._stopTime);
-                        // console.warn(`"${self.name}" was aborted.`);
                         self.onAbortCallback && self.onAbortCallback();
-                        reject("\"".concat(self.name, "\" was aborted.")); // Explicitly reject the promise
+                        reject("\"".concat(self.name, "\" was aborted."));
                     });
-                    // Execute the original function and resolve/reject accordingly
                     var result = originalFunction();
                     if (result instanceof Promise) {
                         result.then(resolve).catch(reject);
@@ -882,9 +900,9 @@
                 });
             };
         }
-        Object.defineProperty(WatchFunction.prototype, "sequence", {
+        Object.defineProperty(WatchFunction.prototype, "id", {
             get: function () {
-                return this._sequence;
+                return this._id;
             },
             enumerable: false,
             configurable: true
@@ -920,7 +938,7 @@
         Object.defineProperty(WatchFunction.prototype, "metrics", {
             get: function () {
                 return {
-                    index: this._index,
+                    id: this._id,
                     name: this.name,
                     start: this.group ? this._startTime - this.group._startTime : 0,
                     duration: this._duration,
@@ -928,7 +946,7 @@
                     isFinished: this._isFinished,
                     isRejected: this._isRejected,
                     isAborted: this._isAborted,
-                    sequence: this._sequence,
+                    sequence: this.sequence,
                 };
             },
             enumerable: false,
@@ -937,26 +955,6 @@
         return WatchFunction;
     }());
 
-    var __assign = (this && this.__assign) || function () {
-        __assign = Object.assign || function(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                    t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-    var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-            if (ar || !(i in from)) {
-                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-                ar[i] = from[i];
-            }
-        }
-        return to.concat(ar || Array.prototype.slice.call(from));
-    };
     var _group_id = 0;
     var Group = /** @class */ (function () {
         function Group() {
@@ -1144,9 +1142,9 @@
         });
         Object.defineProperty(Group.prototype, "metrics", {
             get: function () {
-                return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
-                    return __assign({}, f.metrics);
-                }), true), this.metrics, true);
+                return this._functions.map(function (f) {
+                    return f.metrics;
+                });
             },
             enumerable: false,
             configurable: true
@@ -1164,23 +1162,6 @@
             return this;
         };
         return Group;
-    }());
-
-    /**
-     * Sequence
-     *
-     * A utility class that provides sequential unique IDs.
-     * It maintains a static counter that increments with each call to `nextId()`,
-     * ensuring that each ID is unique within the runtime of the application.
-     */
-    var Sequence = /** @class */ (function () {
-        function Sequence() {
-        }
-        Sequence.nextId = function () {
-            return Sequence._nextId++;
-        };
-        Sequence._nextId = 0;
-        return Sequence;
     }());
 
     var nextId = Sequence.nextId;
