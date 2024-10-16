@@ -19,7 +19,8 @@ export default class Element implements WatchFunction {
 	_startTime: number = 0;
 	_stopTime: number = 0;
 	_duration: number = 0;
-	abort: () => void = () => new AbortController().abort();
+	abortController: AbortController = new AbortController();
+	abort: () => void = () => this.abortController.abort();
 
 	constructor(
 		arg: (() => void) | WatchFunction,

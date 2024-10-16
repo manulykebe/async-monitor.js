@@ -308,6 +308,7 @@ var Element = /** @class */ (function () {
         if (onStartCallback === void 0) { onStartCallback = function () { }; }
         if (onCompleteCallback === void 0) { onCompleteCallback = function () { }; }
         if (onRejectCallback === void 0) { onRejectCallback = function () { }; }
+        var _this = this;
         this.name = '';
         this.onStartCallback = function () { };
         this.onCompleteCallback = function () { };
@@ -318,6 +319,8 @@ var Element = /** @class */ (function () {
         this._startTime = 0;
         this._stopTime = 0;
         this._duration = 0;
+        this.abortController = new AbortController();
+        this.abort = function () { return _this.abortController.abort(); };
         if (typeof arg === 'object') {
             // If an object of type WatchFunction is passed, use its properties
             this.f = arg.f;
@@ -419,9 +422,9 @@ var Monitor = /** @class */ (function () {
     return Monitor;
 }());
 
-var now = function () { return parseFloat(performance.now().toFixed(2)); };
+var now = function () { return parseFloat(performance.now().toFixed(0)); };
 function calcDuration(start, end) {
-    return parseFloat((end - start).toFixed(2));
+    return parseFloat((end - start).toFixed(0));
 }
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -952,7 +955,14 @@ var Group = /** @class */ (function () {
     });
     Object.defineProperty(Group.prototype, "_isRejected", {
         get: function () {
-            return !!this._functions.map(function (x) { return x._isRejected; }).reduce(function (a, b) { return a || b; }, true);
+            return !!this._functions.map(function (x) { return x._isRejected; }).reduce(function (a, b) { return a || b; }, false);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "_isAborted", {
+        get: function () {
+            return !!this._functions.map(function (x) { return x._isAborted; }).reduce(function (a, b) { return a || b; }, false);
         },
         enumerable: false,
         configurable: true
@@ -974,10 +984,17 @@ var Group = /** @class */ (function () {
     };
     // Reset all watch functions in the group
     Group.prototype.reset = function () {
+        this._duration = 0;
+        this._startTime = 0;
+        this._stopTime = 0;
         this._functions.forEach(function (fn) {
-            fn._isRunning = false;
+            fn._duration = 0;
+            fn._isAborted = false;
             fn._isFinished = false;
             fn._isRejected = false;
+            fn._isRunning = false;
+            fn._startTime = 0;
+            fn._stopTime = 0;
         });
     };
     // Get all functions in the group
@@ -1040,19 +1057,19 @@ var Group = /** @class */ (function () {
     });
     Object.defineProperty(Group.prototype, "metrics", {
         get: function () {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
-                var _a, _b, _c, _d;
+                var _a, _b, _c, _d, _e;
                 return {
                     index: i,
                     name: f.name,
                     sequence: (_a = f.sequence) !== null && _a !== void 0 ? _a : 0,
                     start: f.group ? f._startTime - f.group._startTime : undefined,
                     duration: f._duration,
-                    f: f.f.toString(),
                     isRunning: (_b = f._isRunning) !== null && _b !== void 0 ? _b : false,
                     isFinished: (_c = f._isFinished) !== null && _c !== void 0 ? _c : false,
                     isRejected: (_d = f._isRejected) !== null && _d !== void 0 ? _d : false,
+                    isAborted: (_e = f._isAborted) !== null && _e !== void 0 ? _e : false,
                 };
             }), true), [
                 {
@@ -1061,10 +1078,10 @@ var Group = /** @class */ (function () {
                     sequence: 0,
                     start: 0,
                     duration: this._duration,
-                    f: '',
                     isRunning: (_a = this._isRunning) !== null && _a !== void 0 ? _a : false,
                     isFinished: (_b = this._isFinished) !== null && _b !== void 0 ? _b : false,
                     isRejected: (_c = this._isRejected) !== null && _c !== void 0 ? _c : false,
+                    isAborted: (_d = this._isAborted) !== null && _d !== void 0 ? _d : false,
                 },
             ], false);
         },

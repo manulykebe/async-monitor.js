@@ -8,9 +8,10 @@ type Metric = {
 	name: string;
 	start: number | undefined;
 	duration: number | undefined;
-	f: string;
 	isRunning: boolean;
 	isFinished: boolean;
+	isRejected: boolean;
+	isAborted: boolean;
 	sequence: number;
 };
 
@@ -28,11 +29,12 @@ export interface WatchFunction {
 	_isRunning?: boolean;
 	_isFinished?: boolean;
 	_isRejected?: boolean;
+	_isAborted?: boolean;
 	_index?: number | undefined;
 	_startTime: number;
 	_stopTime: number;
 	_duration: number;
-  abortController?: AbortController; // Added abort controller reference
+	abortController: AbortController;
 }
 
 let _group_id: number = 0;
@@ -82,9 +84,12 @@ export default class Group {
 	}
 
 	get _isRejected(): boolean {
-		return !!this._functions.map(x => x._isRejected).reduce((a, b) => a || b, true);
+		return !!this._functions.map(x => x._isRejected).reduce((a, b) => a || b, false);
 	}
 
+	get _isAborted(): boolean {
+		return !!this._functions.map(x => x._isAborted).reduce((a, b) => a || b, false);
+	}
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
 		let watchFunction: WatchFunction;
@@ -102,49 +107,56 @@ export default class Group {
 			// Create a new Element and add it to the group
 			watchFunction = new Element(addWatchFunction);
 		}
-    // Assign an AbortController to the watch function
-    watchFunction.abortController = new AbortController();
+		// Assign an AbortController to the watch function
+		watchFunction.abortController = new AbortController();
 		watchFunction.group = this;
-    // Wrap the function with the abort signal
-    const originalFunction = watchFunction.f;
-    watchFunction.f = () => {
-      return new Promise((resolve, reject) => {
-        const signal = watchFunction.abortController?.signal;
-        // If the signal is aborted before execution
-        signal?.addEventListener('abort', () => {
-          reject(new Error(`"${watchFunction.name}" was aborted.`));
-        });
-        // Execute the original function and resolve/reject accordingly
-        const result = originalFunction();
-        if (result instanceof Promise) {
-          result.then(resolve).catch(reject);
-        } else {
-          resolve(result);
-        }
-      });
-    };
+		// Wrap the function with the abort signal
+		const originalFunction = watchFunction.f;
+		watchFunction.f = () => {
+			return new Promise((resolve, reject) => {
+				const signal = watchFunction.abortController?.signal;
+				// If the signal is aborted before execution
+				signal?.addEventListener('abort', () => {
+					reject(new Error(`"${watchFunction.name}" was aborted.`));
+				});
+				// Execute the original function and resolve/reject accordingly
+				const result = originalFunction();
+				if (result instanceof Promise) {
+					result.then(resolve).catch(reject);
+				} else {
+					resolve(result);
+				}
+			});
+		};
 		this._functions.push(watchFunction);
 	};
-  // Abort a specific watch function by name
-  abortWatch(name: string): void {
-    const watchFunction = this._functions.find(fn => fn.name === name);
-    if (watchFunction?.abortController) {
-      watchFunction.abortController.abort();
-      console.log(`+++ Aborted watch function "${name}"`);
-    } else {
-      console.warn(`+++ No watch function found with name "${name}"`);
-    }
-  }
-  // Abort the entire group
+	// Abort a specific watch function by name
+	abortWatch(name: string): void {
+		const watchFunction = this._functions.find(fn => fn.name === name);
+		if (watchFunction?.abortController) {
+			watchFunction.abortController.abort();
+			console.log(`+++ Aborted watch function "${name}"`);
+		} else {
+			console.warn(`+++ No watch function found with name "${name}"`);
+		}
+	}
+	// Abort the entire group
 	abort(): void {
-    this._functions.forEach(fn => fn.abortController?.abort());
+		this._functions.forEach(fn => fn.abortController?.abort());
 	}
 	// Reset all watch functions in the group
 	reset(): void {
+		this._duration = 0;
+		this._startTime = 0;
+		this._stopTime = 0;
 		this._functions.forEach(fn => {
-			fn._isRunning = false;
+			fn._duration = 0;
+			fn._isAborted = false;
 			fn._isFinished = false;
 			fn._isRejected = false;
+			fn._isRunning = false;
+			fn._startTime = 0;
+			fn._stopTime = 0;
 		});
 	}
 
@@ -164,9 +176,9 @@ export default class Group {
 
 	Watch(callback: () => void, callback_error: () => void) {
 		const watchArray = this._functions.map(fn => ({
-      promise: fn.promise ?? undefined,
-      onRejectCallback: fn.onRejectCallback,
-      group: this,
+			promise: fn.promise ?? undefined,
+			onRejectCallback: fn.onRejectCallback,
+			group: this,
 		}));
 
 		return new Watch(watchArray, callback, callback_error);
@@ -188,9 +200,9 @@ export default class Group {
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
 
 		const watchArray = this._functions.map(fn => ({
-      promise: fn.promise ?? undefined,
-      onRejectCallback: fn.onRejectCallback,
-      group: this,
+			promise: fn.promise ?? undefined,
+			onRejectCallback: fn.onRejectCallback,
+			group: this,
 			_startTime: now(),
 		}));
 
@@ -215,10 +227,10 @@ export default class Group {
 					sequence: f.sequence ?? 0,
 					start: f.group ? f._startTime - f.group._startTime : undefined,
 					duration: f._duration,
-					f: f.f.toString(),
 					isRunning: f._isRunning ?? false,
 					isFinished: f._isFinished ?? false,
 					isRejected: f._isRejected ?? false,
+					isAborted: f._isAborted ?? false,
 				};
 			}),
 			{
@@ -227,10 +239,10 @@ export default class Group {
 				sequence: 0,
 				start: 0,
 				duration: this._duration,
-				f: '',
 				isRunning: this._isRunning ?? false,
 				isFinished: this._isFinished ?? false,
 				isRejected: this._isRejected ?? false,
+				isAborted: this._isAborted ?? false,
 			},
 		];
 	}

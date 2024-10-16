@@ -38,9 +38,10 @@ type Metric = {
     name: string;
     start: number | undefined;
     duration: number | undefined;
-    f: string;
     isRunning: boolean;
     isFinished: boolean;
+    isRejected: boolean;
+    isAborted: boolean;
     sequence: number;
 };
 interface WatchFunction {
@@ -57,11 +58,12 @@ interface WatchFunction {
     _isRunning?: boolean;
     _isFinished?: boolean;
     _isRejected?: boolean;
+    _isAborted?: boolean;
     _index?: number | undefined;
     _startTime: number;
     _stopTime: number;
     _duration: number;
-    abortController?: AbortController;
+    abortController: AbortController;
 }
 declare class Group {
     useConsoleLog: boolean;
@@ -80,6 +82,7 @@ declare class Group {
     get _isRunning(): boolean;
     get _isFinished(): boolean;
     get _isRejected(): boolean;
+    get _isAborted(): boolean;
     addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
     abortWatch(name: string): void;
     abort(): void;
