@@ -39,6 +39,8 @@ export default class WatchFunction {
 	private _stopTime: number = 0;
 	private _duration: number = 0;
 	private abortController: AbortController = new AbortController();
+	abort = () => this.abortController.abort();
+	signal: AbortSignal = this.abortController.signal;
 
 	name: string;
 	parent: string;
@@ -49,9 +51,6 @@ export default class WatchFunction {
 	onCompleteCallback?: () => void;
 	onRejectCallback?: () => void;
 	onAbortCallback?: () => void;
-
-	signal: AbortSignal = this.abortController.signal;
-	abort: () => void = () => this.abortController.abort();
 
 	reset = () => {
 		this._isAborted = false;

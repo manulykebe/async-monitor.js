@@ -60,6 +60,8 @@ declare class WatchFunction {
     private _stopTime;
     private _duration;
     private abortController;
+    abort: () => void;
+    signal: AbortSignal;
     name: string;
     parent: string;
     child: string;
@@ -69,8 +71,6 @@ declare class WatchFunction {
     onCompleteCallback?: () => void;
     onRejectCallback?: () => void;
     onAbortCallback?: () => void;
-    signal: AbortSignal;
-    abort: () => void;
     reset: () => void;
     'promise': Promise<any>;
     get metrics(): Metric;

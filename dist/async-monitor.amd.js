@@ -759,8 +759,8 @@ define(['exports'], (function (exports) { 'use strict';
             this._stopTime = 0;
             this._duration = 0;
             this.abortController = new AbortController();
-            this.signal = this.abortController.signal;
             this.abort = function () { return _this.abortController.abort(); };
+            this.signal = this.abortController.signal;
             this.reset = function () {
                 _this._isAborted = false;
                 _this._isFinished = false;
