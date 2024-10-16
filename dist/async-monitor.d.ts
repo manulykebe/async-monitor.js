@@ -44,27 +44,48 @@ type Metric = {
     isAborted: boolean;
     sequence: number;
 };
-interface WatchFunction {
+declare class WatchFunction {
+    private _sequence;
+    get sequence(): number;
+    private _isAborted;
+    get isAborted(): boolean;
+    private _isFinished;
+    get isFinished(): boolean;
+    private _isRejected;
+    get isRejected(): boolean;
+    private _isRunning;
+    get isRunning(): boolean;
+    private _index?;
+    private _startTime;
+    private _stopTime;
+    private _duration;
+    private abortController;
     name: string;
-    parent?: string | undefined;
-    child?: string | undefined;
+    parent: string;
+    child: string;
     group?: Group | undefined;
-    sequence?: number | undefined;
-    promise?: Promise<any> | void;
     f: () => Promise<any> | void;
-    onStartCallback?: (() => void) | undefined;
-    onCompleteCallback?: (() => void) | undefined;
-    onRejectCallback?: (() => void) | undefined;
-    _isRunning?: boolean;
-    _isFinished?: boolean;
-    _isRejected?: boolean;
-    _isAborted?: boolean;
-    _index?: number | undefined;
-    _startTime: number;
-    _stopTime: number;
-    _duration: number;
-    abortController: AbortController;
+    onStartCallback?: () => void;
+    onCompleteCallback?: () => void;
+    onRejectCallback?: () => void;
+    onAbortCallback?: () => void;
+    signal: AbortSignal;
+    abort: () => void;
+    reset: () => void;
+    'promise': Promise<any>;
+    get metrics(): Metric;
+    constructor(arg: {
+        f: () => Promise<any> | void;
+        name: string;
+        parent: string;
+        child: string;
+        onStartCallback?: () => void;
+        onCompleteCallback?: () => void;
+        onRejectCallback?: () => void;
+        onAbortCallback?: () => void;
+    } | (() => Promise<any> | void), name?: string, parent?: string, child?: string, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void);
 }
+
 declare class Group {
     useConsoleLog: boolean;
     _id: number;
@@ -83,7 +104,7 @@ declare class Group {
     get _isFinished(): boolean;
     get _isRejected(): boolean;
     get _isAborted(): boolean;
-    addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
+    addWatch: (addWatchFunction: WatchFunction) => void;
     abortWatch(name: string): void;
     abort(): void;
     reset(): void;
@@ -141,8 +162,6 @@ declare class Monitor {
 
 declare const version = "1.1.1";
 
-declare function makeAsync<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => Promise<ReturnType<T>>;
-
 declare const nextId: typeof Sequence.nextId;
 
 declare const _default: {
@@ -155,7 +174,7 @@ declare const _default: {
     Watch: typeof Watch;
     sleep: typeof sleep;
     Tree: typeof Tree;
-    makeAsync: typeof makeAsync;
+    WatchFunction: typeof WatchFunction;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, _default as default, makeAsync, nextId, now, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, WatchFunction, _default as default, nextId, now, sleep, version };

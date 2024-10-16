@@ -177,7 +177,7 @@ define(['exports'], (function (exports) { 'use strict';
         }
     };
 
-    var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -186,7 +186,7 @@ define(['exports'], (function (exports) { 'use strict';
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
-    var __generator$3 = (this && this.__generator) || function (thisArg, body) {
+    var __generator$2 = (this && this.__generator) || function (thisArg, body) {
         var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
         return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
@@ -233,10 +233,10 @@ define(['exports'], (function (exports) { 'use strict';
      * }, 1000);
      */
     function sleep() {
-        return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
+        return __awaiter$2(this, arguments, void 0, function (seconds, fail) {
             var controller, signal, promise;
             if (seconds === void 0) { seconds = Math.random() * 3; }
-            return __generator$3(this, function (_a) {
+            return __generator$2(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds / 3 < 0.5;
                 seconds = seconds * 1000;
@@ -260,104 +260,6 @@ define(['exports'], (function (exports) { 'use strict';
                 return [2 /*return*/, promise];
             });
         });
-    }
-
-    var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
-    var __generator$2 = (this && this.__generator) || function (thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
-    var Element = /** @class */ (function () {
-        function Element(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, _startTime, _stopTime, _duration) {
-            if (name === void 0) { name = ''; }
-            if (parent === void 0) { parent = ''; }
-            if (child === void 0) { child = ''; }
-            if (onStartCallback === void 0) { onStartCallback = function () { }; }
-            if (onCompleteCallback === void 0) { onCompleteCallback = function () { }; }
-            if (onRejectCallback === void 0) { onRejectCallback = function () { }; }
-            var _this = this;
-            this.name = '';
-            this.onStartCallback = function () { };
-            this.onCompleteCallback = function () { };
-            this.onRejectCallback = function () { };
-            this._isFinished = false;
-            this._isRunning = false;
-            this._isRejected = false;
-            this._startTime = 0;
-            this._stopTime = 0;
-            this._duration = 0;
-            this.abortController = new AbortController();
-            this.abort = function () { return _this.abortController.abort(); };
-            if (typeof arg === 'object') {
-                // If an object of type WatchFunction is passed, use its properties
-                this.f = arg.f;
-                (this.name = arg.name), (this.parent = arg.parent);
-                this.child = arg.child;
-                this.onStartCallback = arg.onStartCallback;
-                this.onCompleteCallback = arg.onCompleteCallback;
-                this.onRejectCallback = arg.onRejectCallback;
-            }
-            else {
-                // If a function is passed, assign the passed or default values for other properties
-                this.f = arg;
-                this.name = name;
-                this.parent = parent;
-                this.child = child;
-                this.onStartCallback = onStartCallback;
-                this.onCompleteCallback = onCompleteCallback;
-                this.onRejectCallback = onRejectCallback;
-            }
-            this._isFinished = false;
-            this._isRunning = false;
-        }
-        return Element;
-    }());
-    function makeAsync(fn) {
-        if (fn.constructor.name === 'AsyncFunction') {
-            return fn;
-        }
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            return __awaiter$2(this, void 0, void 0, function () {
-                return __generator$2(this, function (_a) {
-                    return [2 /*return*/, fn.apply(this, args)];
-                });
-            });
-        };
     }
 
     var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -531,7 +433,6 @@ define(['exports'], (function (exports) { 'use strict';
         }
         return Watch;
     }());
-    var _sequence = 0;
     function WatchAll(group, callback, callback_error) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -545,7 +446,7 @@ define(['exports'], (function (exports) { 'use strict';
     function _watchAllInternal(group, parent, callback, callback_error, resolve, reject) {
         var watches = group._functions;
         var useConsoleLog = group.useConsoleLog;
-        if (watches.every(function (f) { return f._isFinished; })) {
+        if (watches.every(function (f) { return f.isFinished; })) {
             // All watches are finished
             group._stopTime = now();
             group._duration = calcDuration(group._startTime, group._stopTime);
@@ -555,7 +456,7 @@ define(['exports'], (function (exports) { 'use strict';
             }
             return;
         }
-        if (watches.some(function (f) { return f._isRejected; })) {
+        if (watches.some(function (f) { return f.isRejected; })) {
             // Some watch was rejected
             console.warn('Some watch was rejected');
             reject && reject();
@@ -575,21 +476,19 @@ define(['exports'], (function (exports) { 'use strict';
                     group._onCompleteCallback();
                 return;
             }
-            _sequence = 0;
-            watches.forEach(function (x, i) { return (x._index = i); });
+            // watches.forEach((x, i) => (x._index = i));
         }
         if (children.length > 0) {
             var grandChildren = children
                 .map(function (x) { return x.child; })
                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; });
             grandChildren.forEach(function (gc) {
-                _sequence++;
                 children
                     .filter(function (c) { return c.child === gc; })
                     .forEach(function (child) {
-                    child._isRunning = true;
-                    child._startTime = now();
-                    child.sequence = _sequence;
+                    // child.isRunning = true;
+                    // child._startTime = now();
+                    // child.sequence = _sequence;
                     useConsoleLog && console.highlight(child.name, group._id, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
@@ -616,10 +515,10 @@ define(['exports'], (function (exports) { 'use strict';
                                     else {
                                         console.warn('onCompleteCallback is not defined or not a function');
                                     }
-                                    child._isRunning = false;
-                                    child._isFinished = true;
-                                    child._stopTime = now();
-                                    child._duration = calcDuration(child._startTime, child._stopTime);
+                                    // child._isRunning = false;
+                                    // child._isFinished = true;
+                                    // child._stopTime = now();
+                                    // child._duration = calcDuration(child._startTime, child._stopTime);
                                     useConsoleLog && console.highlight(child.name, group._id, 'complete');
                                 });
                                 child.promise.catch(function () {
@@ -629,11 +528,11 @@ define(['exports'], (function (exports) { 'use strict';
                                     else {
                                         console.warn('onRejectCallback is not defined or not a function');
                                     }
-                                    child._isRunning = false;
-                                    child._isFinished = true;
-                                    child._isRejected = true;
-                                    child._stopTime = now();
-                                    child._duration = calcDuration(child._startTime, child._stopTime);
+                                    // child._isRunning = false;
+                                    // child._isFinished = true;
+                                    // child._isRejected = true;
+                                    // child._stopTime = now();
+                                    // child._duration = calcDuration(child._startTime, child._stopTime);
                                     if (useConsoleLog) {
                                         console.highlight(child.name, group._id, 'rejected');
                                         console.highlight('completed', group._id, 'rejected');
@@ -649,9 +548,9 @@ define(['exports'], (function (exports) { 'use strict';
                     }
                     catch (error) {
                         console.warn('Watch: critical! error in call to (async) function:\n', error);
-                        child._stopTime = now();
-                        child._duration = calcDuration(child._startTime, child._stopTime);
-                        child._isRunning = false;
+                        // child._stopTime = now();
+                        // child._duration = calcDuration(child._startTime, child._stopTime);
+                        // child._isRunning = false;
                         if (typeof group._onUnCompleteCallback === 'function')
                             group._onUnCompleteCallback();
                         return;
@@ -672,7 +571,7 @@ define(['exports'], (function (exports) { 'use strict';
                     });
                     new Watch(validChildren, [
                         function () {
-                            if (!watches.some(function (x) { return x._isRunning; }) && watches.every(function (x) { return x._isFinished; })) {
+                            if (!watches.some(function (x) { return x.isRunning; }) && watches.every(function (x) { return x.isFinished; })) {
                                 if (typeof callback === 'function')
                                     callback();
                             }
@@ -849,6 +748,179 @@ define(['exports'], (function (exports) { 'use strict';
         return Tree;
     }());
 
+    var WatchFunction = /** @class */ (function () {
+        function WatchFunction(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
+            var _this = this;
+            this._isAborted = false;
+            this._isFinished = false;
+            this._isRejected = false;
+            this._isRunning = false;
+            this._startTime = 0;
+            this._stopTime = 0;
+            this._duration = 0;
+            this.abortController = new AbortController();
+            this.signal = this.abortController.signal;
+            this.abort = function () { return _this.abortController.abort(); };
+            this.reset = function () {
+                _this._isAborted = false;
+                _this._isFinished = false;
+                _this._isRejected = false;
+                _this._isRunning = false;
+                _this._index = undefined;
+                _this._startTime = 0;
+                _this._stopTime = 0;
+                _this._duration = 0;
+                // this.abortController = new AbortController();
+                // this.signal = this.abortController.signal;
+                // this.abort = () => this.abortController.abort();
+            };
+            if (typeof arg === 'object') {
+                this.f = arg.f;
+                this.name = arg.name;
+                this.parent = arg.parent;
+                this.child = arg.child;
+                if (arg.onStartCallback)
+                    this.onStartCallback = function () {
+                        _this._isRunning = true;
+                        _this._startTime = now();
+                        console.log("\"".concat(_this.name, "\" has started."));
+                        arg.onStartCallback();
+                    };
+                if (arg.onCompleteCallback)
+                    this.onCompleteCallback = function () {
+                        _this._isFinished = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.log("\"".concat(_this.name, "\" has completed."));
+                        arg.onCompleteCallback();
+                    };
+                if (arg.onRejectCallback)
+                    this.onRejectCallback = function () {
+                        _this._isRejected = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was rejected."));
+                        arg.onRejectCallback();
+                    };
+                if (arg.onAbortCallback)
+                    this.onAbortCallback = function () {
+                        _this._isAborted = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was aborted."));
+                        arg.onAbortCallback();
+                    };
+            }
+            else {
+                this.f = arg;
+                this.name = name;
+                this.parent = parent;
+                this.child = child;
+                if (onStartCallback)
+                    this.onStartCallback = function () {
+                        _this._isRunning = true;
+                        _this._startTime = now();
+                        console.log("\"".concat(_this.name, "\" has started."));
+                        onStartCallback();
+                    };
+                if (onCompleteCallback)
+                    this.onCompleteCallback = function () {
+                        _this._isFinished = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.log("\"".concat(_this.name, "\" has completed."));
+                        onCompleteCallback();
+                    };
+                if (onRejectCallback)
+                    this.onRejectCallback = function () {
+                        _this._isRejected = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was rejected."));
+                        onRejectCallback();
+                    };
+                if (onAbortCallback)
+                    this.onAbortCallback = function () {
+                        _this._isAborted = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was aborted."));
+                        onAbortCallback();
+                    };
+            }
+        }
+        Object.defineProperty(WatchFunction.prototype, "sequence", {
+            get: function () {
+                return this._sequence;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isAborted", {
+            get: function () {
+                return this._isAborted;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isFinished", {
+            get: function () {
+                return this._isFinished;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isRejected", {
+            get: function () {
+                return this._isRejected;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isRunning", {
+            get: function () {
+                return this._isRunning;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "metrics", {
+            get: function () {
+                return {
+                    index: this._index,
+                    name: this.name,
+                    start: this.group ? this._startTime - this.group._startTime : 0,
+                    duration: this._duration,
+                    isRunning: this._isRunning,
+                    isFinished: this._isFinished,
+                    isRejected: this._isRejected,
+                    isAborted: this._isAborted,
+                    sequence: this._sequence,
+                };
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return WatchFunction;
+    }());
+
+    var __assign = (this && this.__assign) || function () {
+        __assign = Object.assign || function(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                    t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
     var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
             if (ar || !(i in from)) {
@@ -896,9 +968,9 @@ define(['exports'], (function (exports) { 'use strict';
             this.addWatch = function (addWatchFunction) {
                 var watchFunction;
                 if (typeof addWatchFunction === 'function') {
-                    watchFunction = new Element(addWatchFunction);
+                    watchFunction = new WatchFunction(addWatchFunction);
                     if (_this._seq === 0) {
-                        watchFunction.parent = watchFunction.parent || undefined;
+                        watchFunction.parent = watchFunction.parent || '';
                         watchFunction.child = '_monitor_1';
                         _this._seq = 1;
                     }
@@ -908,21 +980,19 @@ define(['exports'], (function (exports) { 'use strict';
                     }
                 }
                 else {
-                    // Create a new Element and add it to the group
-                    watchFunction = new Element(addWatchFunction);
+                    // Create a new WatchFunction and add it to the group
+                    watchFunction = new WatchFunction(addWatchFunction);
                 }
                 // Assign an AbortController to the watch function
-                watchFunction.abortController = new AbortController();
                 watchFunction.group = _this;
                 // Wrap the function with the abort signal
                 var originalFunction = watchFunction.f;
                 watchFunction.f = function () {
                     return new Promise(function (resolve, reject) {
-                        var _a;
-                        var signal = (_a = watchFunction.abortController) === null || _a === void 0 ? void 0 : _a.signal;
+                        var signal = watchFunction.signal;
                         // If the signal is aborted before execution
-                        signal === null || signal === void 0 ? void 0 : signal.addEventListener('abort', function () {
-                            reject(new Error("\"".concat(watchFunction.name, "\" was aborted.")));
+                        signal.addEventListener('abort', function () {
+                            watchFunction.onAbortCallback && watchFunction.onAbortCallback();
                         });
                         // Execute the original function and resolve/reject accordingly
                         var result = originalFunction();
@@ -939,28 +1009,28 @@ define(['exports'], (function (exports) { 'use strict';
         }
         Object.defineProperty(Group.prototype, "_isRunning", {
             get: function () {
-                return !!this._functions.map(function (x) { return x._isRunning; }).reduce(function (a, b) { return a || b; }, false);
+                return !!this._functions.map(function (x) { return x.isRunning; }).reduce(function (a, b) { return a || b; }, false);
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Group.prototype, "_isFinished", {
             get: function () {
-                return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, true);
+                return !!this._functions.map(function (x) { return x.isFinished; }).reduce(function (a, b) { return a && b; }, true);
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Group.prototype, "_isRejected", {
             get: function () {
-                return !!this._functions.map(function (x) { return x._isRejected; }).reduce(function (a, b) { return a || b; }, false);
+                return !!this._functions.map(function (x) { return x.isRejected; }).reduce(function (a, b) { return a || b; }, false);
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Group.prototype, "_isAborted", {
             get: function () {
-                return !!this._functions.map(function (x) { return x._isAborted; }).reduce(function (a, b) { return a || b; }, false);
+                return !!this._functions.map(function (x) { return x.isAborted; }).reduce(function (a, b) { return a || b; }, false);
             },
             enumerable: false,
             configurable: true
@@ -968,9 +1038,8 @@ define(['exports'], (function (exports) { 'use strict';
         // Abort a specific watch function by name
         Group.prototype.abortWatch = function (name) {
             var watchFunction = this._functions.find(function (fn) { return fn.name === name; });
-            if (watchFunction === null || watchFunction === void 0 ? void 0 : watchFunction.abortController) {
-                watchFunction.abortController.abort();
-                console.log("+++ Aborted watch function \"".concat(name, "\""));
+            if (watchFunction) {
+                watchFunction.abort();
             }
             else {
                 console.warn("+++ No watch function found with name \"".concat(name, "\""));
@@ -978,22 +1047,16 @@ define(['exports'], (function (exports) { 'use strict';
         };
         // Abort the entire group
         Group.prototype.abort = function () {
-            this._functions.forEach(function (fn) { var _a; return (_a = fn.abortController) === null || _a === void 0 ? void 0 : _a.abort(); });
+            this._functions.forEach(function (fn) {
+                fn.abort();
+            });
         };
         // Reset all watch functions in the group
         Group.prototype.reset = function () {
             this._duration = 0;
             this._startTime = 0;
             this._stopTime = 0;
-            this._functions.forEach(function (fn) {
-                fn._duration = 0;
-                fn._isAborted = false;
-                fn._isFinished = false;
-                fn._isRejected = false;
-                fn._isRunning = false;
-                fn._startTime = 0;
-                fn._stopTime = 0;
-            });
+            this._functions.forEach(function (fn) { return fn.reset(); });
         };
         // Get all functions in the group
         Group.prototype.getAll = function () {
@@ -1055,33 +1118,9 @@ define(['exports'], (function (exports) { 'use strict';
         });
         Object.defineProperty(Group.prototype, "metrics", {
             get: function () {
-                var _a, _b, _c, _d;
                 return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
-                    var _a, _b, _c, _d, _e;
-                    return {
-                        index: i,
-                        name: f.name,
-                        sequence: (_a = f.sequence) !== null && _a !== void 0 ? _a : 0,
-                        start: f.group ? f._startTime - f.group._startTime : undefined,
-                        duration: f._duration,
-                        isRunning: (_b = f._isRunning) !== null && _b !== void 0 ? _b : false,
-                        isFinished: (_c = f._isFinished) !== null && _c !== void 0 ? _c : false,
-                        isRejected: (_d = f._isRejected) !== null && _d !== void 0 ? _d : false,
-                        isAborted: (_e = f._isAborted) !== null && _e !== void 0 ? _e : false,
-                    };
-                }), true), [
-                    {
-                        index: 0,
-                        name: '',
-                        sequence: 0,
-                        start: 0,
-                        duration: this._duration,
-                        isRunning: (_a = this._isRunning) !== null && _a !== void 0 ? _a : false,
-                        isFinished: (_b = this._isFinished) !== null && _b !== void 0 ? _b : false,
-                        isRejected: (_c = this._isRejected) !== null && _c !== void 0 ? _c : false,
-                        isAborted: (_d = this._isAborted) !== null && _d !== void 0 ? _d : false,
-                    },
-                ], false);
+                    return __assign({}, f.metrics);
+                }), true), this.metrics, true);
             },
             enumerable: false,
             configurable: true
@@ -1119,6 +1158,7 @@ define(['exports'], (function (exports) { 'use strict';
     }());
 
     var nextId = Sequence.nextId;
+    // Export types and interfaces.
     // Use default export if necessary
     var Index = {
         Group: Group,
@@ -1130,7 +1170,7 @@ define(['exports'], (function (exports) { 'use strict';
         Watch: Watch,
         sleep: sleep,
         Tree: Tree,
-        makeAsync: makeAsync,
+        WatchFunction: WatchFunction,
     };
 
     exports.Group = Group;
@@ -1138,8 +1178,8 @@ define(['exports'], (function (exports) { 'use strict';
     exports.Sequence = Sequence;
     exports.Tree = Tree;
     exports.Watch = Watch;
+    exports.WatchFunction = WatchFunction;
     exports.default = Index;
-    exports.makeAsync = makeAsync;
     exports.nextId = nextId;
     exports.now = now;
     exports.sleep = sleep;

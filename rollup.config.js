@@ -30,15 +30,15 @@ export default [
 			},
 		],
 	},
-	{
-		input: '.tmp/tests.test.js',
-		context: 'this',
-		watch: {clearScreen: false},
-		output: [
-			{file: '.tmp/tests.test.cjs', format: 'cjs', exports: 'named'}, // For tests running in Node.js
-			{file: '.tmp/tests.test.umd.js', format: 'umd', exports: 'named', name: 'MONITOR'}, // For the nodeunit.html tests in browser
-		],
-	},
+	// {
+	// 	input: '.tmp/tests.test.js',
+	// 	context: 'this',
+	// 	watch: {clearScreen: false},
+	// 	output: [
+	// 		{file: '.tmp/tests.test.cjs', format: 'cjs', exports: 'named'}, // For tests running in Node.js
+	// 		{file: '.tmp/tests.test.umd.js', format: 'umd', exports: 'named', name: 'MONITOR'}, // For the nodeunit.html tests in browser
+	// 	],
+	// },
 	{
 		input: './.tmp/Index.d.ts',
 		watch: {clearScreen: false},

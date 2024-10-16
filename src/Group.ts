@@ -1,41 +1,7 @@
-import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
 import now from './Now';
-
-type Metric = {
-	index: number;
-	name: string;
-	start: number | undefined;
-	duration: number | undefined;
-	isRunning: boolean;
-	isFinished: boolean;
-	isRejected: boolean;
-	isAborted: boolean;
-	sequence: number;
-};
-
-export interface WatchFunction {
-	name: string;
-	parent?: string | undefined;
-	child?: string | undefined;
-	group?: Group | undefined;
-	sequence?: number | undefined;
-	promise?: Promise<any> | void;
-	f: () => Promise<any> | void;
-	onStartCallback?: (() => void) | undefined;
-	onCompleteCallback?: (() => void) | undefined;
-	onRejectCallback?: (() => void) | undefined;
-	_isRunning?: boolean;
-	_isFinished?: boolean;
-	_isRejected?: boolean;
-	_isAborted?: boolean;
-	_index?: number | undefined;
-	_startTime: number;
-	_stopTime: number;
-	_duration: number;
-	abortController: AbortController;
-}
+import WatchFunction, {Metric} from './WatchFunction';
 
 let _group_id: number = 0;
 export default class Group {
@@ -76,27 +42,27 @@ export default class Group {
 	};
 
 	get _isRunning(): boolean {
-		return !!this._functions.map(x => x._isRunning).reduce((a, b) => a || b, false);
+		return !!this._functions.map(x => x.isRunning).reduce((a, b) => a || b, false);
 	}
 
 	get _isFinished(): boolean {
-		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, true);
+		return !!this._functions.map(x => x.isFinished).reduce((a, b) => a && b, true);
 	}
 
 	get _isRejected(): boolean {
-		return !!this._functions.map(x => x._isRejected).reduce((a, b) => a || b, false);
+		return !!this._functions.map(x => x.isRejected).reduce((a, b) => a || b, false);
 	}
 
 	get _isAborted(): boolean {
-		return !!this._functions.map(x => x._isAborted).reduce((a, b) => a || b, false);
+		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
 	}
 	// Add a watch function
-	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
+	addWatch = (addWatchFunction: WatchFunction) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
-			watchFunction = new Element(addWatchFunction);
+			watchFunction = new WatchFunction(addWatchFunction);
 			if (this._seq === 0) {
-				watchFunction.parent = watchFunction.parent || undefined;
+				watchFunction.parent = watchFunction.parent || '';
 				watchFunction.child = '_monitor_1';
 				this._seq = 1;
 			} else {
@@ -104,21 +70,19 @@ export default class Group {
 				watchFunction.child = '_monitor_' + this._seq;
 			}
 		} else {
-			// Create a new Element and add it to the group
-			watchFunction = new Element(addWatchFunction);
+			// Create a new WatchFunction and add it to the group
+			watchFunction = new WatchFunction(addWatchFunction);
 		}
 		// Assign an AbortController to the watch function
-		watchFunction.abortController = new AbortController();
 		watchFunction.group = this;
 		// Wrap the function with the abort signal
 		const originalFunction = watchFunction.f;
 		watchFunction.f = () => {
 			return new Promise((resolve, reject) => {
-				const signal = watchFunction.abortController?.signal;
+				const signal = watchFunction.signal;
 				// If the signal is aborted before execution
-				signal?.addEventListener('abort', () => {
-					watchFunction._isAborted = true;
-					console.error(new Error(`"${watchFunction.name}" was aborted.`));
+				signal.addEventListener('abort', () => {
+					watchFunction.onAbortCallback && watchFunction.onAbortCallback();
 				});
 				// Execute the original function and resolve/reject accordingly
 				const result = originalFunction();
@@ -134,10 +98,8 @@ export default class Group {
 	// Abort a specific watch function by name
 	abortWatch(name: string): void {
 		const watchFunction = this._functions.find(fn => fn.name === name);
-		if (watchFunction?.abortController) {
-			watchFunction.abortController.abort();
-			// watchFunction._isAborted = true;
-			console.log(`+++ Aborted watch function "${name}"`);
+		if (watchFunction) {
+			watchFunction.abort();
 		} else {
 			console.warn(`+++ No watch function found with name "${name}"`);
 		}
@@ -145,8 +107,7 @@ export default class Group {
 	// Abort the entire group
 	abort(): void {
 		this._functions.forEach(fn => {
-			// fn._isAborted = true;
-			fn.abortController?.abort();
+			fn.abort();
 		});
 	}
 	// Reset all watch functions in the group
@@ -154,15 +115,7 @@ export default class Group {
 		this._duration = 0;
 		this._startTime = 0;
 		this._stopTime = 0;
-		this._functions.forEach(fn => {
-			fn._duration = 0;
-			fn._isAborted = false;
-			fn._isFinished = false;
-			fn._isRejected = false;
-			fn._isRunning = false;
-			fn._startTime = 0;
-			fn._stopTime = 0;
-		});
+		this._functions.forEach(fn => fn.reset());
 	}
 
 	// Get all functions in the group
@@ -227,28 +180,10 @@ export default class Group {
 		return [
 			...this._functions.map((f, i) => {
 				return {
-					index: i,
-					name: f.name,
-					sequence: f.sequence ?? 0,
-					start: Math.max(0, f.group ? f._startTime - f.group._startTime : 0),
-					duration: f._duration,
-					isRunning: f._isRunning ?? false,
-					isFinished: f._isFinished ?? false,
-					isRejected: f._isRejected ?? false,
-					isAborted: f._isAborted ?? false,
+					...f.metrics,
 				};
 			}),
-			{
-				index: 0,
-				name: '',
-				sequence: 0,
-				start: 0,
-				duration: this._duration,
-				isRunning: this._isRunning ?? false,
-				isFinished: this._isFinished ?? false,
-				isRejected: this._isRejected ?? false,
-				isAborted: this._isAborted ?? false,
-			},
+			...this.metrics,
 		];
 	}
 
