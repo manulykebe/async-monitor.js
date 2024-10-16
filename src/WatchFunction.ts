@@ -61,9 +61,9 @@ export default class WatchFunction {
 		this._startTime = 0;
 		this._stopTime = 0;
 		this._duration = 0;
-		// this.abortController = new AbortController();
-		// this.signal = this.abortController.signal;
-		// this.abort = () => this.abortController.abort();
+		this.abortController = new AbortController();
+		this.signal = this.abortController.signal;
+		this.abort = () => this.abortController.abort();
 	};
 
 	'promise': Promise<any>;
@@ -182,5 +182,22 @@ export default class WatchFunction {
 					onAbortCallback();
 				};
 		}
+
+		const self = this;
+		const originalFunction = this.f;
+		this.f = () => {
+			return new Promise((resolve, reject) => {
+				self.signal.addEventListener('abort', () => {
+					self.onAbortCallback && self.onAbortCallback();
+					reject(`"${self.name}" was aborted.`);
+				});
+				const result = originalFunction();
+				if (result instanceof Promise) {
+					result.then(resolve).catch(reject);
+				} else {
+					resolve(result);
+				}
+			});
+		};
 	}
 }

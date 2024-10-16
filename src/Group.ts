@@ -76,23 +76,23 @@ export default class Group {
 		// Assign an AbortController to the watch function
 		watchFunction.group = this;
 		// Wrap the function with the abort signal
-		const originalFunction = watchFunction.f;
-		watchFunction.f = () => {
-			return new Promise((resolve, reject) => {
-				const signal = watchFunction.signal;
-				// If the signal is aborted before execution
-				signal.addEventListener('abort', () => {
-					watchFunction.onAbortCallback && watchFunction.onAbortCallback();
-				});
-				// Execute the original function and resolve/reject accordingly
-				const result = originalFunction();
-				if (result instanceof Promise) {
-					result.then(resolve).catch(reject);
-				} else {
-					resolve(result);
-				}
-			});
-		};
+		// const originalFunction = watchFunction.f;
+		// watchFunction.f = () => {
+		// 	return new Promise((resolve, reject) => {
+		// 		const signal = watchFunction.signal;
+		// 		// If the signal is aborted before execution
+		// 		signal.addEventListener('abort', () => {
+		// 			watchFunction.onAbortCallback && watchFunction.onAbortCallback();
+		// 		});
+		// 		// Execute the original function and resolve/reject accordingly
+		// 		const result = originalFunction();
+		// 		if (result instanceof Promise) {
+		// 			result.then(resolve).catch(reject);
+		// 		} else {
+		// 			resolve(result);
+		// 		}
+		// 	});
+		// };
 		this._functions.push(watchFunction);
 	};
 	// Abort a specific watch function by name

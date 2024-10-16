@@ -770,9 +770,9 @@ define(['exports'], (function (exports) { 'use strict';
                 _this._startTime = 0;
                 _this._stopTime = 0;
                 _this._duration = 0;
-                // this.abortController = new AbortController();
-                // this.signal = this.abortController.signal;
-                // this.abort = () => this.abortController.abort();
+                _this.abortController = new AbortController();
+                _this.signal = _this.abortController.signal;
+                _this.abort = function () { return _this.abortController.abort(); };
             };
             if (typeof arg === 'object') {
                 this.f = arg.f;
@@ -854,6 +854,29 @@ define(['exports'], (function (exports) { 'use strict';
                         onAbortCallback();
                     };
             }
+            var originalFunction = this.f;
+            var self = this;
+            this.f = function () {
+                return new Promise(function (resolve, reject) {
+                    self.signal.addEventListener('abort', function () {
+                        // self._isAborted = true;
+                        // self._isRunning = false;
+                        // self._stopTime = now();
+                        // self._duration = calcDuration(self._startTime, self._stopTime);
+                        // console.warn(`"${self.name}" was aborted.`);
+                        self.onAbortCallback && self.onAbortCallback();
+                        reject("\"".concat(self.name, "\" was aborted.")); // Explicitly reject the promise
+                    });
+                    // Execute the original function and resolve/reject accordingly
+                    var result = originalFunction();
+                    if (result instanceof Promise) {
+                        result.then(resolve).catch(reject);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+            };
         }
         Object.defineProperty(WatchFunction.prototype, "sequence", {
             get: function () {
@@ -986,24 +1009,23 @@ define(['exports'], (function (exports) { 'use strict';
                 // Assign an AbortController to the watch function
                 watchFunction.group = _this;
                 // Wrap the function with the abort signal
-                var originalFunction = watchFunction.f;
-                watchFunction.f = function () {
-                    return new Promise(function (resolve, reject) {
-                        var signal = watchFunction.signal;
-                        // If the signal is aborted before execution
-                        signal.addEventListener('abort', function () {
-                            watchFunction.onAbortCallback && watchFunction.onAbortCallback();
-                        });
-                        // Execute the original function and resolve/reject accordingly
-                        var result = originalFunction();
-                        if (result instanceof Promise) {
-                            result.then(resolve).catch(reject);
-                        }
-                        else {
-                            resolve(result);
-                        }
-                    });
-                };
+                // const originalFunction = watchFunction.f;
+                // watchFunction.f = () => {
+                // 	return new Promise((resolve, reject) => {
+                // 		const signal = watchFunction.signal;
+                // 		// If the signal is aborted before execution
+                // 		signal.addEventListener('abort', () => {
+                // 			watchFunction.onAbortCallback && watchFunction.onAbortCallback();
+                // 		});
+                // 		// Execute the original function and resolve/reject accordingly
+                // 		const result = originalFunction();
+                // 		if (result instanceof Promise) {
+                // 			result.then(resolve).catch(reject);
+                // 		} else {
+                // 			resolve(result);
+                // 		}
+                // 	});
+                // };
                 _this._functions.push(watchFunction);
             };
         }
