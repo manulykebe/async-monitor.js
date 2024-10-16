@@ -212,33 +212,69 @@ var __generator$3 = (this && this.__generator) || function (thisArg, body) {
     }
 };
 /**
- * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
- * has a random option when param fail is not set.
+ * Pauses execution for a specified number of seconds, with an option to abort using AbortController.
+ * If the `fail` parameter is not provided, it defaults to a random rejection based on the `seconds` value.
  *
- * @param seconds - The number of seconds (default is a random number between 0 and 3).
- * @param fail - Whether the function should reject or not (default is `false`).
- * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
+ * @param seconds - The number of seconds to sleep (when set to 'undefined' a random timer between 0 and 3 seconds is set).
+ * @param fail - Optional. If `true`, the promise will reject after the specified time. If `false`, it will resolve. If `undefined`, it will randomly reject based on the `seconds` value.
+ * @returns A promise that resolves after the specified number of seconds, rejects based on the `fail` condition, or aborts if the signal is triggered.
+ *
+ * @example
+ * const sleepPromise = sleep(2, false);
+ * sleepPromise
+ *   .then((result) => console.log(`Resolved after ${result / 1000} seconds`))
+ *   .catch((error) => console.error(error.message));
+ *
+ * // Abort the sleep after 1 second
+ * setTimeout(() => {
+ *   sleepPromise.abort();
+ * }, 1000);
  */
 function sleep() {
     return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
+        var controller, signal, promise;
         if (seconds === void 0) { seconds = Math.random() * 3; }
         return __generator$3(this, function (_a) {
             if (fail === undefined)
                 fail = seconds / 3 < 0.5;
             seconds = seconds * 1000;
-            return [2 /*return*/, new Promise(function (resolve, reject) {
-                    setTimeout(function () {
-                        if (fail) {
-                            reject(seconds);
-                        }
-                        else {
-                            resolve(seconds);
-                        }
-                    }, seconds);
-                })];
+            controller = new AbortController();
+            signal = controller.signal;
+            promise = new Promise(function (resolve, reject) {
+                var timeoutId = setTimeout(function () {
+                    if (fail) {
+                        reject(new Error("Rejected after ".concat(seconds / 1000, " seconds")));
+                    }
+                    else {
+                        resolve(seconds);
+                    }
+                }, seconds);
+                signal.addEventListener('abort', function () {
+                    clearTimeout(timeoutId);
+                    reject(new Error('Sleep aborted'));
+                });
+            });
+            promise.abort = function () { return controller.abort(); };
+            return [2 /*return*/, promise];
         });
     });
 }
+/**
+ * Generating documentation during the build step:
+ *
+ * 1. Install TypeDoc (a documentation generator for TypeScript):
+ *    npm install typedoc --save-dev
+ *
+ * 2. Add a script to your `package.json` to generate documentation:
+ *    "scripts": {
+ *      "build-docs": "typedoc --out docs src"
+ *    }
+ *
+ * 3. Run the script to generate documentation:
+ *    npm run build-docs
+ *
+ * This will generate documentation in the `docs` folder for your TypeScript code.
+ */
 
 var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }

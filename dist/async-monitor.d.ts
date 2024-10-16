@@ -5,12 +5,23 @@ declare global {
 }
 
 /**
- * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
- * has a random option when param fail is not set.
+ * Pauses execution for a specified number of seconds, with an option to abort using AbortController.
+ * If the `fail` parameter is not provided, it defaults to a random rejection based on the `seconds` value.
  *
- * @param seconds - The number of seconds (default is a random number between 0 and 3).
- * @param fail - Whether the function should reject or not (default is `false`).
- * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
+ * @param seconds - The number of seconds to sleep (when set to 'undefined' a random timer between 0 and 3 seconds is set).
+ * @param fail - Optional. If `true`, the promise will reject after the specified time. If `false`, it will resolve. If `undefined`, it will randomly reject based on the `seconds` value.
+ * @returns A promise that resolves after the specified number of seconds, rejects based on the `fail` condition, or aborts if the signal is triggered.
+ *
+ * @example
+ * const sleepPromise = sleep(2, false);
+ * sleepPromise
+ *   .then((result) => console.log(`Resolved after ${result / 1000} seconds`))
+ *   .catch((error) => console.error(error.message));
+ *
+ * // Abort the sleep after 1 second
+ * setTimeout(() => {
+ *   sleepPromise.abort();
+ * }, 1000);
  */
 declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<number>;
 
