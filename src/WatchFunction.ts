@@ -138,6 +138,7 @@ export default class WatchFunction {
 				if (arg.onRejectCallback) arg.onRejectCallback!();
 			};
 			this.onAbortCallback = () => {
+				if (this._isFinished) return;
 				this._isAborted = true;
 				this._isRunning = false;
 				this._stopTime = now();
@@ -177,6 +178,7 @@ export default class WatchFunction {
 				};
 			if (onAbortCallback)
 				this.onAbortCallback = () => {
+					if (this._isFinished) return;
 					this._isAborted = true;
 					this._isRunning = false;
 					this._stopTime = now();
