@@ -17,9 +17,6 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			const button = document.getElementById('demo01');
-			button.disabled = true;
-			button.innerText = 'Executing...';
 			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
@@ -83,27 +80,30 @@ const importModule = async () => {
 
 	function demo_demo01() {
 		console.clear();
-		console.log(demo01.consoleTree, ['tree', `tree-${demo01._id}`]);
-
 		demo01.reset();
 		demo01
-			.WatchAll(
-				() => {
-					debugger;
+			.WatchAll({
+				onStartCallback: () => {
+					const button = document.getElementById('demo01');
+					button.disabled = true;
+					button.innerText = 'demo01 running...';
+				},
+				onCompleteCallback: () => {
 					const button = document.getElementById('demo01');
 					button.disabled = false;
 					button.innerText = 'demo01';
-					console.log('Metrics:');
-					console.table(demo01.metrics);
 				},
-				() => {
+				onRejectCallback: () => {
+					const button = document.getElementById('demo01');
+					button.disabled = false;
+					button.innerText = 'demo01 (rejected)';
+				},
+				onAbortCallback: () => {
 					const button = document.getElementById('demo01');
 					button.disabled = false;
 					button.innerText = 'demo01 (aborted)';
-					console.log('Metrics:');
-					console.table(demo01.metrics);
 				},
-			)
+			})
 			.then(() => {
 				console.log('++++onCompleteCallback("demo01")-> THEN');
 			})

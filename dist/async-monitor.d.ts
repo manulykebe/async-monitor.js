@@ -121,7 +121,12 @@ declare class Group {
     add(): void;
     remove(): void;
     Watch(onStartCallback: () => void, onRejectCallback: () => void): Watch;
-    WatchAll(onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void): Promise<void> | undefined;
+    WatchAll(onStartCallback?: (() => void) | {
+        onStartCallback?: () => void;
+        onCompleteCallback?: () => void;
+        onRejectCallback?: () => void;
+        onAbortCallback?: () => void;
+    }, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void): Promise<void> | undefined;
     get consoleTree(): string;
     get metrics(): Metric[];
     onRejected(cbf: () => void): this;

@@ -56,9 +56,10 @@ export default class Group {
 	get onStartCallback(): () => void {
 		return () => {
 			this._startTime = now();
-			console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
 
 			if (this.useConsoleLog) {
+				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
+				console.log(this.consoleTree, ['tree', `tree-${this._id}`]);
 				console.group('Group: ' + this._id, this._id);
 				console.log(`*** START ${this._id} ***`);
 				console.highlight('completed', this._id, 'start');
@@ -78,8 +79,9 @@ export default class Group {
 
 			if (this.useConsoleLog) {
 				console.log(`*** COMPLETE ${this._id} ***`);
-				(console as any).highlight('completed', this._id, 'complete');
+				console.highlight('completed', this._id, 'complete');
 				console.groupEnd();
+				console.log(this.metrics);
 			}
 			this._onCompleteCallback?.();
 		};
@@ -91,7 +93,15 @@ export default class Group {
 	private _onRejectCallback?: () => void = () => {};
 	get onRejectCallback(): () => void {
 		return () => {
-			if (this.useConsoleLog) console.log(`*** REJECTED ${this._id} ***`);
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** REJECTED ${this._id} ***`);
+				console.highlight('completed', this._id, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
 			this._onRejectCallback?.();
 		};
 	}
@@ -102,7 +112,15 @@ export default class Group {
 	private _onAbortCallback?: () => void = () => {};
 	get onAbortCallback(): () => void {
 		return () => {
-			if (this.useConsoleLog) console.log(`*** ABORTED ${this._id} ***`);
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** ABORTED ${this._id} ***`);
+				console.highlight('completed', this._id, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
 			this._onAbortCallback?.();
 		};
 	}
@@ -191,39 +209,61 @@ export default class Group {
 	}
 
 	WatchAll(
-		onStartCallback?: () => void,
+		onStartCallback?:
+			| (() => void)
+			| {
+					onStartCallback?: () => void;
+					onCompleteCallback?: () => void;
+					onRejectCallback?: () => void;
+					onAbortCallback?: () => void;
+			  },
 		onCompleteCallback?: () => void,
 		onRejectCallback?: () => void,
 		onAbortCallback?: () => void,
 	) {
-		if (onStartCallback) {
-			this.onStartCallback = onStartCallback;
-		}
-		if (onCompleteCallback) {
-			this.onCompleteCallback = onCompleteCallback;
-		}
-		if (onRejectCallback) {
-			this.onRejectCallback = onRejectCallback;
-		}
-		if (onAbortCallback) {
-			this.onAbortCallback = onAbortCallback;
+		if (typeof onStartCallback === 'object') {
+			const {onStartCallback: startCb, onCompleteCallback, onRejectCallback, onAbortCallback} = onStartCallback;
+			if (startCb) {
+				this.onStartCallback = startCb;
+			}
+			if (onCompleteCallback) {
+				this.onCompleteCallback = onCompleteCallback;
+			}
+			if (onRejectCallback) {
+				this.onRejectCallback = onRejectCallback;
+			}
+			if (onAbortCallback) {
+				this.onAbortCallback = onAbortCallback;
+			}
+		} else {
+			if (onStartCallback) {
+				this.onStartCallback = onStartCallback;
+			}
+			if (onCompleteCallback) {
+				this.onCompleteCallback = onCompleteCallback;
+			}
+			if (onRejectCallback) {
+				this.onRejectCallback = onRejectCallback;
+			}
+			if (onAbortCallback) {
+				this.onAbortCallback = onAbortCallback;
+			}
 		}
 
 		if (this.isRunning) {
 			console.warn('This WatchAll group is already being monitored.');
 			return;
 		}
-		this.onStartCallback();
 
 		this._startTime = now();
-		if (typeof this._onStartCallback === 'function') this._onStartCallback();
+		if (typeof this.onStartCallback === 'function') this.onStartCallback();
 
-		const watchArray = this._functions.map(fn => ({
-			promise: fn.promise ?? undefined,
-			onRejectCallback: fn.onRejectCallback,
-			group: this,
-			_startTime: now(),
-		}));
+		// const watchArray = this._functions.map(fn => ({
+		// 	promise: fn.promise ?? undefined,
+		// 	onRejectCallback: fn.onRejectCallback,
+		// 	group: this,
+		// 	_startTime: now(),
+		// }));
 
 		return WatchAll(this); //, onStartCallback, onRejectCallback);
 	}

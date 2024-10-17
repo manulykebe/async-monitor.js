@@ -40,7 +40,6 @@ export class Watch {
 			})
 			.finally(() => {
 				if (_breakOnRejected) {
-					debugger;
 					const fs0 = fs[0];
 					if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
 					// if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
@@ -66,7 +65,6 @@ export class Watch {
 						f.forEach(cbf => {
 							if (typeof cbf === 'function') {
 								try {
-									debugger;
 									cbf();
 								} catch (error) {
 									console.warn('Error while executing cbf.', error);
@@ -80,8 +78,12 @@ export class Watch {
 	}
 }
 
+export class Progress {
+	constructor(group: Group) {
+		// Call the private function with the default parent value as undefined
+	}
+}
 let _sequence = 0;
-
 export async function WatchAll(group: Group, onStartCallback?: () => void, callback_error?: () => void): Promise<void> {
 	// Call the private function with the default parent value as undefined
 	return new Promise<void>((resolve, reject) => {

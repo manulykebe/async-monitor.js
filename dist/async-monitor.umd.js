@@ -27,7 +27,12 @@
                 var row = document.createElement('tr');
                 keys_1.forEach(function (key) {
                     var td = document.createElement('td');
-                    td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    try {
+                        td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    }
+                    catch (error) {
+                        td.textContent = "".concat(key);
+                    }
                     td.classList.add('log-table-cell');
                     row.appendChild(td);
                 });
@@ -375,7 +380,6 @@
                 .finally(function () {
                 var _a;
                 if (_breakOnRejected) {
-                    debugger;
                     var fs0 = fs[0];
                     if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
                         fs0.group.__callback_error();
@@ -404,7 +408,6 @@
                         f.forEach(function (cbf) {
                             if (typeof cbf === 'function') {
                                 try {
-                                    debugger;
                                     cbf();
                                 }
                                 catch (error) {
@@ -784,6 +787,8 @@
                     console.log("\"".concat(_this.name, "\" has completed."));
                     if (arg.onCompleteCallback)
                         arg.onCompleteCallback();
+                    debugger;
+                    console.log(_this.group);
                 };
                 this.onRejectCallback = function () {
                     if (_this._isAborted)
@@ -1053,8 +1058,9 @@
                 return function () {
                     var _a;
                     _this._startTime = now();
-                    console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
                     if (_this.useConsoleLog) {
+                        console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
+                        console.log(_this.consoleTree, ['tree', "tree-".concat(_this._id)]);
                         console.group('Group: ' + _this._id, _this._id);
                         console.log("*** START ".concat(_this._id, " ***"));
                         console.highlight('completed', _this._id, 'start');
@@ -1080,6 +1086,7 @@
                         console.log("*** COMPLETE ".concat(_this._id, " ***"));
                         console.highlight('completed', _this._id, 'complete');
                         console.groupEnd();
+                        console.log(_this.metrics);
                     }
                     (_a = _this._onCompleteCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
                 };
@@ -1096,8 +1103,14 @@
                 var _this = this;
                 return function () {
                     var _a;
-                    if (_this.useConsoleLog)
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.useConsoleLog) {
                         console.log("*** REJECTED ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'complete');
+                        console.groupEnd();
+                        console.log(_this.metrics);
+                    }
                     (_a = _this._onRejectCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
                 };
             },
@@ -1113,8 +1126,14 @@
                 var _this = this;
                 return function () {
                     var _a;
-                    if (_this.useConsoleLog)
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.useConsoleLog) {
                         console.log("*** ABORTED ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'complete');
+                        console.groupEnd();
+                        console.log(_this.metrics);
+                    }
                     (_a = _this._onAbortCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
                 };
             },
@@ -1165,36 +1184,48 @@
             return new Watch(watchArray, onStartCallback, onRejectCallback);
         };
         Group.prototype.WatchAll = function (onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
-            var _this = this;
-            if (onStartCallback) {
-                this.onStartCallback = onStartCallback;
+            if (typeof onStartCallback === 'object') {
+                var startCb = onStartCallback.onStartCallback, onCompleteCallback_1 = onStartCallback.onCompleteCallback, onRejectCallback_1 = onStartCallback.onRejectCallback, onAbortCallback_1 = onStartCallback.onAbortCallback;
+                if (startCb) {
+                    this.onStartCallback = startCb;
+                }
+                if (onCompleteCallback_1) {
+                    this.onCompleteCallback = onCompleteCallback_1;
+                }
+                if (onRejectCallback_1) {
+                    this.onRejectCallback = onRejectCallback_1;
+                }
+                if (onAbortCallback_1) {
+                    this.onAbortCallback = onAbortCallback_1;
+                }
             }
-            if (onCompleteCallback) {
-                this.onCompleteCallback = onCompleteCallback;
-            }
-            if (onRejectCallback) {
-                this.onRejectCallback = onRejectCallback;
-            }
-            if (onAbortCallback) {
-                this.onAbortCallback = onAbortCallback;
+            else {
+                if (onStartCallback) {
+                    this.onStartCallback = onStartCallback;
+                }
+                if (onCompleteCallback) {
+                    this.onCompleteCallback = onCompleteCallback;
+                }
+                if (onRejectCallback) {
+                    this.onRejectCallback = onRejectCallback;
+                }
+                if (onAbortCallback) {
+                    this.onAbortCallback = onAbortCallback;
+                }
             }
             if (this.isRunning) {
                 console.warn('This WatchAll group is already being monitored.');
                 return;
             }
-            this.onStartCallback();
             this._startTime = now();
-            if (typeof this._onStartCallback === 'function')
-                this._onStartCallback();
-            this._functions.map(function (fn) {
-                var _a;
-                return ({
-                    promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined,
-                    onRejectCallback: fn.onRejectCallback,
-                    group: _this,
-                    _startTime: now(),
-                });
-            });
+            if (typeof this.onStartCallback === 'function')
+                this.onStartCallback();
+            // const watchArray = this._functions.map(fn => ({
+            // 	promise: fn.promise ?? undefined,
+            // 	onRejectCallback: fn.onRejectCallback,
+            // 	group: this,
+            // 	_startTime: now(),
+            // }));
             return WatchAll(this); //, onStartCallback, onRejectCallback);
         };
         Object.defineProperty(Group.prototype, "consoleTree", {

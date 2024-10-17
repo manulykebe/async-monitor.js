@@ -31,7 +31,11 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 			const row = document.createElement('tr');
 			keys.forEach(key => {
 				const td = document.createElement('td');
-				td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				try {
+					td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				} catch (error) {
+					td.textContent = `${key}`;
+				}
 				td.classList.add('log-table-cell');
 				row.appendChild(td);
 			});
