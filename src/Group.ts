@@ -1,37 +1,125 @@
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
-import now from './Now';
+import now, {calcDuration} from './Now';
 import WatchFunction, {Metric} from './WatchFunction';
+import Sequence from './Sequence';
 
-let _group_id: number = 0;
 export default class Group {
 	useConsoleLog: boolean = true;
-	_id = _group_id++;
-	_functions: WatchFunction[] = [];
-	_startTime: number = 0;
-	_stopTime: number = 0;
-	_duration: number = 0;
-	_seq: number = 0;
+
+	private _id: number = Sequence.nextId();
+	get id(): number {
+		return this._id!;
+	}
+	private _functions: WatchFunction[] = [];
+	get functions(): WatchFunction[] {
+		return this._functions;
+	}
+	get isRunning(): boolean {
+		return !!this._functions.map(x => x.isRunning).reduce((a, b) => a || b, false);
+	}
+
+	get isFinished(): boolean {
+		return !!this._functions.map(x => x.isFinished).reduce((a, b) => a && b, true);
+	}
+
+	get isRejected(): boolean {
+		return !!this._functions.map(x => x.isRejected).reduce((a, b) => a || b, false);
+	}
+
+	get isAborted(): boolean {
+		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
+	}
+	private _startTime: number = 0;
+	get startTime(): number {
+		return this._startTime;
+	}
+	set startTime(value: number) {
+		this._startTime = value;
+	}
+	private _stopTime: number = 0;
+	get stopTime(): number {
+		return this._stopTime;
+	}
+	set stopTime(value: number) {
+		this._stopTime = value;
+	}
+	private _duration: number = 0;
+	get duration(): number {
+		return Math.min(0, this._duration);
+	}
+	set duration(value: number) {
+		this._duration = value;
+	}
+	name?: string | undefined;
+	private _onStartCallback?: () => void = () => {};
+	get onStartCallback(): () => void {
+		return () => {
+			this._startTime = now();
+			console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
+
+			if (this.useConsoleLog) {
+				console.group('Group: ' + this._id, this._id);
+				console.log(`*** START ${this._id} ***`);
+				console.highlight('completed', this._id, 'start');
+			}
+			this._onStartCallback!();
+		};
+	}
+	set onStartCallback(value: () => void) {
+		if (typeof value === 'function') this._onStartCallback = value;
+	}
+
+	private _onCompleteCallback?: () => void = () => {};
+	get onCompleteCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** COMPLETE ${this._id} ***`);
+				(console as any).highlight('completed', this._id, 'complete');
+				console.groupEnd();
+			}
+			this._onCompleteCallback?.();
+		};
+	}
+	set onCompleteCallback(value: () => void) {
+		if (typeof value === 'function') this._onCompleteCallback = value;
+	}
+
+	private _onRejectCallback?: () => void = () => {};
+	get onRejectCallback(): () => void {
+		return () => {
+			if (this.useConsoleLog) console.log(`*** REJECTED ${this._id} ***`);
+			this._onRejectCallback?.();
+		};
+	}
+	set onRejectCallback(value: () => void) {
+		if (typeof value === 'function') this._onRejectCallback = value;
+	}
+
+	private _onAbortCallback?: () => void = () => {};
+	get onAbortCallback(): () => void {
+		return () => {
+			if (this.useConsoleLog) console.log(`*** ABORTED ${this._id} ***`);
+			this._onAbortCallback?.();
+		};
+	}
+	set onAbortCallback(value: () => void) {
+		if (typeof value === 'function') this._onAbortCallback = value;
+	}
+
+	sequence: number = 0;
+	reset = () => {
+		this._duration = 0;
+		this._startTime = 0;
+		this._stopTime = 0;
+		this._functions.forEach(fn => fn.reset());
+	};
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
-
-	// Default Callbacks
-	_onStartCallback: () => void = () => {
-		console.group('Group: ' + this._id, this._id);
-		if (this.useConsoleLog) {
-			console.log(`*** START ${this._id} ***`);
-			(console as any).highlight('completed', this._id, 'start');
-		}
-	};
-
-	_onCompleteCallback: () => void = () => {
-		if (this.useConsoleLog) {
-			console.log(`*** COMPLETE ${this._id} ***`);
-			(console as any).highlight('completed', this._id, 'complete');
-			console.groupEnd();
-		}
-	};
 
 	_onUnCompleteCallback: () => void = () => {
 		if (this.useConsoleLog) console.log(`*** ABORTED? ${this._id} ***`);
@@ -41,33 +129,18 @@ export default class Group {
 		if (this.useConsoleLog) console.log(`*** REJECTED? ${this._id} ***`);
 	};
 
-	get _isRunning(): boolean {
-		return !!this._functions.map(x => x.isRunning).reduce((a, b) => a || b, false);
-	}
-
-	get _isFinished(): boolean {
-		return !!this._functions.map(x => x.isFinished).reduce((a, b) => a && b, true);
-	}
-
-	get _isRejected(): boolean {
-		return !!this._functions.map(x => x.isRejected).reduce((a, b) => a || b, false);
-	}
-
-	get _isAborted(): boolean {
-		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
-	}
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
 			watchFunction = new WatchFunction(addWatchFunction);
-			if (this._seq === 0) {
+			if (this.sequence === 0) {
 				watchFunction.parent = watchFunction.parent || '';
 				watchFunction.child = '_monitor_1';
-				this._seq = 1;
+				this.sequence = 1;
 			} else {
-				watchFunction.parent = '_monitor_' + this._seq++;
-				watchFunction.child = '_monitor_' + this._seq;
+				watchFunction.parent = '_monitor_' + this.sequence++;
+				watchFunction.child = '_monitor_' + this.sequence;
 			}
 		} else {
 			// Create a new WatchFunction and add it to the group
@@ -75,24 +148,6 @@ export default class Group {
 		}
 		// Assign an AbortController to the watch function
 		watchFunction.group = this;
-		// Wrap the function with the abort signal
-		// const originalFunction = watchFunction.f;
-		// watchFunction.f = () => {
-		// 	return new Promise((resolve, reject) => {
-		// 		const signal = watchFunction.signal;
-		// 		// If the signal is aborted before execution
-		// 		signal.addEventListener('abort', () => {
-		// 			watchFunction.onAbortCallback && watchFunction.onAbortCallback();
-		// 		});
-		// 		// Execute the original function and resolve/reject accordingly
-		// 		const result = originalFunction();
-		// 		if (result instanceof Promise) {
-		// 			result.then(resolve).catch(reject);
-		// 		} else {
-		// 			resolve(result);
-		// 		}
-		// 	});
-		// };
 		this._functions.push(watchFunction);
 	};
 	// Abort a specific watch function by name
@@ -110,13 +165,6 @@ export default class Group {
 			fn.abort();
 		});
 	}
-	// Reset all watch functions in the group
-	reset(): void {
-		this._duration = 0;
-		this._startTime = 0;
-		this._stopTime = 0;
-		this._functions.forEach(fn => fn.reset());
-	}
 
 	// Get all functions in the group
 	getAll(): Array<WatchFunction> {
@@ -132,27 +180,40 @@ export default class Group {
 	add(): void {}
 	remove(): void {}
 
-	Watch(callback: () => void, callback_error: () => void) {
+	Watch(onStartCallback: () => void, onRejectCallback: () => void) {
 		const watchArray = this._functions.map(fn => ({
 			promise: fn.promise ?? undefined,
 			onRejectCallback: fn.onRejectCallback,
 			group: this,
 		}));
 
-		return new Watch(watchArray, callback, callback_error);
+		return new Watch(watchArray, onStartCallback, onRejectCallback);
 	}
 
-	WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined) {
-		this.__callback = callback ?? (() => {});
-		this.__callback_error = callback_error ?? (() => {});
+	WatchAll(
+		onStartCallback?: () => void,
+		onCompleteCallback?: () => void,
+		onRejectCallback?: () => void,
+		onAbortCallback?: () => void,
+	) {
+		if (onStartCallback) {
+			this.onStartCallback = onStartCallback;
+		}
+		if (onCompleteCallback) {
+			this.onCompleteCallback = onCompleteCallback;
+		}
+		if (onRejectCallback) {
+			this.onRejectCallback = onRejectCallback;
+		}
+		if (onAbortCallback) {
+			this.onAbortCallback = onAbortCallback;
+		}
 
-		callback = this.__callback;
-		callback_error = this.__callback_error;
-
-		if (this._isRunning) {
+		if (this.isRunning) {
 			console.warn('This WatchAll group is already being monitored.');
 			return;
 		}
+		this.onStartCallback();
 
 		this._startTime = now();
 		if (typeof this._onStartCallback === 'function') this._onStartCallback();
@@ -164,7 +225,7 @@ export default class Group {
 			_startTime: now(),
 		}));
 
-		return WatchAll(this, callback, callback_error);
+		return WatchAll(this); //, onStartCallback, onRejectCallback);
 	}
 
 	get consoleTree(): string {
@@ -182,16 +243,16 @@ export default class Group {
 		});
 	}
 
-	onRejected(callback: () => void) {
-		this._onRejectedCallback = callback;
+	onRejected(cbf: () => void) {
+		this._onRejectedCallback = cbf;
 		return this;
 	}
-	onStart(callback: () => void) {
-		this._onStartCallback = callback;
+	onStart(cbf: () => void) {
+		this._onStartCallback = cbf;
 		return this;
 	}
-	onComplete(callback: () => void) {
-		this._onCompleteCallback = callback;
+	onComplete(cbf: () => void) {
+		this._onCompleteCallback = cbf;
 		return this;
 	}
 }

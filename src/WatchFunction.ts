@@ -35,7 +35,6 @@ export default class WatchFunction {
 	get isRunning(): boolean {
 		return this._isRunning;
 	}
-	private _index?: number | undefined;
 	private _startTime: number = 0;
 	private _stopTime: number = 0;
 	private _duration: number = 0;
@@ -60,7 +59,6 @@ export default class WatchFunction {
 		this._isFinished = false;
 		this._isRejected = false;
 		this._isRunning = false;
-		this._index = undefined;
 		this._startTime = 0;
 		this._stopTime = 0;
 		this._duration = 0;
@@ -75,7 +73,7 @@ export default class WatchFunction {
 		return {
 			id: this._id!,
 			name: this.name,
-			start: this.group ? this._startTime - this.group._startTime : 0,
+			start: this.group ? this._startTime - this.group.startTime : 0,
 			duration: this._duration,
 			isRunning: this._isRunning,
 			isFinished: this._isFinished,

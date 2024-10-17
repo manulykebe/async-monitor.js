@@ -10,12 +10,12 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 
 	const demo01 = new Group();
-
+	demo01.name = 'demo01: 3 parallel tasks, followed by a single task';
 	demo01.addWatch({
 		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(20, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			const button = document.getElementById('demo01');
 			button.disabled = true;
