@@ -197,7 +197,6 @@ console.highlight = function (text: RegExp | string, _id: number, className: str
 		if (typeof text === 'string') {
 			regex = new RegExp(escapeRegExp(text), 'gi');
 		} else {
-			debugger;
 			regex = new RegExp(text, 'g');
 		}
 		const highlightedText = treeElement.innerHTML.replace(regex, match => {
@@ -216,11 +215,23 @@ console.highlight = function (text: RegExp | string, _id: number, className: str
 	}
 };
 
-function clearHighlights(_id: number) {
-	const treeElement = document.querySelector(`pre[class="tree-${_id}"]`);
+export function clearHighlights(_id: number) {
+	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (treeElement) {
 		treeElement.querySelectorAll(`span`).forEach(span => {
-			span.outerHTML = span.innerHTML;
+			if (!span.classList.contains('highlight-repeat')) span.outerHTML = span.innerHTML;
 		});
+	}
+}
+
+export function displayRepeat(_id: number, runsNo: number, repeatNo: number) {
+	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
+	if (treeElement) {
+		const repeatElement = treeElement.querySelector(`span[class*="highlight-repeat"]`);
+		if (repeatElement) {
+			debugger;
+			(repeatElement as HTMLElement).innerText =
+				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) + runsNo.toString().concat('/');
+		}
 	}
 }

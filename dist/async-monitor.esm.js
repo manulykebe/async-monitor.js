@@ -167,7 +167,6 @@ console.highlight = function (text, _id, className) {
             regex = new RegExp(escapeRegExp(text), 'gi');
         }
         else {
-            debugger;
             regex = new RegExp(text, 'g');
         }
         var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
@@ -185,6 +184,26 @@ console.highlight = function (text, _id, className) {
         }
     }
 };
+function clearHighlights(_id) {
+    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+    if (treeElement) {
+        treeElement.querySelectorAll("span").forEach(function (span) {
+            if (!span.classList.contains('highlight-repeat'))
+                span.outerHTML = span.innerHTML;
+        });
+    }
+}
+function displayRepeat(_id, runsNo, repeatNo) {
+    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+    if (treeElement) {
+        var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
+        if (repeatElement) {
+            debugger;
+            repeatElement.innerText =
+                ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) + runsNo.toString().concat('/');
+        }
+    }
+}
 
 var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -511,7 +530,6 @@ var Watch = /** @class */ (function () {
             .finally(function () {
             var _a;
             if (_breakOnRejected) {
-                debugger;
                 var fs0 = fs[0];
                 if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
                     fs0.group.__callback_error();
@@ -906,9 +924,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 var _group_id = 0;
 var Group = /** @class */ (function () {
     function Group(options) {
-        if (options === void 0) { options = { repeat: 0 }; }
+        if (options === void 0) { options = { repeat: 0, runs: 1 }; }
         var _this = this;
-        this.options = { repeat: 0 };
+        this.options = { repeat: 0, runs: 0 };
         this.useConsoleLog = true;
         this._id = _group_id++;
         this._functions = [];
@@ -916,7 +934,6 @@ var Group = /** @class */ (function () {
         this._stopTime = 0;
         this._duration = 0;
         this._seq = 0;
-        this.repeat = -1; // Repeat the group n times, -1 is infinite, 0 is not applicable
         // Default Callbacks
         this._onStartCallback = function () {
             console.group('Group: ' + _this._id, _this._id);
@@ -927,6 +944,13 @@ var Group = /** @class */ (function () {
             }
         };
         this._onCompleteCallback = function () {
+            var _a;
+            _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
+            if (_this.options.runs < _this.options.repeat || _this.options.repeat === -1) {
+                _this.reset();
+                _this.WatchAll(_this.__callback, _this.__callback_error);
+                return;
+            }
             if (_this.useConsoleLog) {
                 console.log("*** COMPLETE ".concat(_this._id, " ***"));
                 console.highlight('completed', _this._id, 'complete');
@@ -993,11 +1017,14 @@ var Group = /** @class */ (function () {
     };
     // Reset all watch functions in the group
     Group.prototype.reset = function () {
+        var _a, _b;
         this._functions.forEach(function (fn) {
             fn._isRunning = false;
             fn._isFinished = false;
             fn._isRejected = false;
         });
+        displayRepeat(this._id, (_a = this.options.runs) !== null && _a !== void 0 ? _a : 1, (_b = this.options.repeat) !== null && _b !== void 0 ? _b : 1);
+        clearHighlights(this._id);
     };
     // Get all functions in the group
     Group.prototype.getAll = function () {

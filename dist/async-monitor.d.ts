@@ -63,7 +63,8 @@ interface WatchFunction {
     _duration: number;
 }
 interface GroupOptions {
-    repeat?: number;
+    repeat: number;
+    runs?: number;
 }
 declare class Group {
     options: GroupOptions;
@@ -75,7 +76,6 @@ declare class Group {
     _stopTime: number;
     _duration: number;
     _seq: number;
-    repeat: number;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
     _onStartCallback: () => void;

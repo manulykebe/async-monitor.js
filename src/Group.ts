@@ -2,6 +2,7 @@ import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
 import now from './Now';
+import {clearHighlights, displayRepeat} from './Console';
 
 type Metric = {
 	index: number;
@@ -35,13 +36,14 @@ export interface WatchFunction {
 }
 
 interface GroupOptions {
-	repeat?: number;
+	repeat: number;
+	runs?: number;
 }
 
 let _group_id: number = 0;
 export default class Group {
-	options: GroupOptions = {repeat: 0};
-	constructor(options: GroupOptions = {repeat: 0}) {
+	options: GroupOptions = {repeat: 0, runs: 0};
+	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
 		this.options = options;
 	}
 	useConsoleLog: boolean = true;
@@ -51,8 +53,6 @@ export default class Group {
 	_stopTime: number = 0;
 	_duration: number = 0;
 	_seq: number = 0;
-
-	repeat: number = -1; // Repeat the group n times, -1 is infinite, 0 is not applicable
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
@@ -68,6 +68,13 @@ export default class Group {
 	};
 
 	_onCompleteCallback: () => void = () => {
+		this.options.runs = (this.options.runs ?? 1) + 1;
+		if (this.options.runs < this.options.repeat || this.options.repeat === -1) {
+			this.reset();
+			this.WatchAll(this.__callback, this.__callback_error);
+			return;
+		}
+
 		if (this.useConsoleLog) {
 			console.log(`*** COMPLETE ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'complete');
@@ -128,6 +135,8 @@ export default class Group {
 			fn._isFinished = false;
 			fn._isRejected = false;
 		});
+		displayRepeat(this._id, this.options.runs ?? 1, this.options.repeat ?? 1);
+		clearHighlights(this._id);
 	}
 
 	// Get all functions in the group

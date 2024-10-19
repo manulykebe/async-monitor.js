@@ -91,7 +91,6 @@ const importModule = async () => {
 		demo01
 			.WatchAll(
 				() => {
-					debugger;
 					const button = document.getElementById('demo01');
 					button.disabled = false;
 					button.innerText = 'demo01';
