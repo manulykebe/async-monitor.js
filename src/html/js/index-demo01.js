@@ -9,7 +9,9 @@ const importModule = async () => {
 
 	const {Group, Tree, sleep, version} = module;
 
-	const demo01 = new Group();
+	const demo01 = new Group({
+		repeat: 4,
+	});
 
 	demo01.addWatch({
 		name: 'preparation step 01',

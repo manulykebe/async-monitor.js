@@ -34,8 +34,16 @@ export interface WatchFunction {
 	_duration: number;
 }
 
+interface GroupOptions {
+	repeat?: number;
+}
+
 let _group_id: number = 0;
 export default class Group {
+	options: GroupOptions = {repeat: 0};
+	constructor(options: GroupOptions = {repeat: 0}) {
+		this.options = options;
+	}
 	useConsoleLog: boolean = true;
 	_id = _group_id++;
 	_functions: WatchFunction[] = [];
@@ -43,6 +51,8 @@ export default class Group {
 	_stopTime: number = 0;
 	_duration: number = 0;
 	_seq: number = 0;
+
+	repeat: number = -1; // Repeat the group n times, -1 is infinite, 0 is not applicable
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
@@ -174,7 +184,7 @@ export default class Group {
 			return {name: f.name, parent: f.parent, child: f.child};
 		});
 
-		const treeBuilder = new Tree();
+		const treeBuilder = new Tree({repeat: this.options.repeat});
 		return treeBuilder.processTree(treeData);
 	}
 

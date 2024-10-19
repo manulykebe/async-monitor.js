@@ -711,10 +711,16 @@
     }
 
     var Tree = /** @class */ (function () {
-        function Tree() {
+        // repeater not in use by default, -1 is infinite, >0 is number of loops
+        function Tree(options) {
+            if (options === void 0) { options = {}; }
+            var _a;
             this.map = {};
             this.roots = [];
             this.consoleLogText = '';
+            this.repeatOptions = { repeat: 0, current: 0 };
+            this.repeatOptions.repeat = (_a = options.repeat) !== null && _a !== void 0 ? _a : 0;
+            console.log('Repeat value set to:', this.repeatOptions.repeat); // Debugging the value
         }
         // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
         Tree.prototype.buildTree = function (arr) {
@@ -792,7 +798,13 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
-            var line = "".concat(isFirst ? '──' : prefix).concat(isLast && !isFirst ? '└─' : '├─', " ").concat(node.description);
+            var repeatIndicator = ' ';
+            var repeatIndicatorFirstLine = '─';
+            if (this.repeatOptions.repeat != 0) {
+                repeatIndicator = ' │';
+                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+            }
+            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             // Calculate the longest line length during this dry run
             if (line.length > maxLengthObj.maxLength) {
                 maxLengthObj.maxLength = line.length;
@@ -810,8 +822,14 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             var isTerminal = node.children.length === 0;
+            var repeatIndicator = ' ';
+            var repeatIndicatorFirstLine = '─';
             var terminalLabel = '';
-            var line = "".concat(isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+            if (this.repeatOptions.repeat != 0) {
+                repeatIndicator = ' │';
+                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+            }
+            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             if (isTerminal) {
                 var index = terminalIndex.current++;
                 terminalLabel = index === 0 ? '─┐' : '─┤';
@@ -859,9 +877,15 @@
                 return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
             });
             // Step 6: Add final completion line
+            if (this.repeatOptions.repeat != 0) {
+                var repeatText = this.repeatOptions.repeat == -1
+                    ? ' ∞ '
+                    : ' ' + 'x'.repeat(String(this.repeatOptions.repeat).length) + '/' + this.repeatOptions.repeat + ' ';
+                this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
+            }
             this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
             // Return the console output as string
-            return this.consoleLogText;
+            return this.consoleLogText + this.repeatOptions.repeat;
         };
         return Tree;
     }());
@@ -877,8 +901,10 @@
     };
     var _group_id = 0;
     var Group = /** @class */ (function () {
-        function Group() {
+        function Group(options) {
+            if (options === void 0) { options = { repeat: 0 }; }
             var _this = this;
+            this.options = { repeat: 0 };
             this.useConsoleLog = true;
             this._id = _group_id++;
             this._functions = [];
@@ -886,6 +912,7 @@
             this._stopTime = 0;
             this._duration = 0;
             this._seq = 0;
+            this.repeat = -1; // Repeat the group n times, -1 is infinite, 0 is not applicable
             // Default Callbacks
             this._onStartCallback = function () {
                 console.group('Group: ' + _this._id, _this._id);
@@ -932,6 +959,7 @@
                 watchFunction.group = _this;
                 _this._functions.push(watchFunction);
             };
+            this.options = options;
         }
         Object.defineProperty(Group.prototype, "_isRunning", {
             get: function () {
@@ -1019,7 +1047,7 @@
                 var treeData = this._functions.map(function (f) {
                     return { name: f.name, parent: f.parent, child: f.child };
                 });
-                var treeBuilder = new Tree();
+                var treeBuilder = new Tree({ repeat: this.options.repeat });
                 return treeBuilder.processTree(treeData);
             },
             enumerable: false,

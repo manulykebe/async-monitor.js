@@ -62,7 +62,12 @@ interface WatchFunction {
     _stopTime: number;
     _duration: number;
 }
+interface GroupOptions {
+    repeat?: number;
+}
 declare class Group {
+    options: GroupOptions;
+    constructor(options?: GroupOptions);
     useConsoleLog: boolean;
     _id: number;
     _functions: WatchFunction[];
@@ -70,6 +75,7 @@ declare class Group {
     _stopTime: number;
     _duration: number;
     _seq: number;
+    repeat: number;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
     _onStartCallback: () => void;
@@ -115,10 +121,15 @@ interface TreeData {
     child: string | number | undefined;
     name: string | undefined;
 }
+interface TreeOptions {
+    repeat?: number;
+}
 declare class Tree {
     private map;
     private roots;
     private consoleLogText;
+    private repeatOptions;
+    constructor(options?: TreeOptions);
     private buildTree;
     private collectTerminalNodes;
     private calculateMaxLength;
