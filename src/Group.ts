@@ -63,6 +63,7 @@ export default class Group {
 		if (this.useConsoleLog) {
 			console.log(`*** START ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'start');
+			(console as any).highlight(/ x+\//, this._id, ['start', 'repeat']);
 		}
 	};
 

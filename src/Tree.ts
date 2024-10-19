@@ -232,7 +232,6 @@ export default class Tree {
 		}
 		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
 
-		// Return the console output as string
-		return this.consoleLogText + this.repeatOptions.repeat;
+		return this.consoleLogText;
 	}
 }

@@ -165,18 +165,29 @@
             console.warn("could not highlight tree-".concat(_id, "."));
             return;
         }
-        if (className === 'start') {
-            var regex = new RegExp(escapeRegExp(text), 'gi');
+        if (!Array.isArray(className))
+            className = [className];
+        if (className.includes('start')) {
+            var regex = void 0;
+            if (typeof text === 'string') {
+                regex = new RegExp(escapeRegExp(text), 'gi');
+            }
+            else {
+                debugger;
+                regex = new RegExp(text, 'g');
+            }
             var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-                return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
+                return "<span class=\"highlight-".concat(className.join(' highlight-'), "\">").concat(match, "</span>");
             });
             treeElement.innerHTML = highlightedText;
         }
         else {
-            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
-            if (spanElement) {
-                spanElement.classList.remove("highlight-start");
-                spanElement.classList.add("highlight-".concat(className));
+            if (typeof text === 'string') {
+                var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+                if (spanElement) {
+                    spanElement.classList.remove("highlight-start");
+                    spanElement.classList.add("highlight-".concat(className));
+                }
             }
         }
     };
@@ -884,8 +895,7 @@
                 this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
             }
             this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
-            // Return the console output as string
-            return this.consoleLogText + this.repeatOptions.repeat;
+            return this.consoleLogText;
         };
         return Tree;
     }());
@@ -919,6 +929,7 @@
                 if (_this.useConsoleLog) {
                     console.log("*** START ".concat(_this._id, " ***"));
                     console.highlight('completed', _this._id, 'start');
+                    console.highlight(/ x+\//, _this._id, ['start', 'repeat']);
                 }
             };
             this._onCompleteCallback = function () {
