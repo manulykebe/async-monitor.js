@@ -781,8 +781,6 @@ var WatchFunction = /** @class */ (function () {
                 console.log("\"".concat(_this.name, "\" has completed."));
                 if (arg.onCompleteCallback)
                     arg.onCompleteCallback();
-                debugger;
-                console.log(_this.group);
             };
             this.onRejectCallback = function () {
                 if (_this._isAborted)
