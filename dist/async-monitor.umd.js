@@ -27,7 +27,12 @@
                 var row = document.createElement('tr');
                 keys_1.forEach(function (key) {
                     var td = document.createElement('td');
-                    td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    try {
+                        td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    }
+                    catch (error) {
+                        td.textContent = "".concat(key);
+                    }
                     td.classList.add('log-table-cell');
                     row.appendChild(td);
                 });
@@ -71,8 +76,6 @@
     var originalConsoleTable = console.table;
     var originalConsoleWarn = console.warn;
     function appendLogToConsole(message, classnames, _id) {
-        if (message === null)
-            return;
         if (!message && message.trim() === '')
             return;
         var consoleDiv = document.getElementById('console');
@@ -147,177 +150,41 @@
     function escapeRegExp(text) {
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
-    // text is string or regex
     function findSpanElementWithClassAndText(text, _id, className) {
-        if (text instanceof RegExp)
-            debugger;
         var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
         if (!treeElement)
             return null;
         var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
         for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
             var span = _a[_i];
-            if (typeof text === 'string' && span.textContent === text) {
-                return span;
-            }
-            else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
+            if (span.textContent === text) {
                 return span;
             }
         }
         return null;
     }
-    // _id is number or object {_id: number = 1, _index: number = 0}
-    console.highlight = function (text, ids, className) {
+    console.highlight = function (text, _id, className) {
         if (className === void 0) { className = 'start'; }
-        var treeElement = document.querySelector("pre[class*=\"tree-".concat(ids.id, "\"]"));
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
         if (!treeElement) {
-            console.warn("could not highlight tree-".concat(ids.id, "."));
+            console.warn("could not highlight tree-".concat(_id, "."));
             return;
         }
-        if (!Array.isArray(className))
-            className = [className];
-        if (className.includes('start')) {
-            var regex = void 0;
-            if (typeof text === 'string') {
-                regex = new RegExp(escapeRegExp(text), 'gi');
-            }
-            else {
-                regex = new RegExp(text, 'g');
-            }
+        if (className === 'start') {
+            var regex = new RegExp(escapeRegExp(text), 'gi');
             var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-                return "<span data-monitor-tree=\"".concat(ids.id, "\" data-monitor-index=\"").concat(ids.index, "\" class=\"highlight-").concat(className.join(' highlight-'), "\"><i class=\"fas fa-info-circle icon\" onclick=\"interact();\"></i>").concat(match, "</span>");
+                return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
             });
             treeElement.innerHTML = highlightedText;
         }
         else {
-            var spanElement = findSpanElementWithClassAndText(text, ids.id, 'start');
+            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
             if (spanElement) {
                 spanElement.classList.remove("highlight-start");
                 spanElement.classList.add("highlight-".concat(className));
             }
         }
     };
-    function clearHighlights(_id) {
-        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
-        if (treeElement) {
-            treeElement.querySelectorAll("span").forEach(function (span) {
-                if (!span.classList.contains('highlight-repeat'))
-                    span.outerHTML = span.innerHTML;
-            });
-        }
-    }
-    function displayRepeat(_id, runsNo, repeatNo) {
-        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
-        if (treeElement) {
-            var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
-            if (repeatElement) {
-                repeatElement.innerText =
-                    ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
-                        runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
-            }
-        }
-    }
-
-    var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
-    var __generator$3 = (this && this.__generator) || function (thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
-    /**
-     * Pauses execution for a specified number of seconds, with an option to abort using AbortController.
-     * If the `fail` parameter is not provided, it defaults to a random rejection based on the `seconds` value.
-     *
-     * @param seconds - The number of seconds to sleep (when set to 'undefined' a random timer between 0 and 3 seconds is set).
-     * @param fail - Optional. If `true`, the promise will reject after the specified time. If `false`, it will resolve. If `undefined`, it will randomly reject based on the `seconds` value.
-     * @returns A promise that resolves after the specified number of seconds, rejects based on the `fail` condition, or aborts if the signal is triggered.
-     *
-     * @example
-     * const sleepPromise = sleep(2, false);
-     * sleepPromise
-     *   .then((result) => console.log(`Resolved after ${result / 1000} seconds`))
-     *   .catch((error) => console.error(error.message));
-     *
-     * // Abort the sleep after 1 second
-     * setTimeout(() => {
-     *   sleepPromise.abort();
-     * }, 1000);
-     */
-    function sleep() {
-        return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
-            var controller, signal, promise;
-            if (seconds === void 0) { seconds = Math.random() * 3; }
-            return __generator$3(this, function (_a) {
-                if (fail === undefined)
-                    fail = seconds / 3 < 0.5;
-                seconds = seconds * 1000;
-                controller = new AbortController();
-                signal = controller.signal;
-                promise = new Promise(function (resolve, reject) {
-                    var timeoutId = setTimeout(function () {
-                        if (fail) {
-                            reject(new Error("Rejected after ".concat(seconds / 1000, " seconds")));
-                        }
-                        else {
-                            resolve(seconds);
-                        }
-                    }, seconds);
-                    signal.addEventListener('abort', function () {
-                        clearTimeout(timeoutId);
-                        reject(new Error('Sleep aborted'));
-                    });
-                });
-                promise.abort = function () { return controller.abort(); };
-                return [2 /*return*/, promise];
-            });
-        });
-    }
-    /**
-     * Generating documentation during the build step:
-     *
-     * 1. Install TypeDoc (a documentation generator for TypeScript):
-     *    npm install typedoc --save-dev
-     *
-     * 2. Add a script to your `package.json` to generate documentation:
-     *    "scripts": {
-     *      "build-docs": "typedoc --out docs src"
-     *    }
-     *
-     * 3. Run the script to generate documentation:
-     *    npm run build-docs
-     *
-     * This will generate documentation in the `docs` folder for your TypeScript code.
-     */
 
     var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -355,63 +222,33 @@
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var Element = /** @class */ (function () {
-        function Element(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, _startTime, _stopTime, _duration) {
-            if (name === void 0) { name = ''; }
-            if (parent === void 0) { parent = ''; }
-            if (child === void 0) { child = ''; }
-            if (onStartCallback === void 0) { onStartCallback = function () { }; }
-            if (onCompleteCallback === void 0) { onCompleteCallback = function () { }; }
-            if (onRejectCallback === void 0) { onRejectCallback = function () { }; }
-            this.name = '';
-            this.onStartCallback = function () { };
-            this.onCompleteCallback = function () { };
-            this.onRejectCallback = function () { };
-            this._isFinished = false;
-            this._isRunning = false;
-            this._isRejected = false;
-            this._startTime = 0;
-            this._stopTime = 0;
-            this._duration = 0;
-            if (typeof arg === 'object') {
-                // If an object of type WatchFunction is passed, use its properties
-                this.f = arg.f;
-                (this.name = arg.name), (this.parent = arg.parent);
-                this.child = arg.child;
-                this.onStartCallback = arg.onStartCallback;
-                this.onCompleteCallback = arg.onCompleteCallback;
-                this.onRejectCallback = arg.onRejectCallback;
-            }
-            else {
-                // If a function is passed, assign the passed or default values for other properties
-                this.f = arg;
-                this.name = name;
-                this.parent = parent;
-                this.child = child;
-                this.onStartCallback = onStartCallback;
-                this.onCompleteCallback = onCompleteCallback;
-                this.onRejectCallback = onRejectCallback;
-            }
-            this._isFinished = false;
-            this._isRunning = false;
-        }
-        return Element;
-    }());
-    function makeAsync(fn) {
-        if (fn.constructor.name === 'AsyncFunction') {
-            return fn;
-        }
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            return __awaiter$2(this, void 0, void 0, function () {
-                return __generator$2(this, function (_a) {
-                    return [2 /*return*/, fn.apply(this, args)];
-                });
+    /**
+     * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
+     * has a random option when param fail is not set.
+     *
+     * @param seconds - The number of seconds (default is a random number between 0 and 3).
+     * @param fail - Whether the function should reject or not (default is `false`).
+     * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
+     */
+    function sleep() {
+        return __awaiter$2(this, arguments, void 0, function (seconds, fail) {
+            if (seconds === void 0) { seconds = Math.random() * 3; }
+            return __generator$2(this, function (_a) {
+                if (fail === undefined)
+                    fail = seconds / 3 < 0.5;
+                seconds = seconds * 1000;
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        setTimeout(function () {
+                            if (fail) {
+                                reject(seconds);
+                            }
+                            else {
+                                resolve(seconds);
+                            }
+                        }, seconds);
+                    })];
             });
-        };
+        });
     }
 
     var __awaiter$1 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -474,9 +311,9 @@
         return Monitor;
     }());
 
-    var now = function () { return parseFloat(performance.now().toFixed(2)); };
+    var now = function () { return parseFloat(performance.now().toFixed(0)); };
     function calcDuration(start, end) {
-        return parseFloat((end - start).toFixed(2));
+        return parseFloat((end - start).toFixed(0));
     }
 
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -568,13 +405,14 @@
                     if (!Array.isArray(f))
                         f = [f];
                     if (Array.isArray(f)) {
-                        f.forEach(function (callback) {
-                            if (typeof callback === 'function') {
+                        f.forEach(function (cbf) {
+                            if (typeof cbf === 'function') {
                                 try {
-                                    callback();
+                                    cbf();
                                 }
                                 catch (error) {
-                                    console.warn('Error while executing callback.', error);
+                                    console.warn('Error while executing cbf.', error);
+                                    console.log(cbf);
                                 }
                             }
                         });
@@ -584,39 +422,38 @@
         }
         return Watch;
     }());
-    var _sequence = 0;
-    function WatchAll(group, callback, callback_error) {
+    function WatchAll(group, onStartCallback, callback_error) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 // Call the private function with the default parent value as undefined
                 return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _watchAllInternal(group, undefined, callback, callback_error, resolve, reject);
+                        _watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
                     })];
             });
         });
     }
-    function _watchAllInternal(group, parent, callback, callback_error, resolve, reject) {
-        var watches = group._functions;
+    function _watchAllInternal(group, parent, onStartCallback, callback_error, resolve, reject) {
+        var watches = group.functions;
         var useConsoleLog = group.useConsoleLog;
-        if (watches.every(function (f) { return f._isFinished; })) {
+        if (watches.every(function (f) { return f.isFinished; })) {
             // All watches are finished
-            group._stopTime = now();
-            group._duration = calcDuration(group._startTime, group._stopTime);
-            if (typeof group._onCompleteCallback === 'function') {
-                group._onCompleteCallback();
+            group.stopTime = now();
+            group.duration = calcDuration(group.startTime, group.stopTime);
+            if (typeof group.onCompleteCallback === 'function') {
+                group.onCompleteCallback();
                 resolve && resolve();
             }
             return;
         }
-        if (watches.some(function (f) { return f._isRejected; })) {
+        if (watches.some(function (f) { return f.isRejected; })) {
             // Some watch was rejected
             console.warn('Some watch was rejected');
             reject && reject();
             return;
         }
         if (typeof parent === 'function') {
-            callback_error = callback;
-            callback = parent;
+            callback_error = onStartCallback;
+            onStartCallback = parent;
             parent = undefined;
         }
         var children = watches.filter(function (x) { return x.parent === parent; });
@@ -624,26 +461,21 @@
             if (children.length === 0) {
                 console.warn('Nothing to do.');
                 console.warn('Nothing to do.');
-                if (typeof group._onCompleteCallback === 'function')
-                    group._onCompleteCallback();
+                if (typeof group.onCompleteCallback === 'function')
+                    group.onCompleteCallback();
                 return;
             }
-            _sequence = 0;
-            watches.forEach(function (x, i) { return (x._index = i); });
+            // watches.forEach((x, i) => (x._index = i));
         }
         if (children.length > 0) {
             var grandChildren = children
                 .map(function (x) { return x.child; })
                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; });
             grandChildren.forEach(function (gc) {
-                _sequence++;
                 children
                     .filter(function (c) { return c.child === gc; })
                     .forEach(function (child) {
-                    child._isRunning = true;
-                    child._startTime = now();
-                    child.sequence = _sequence;
-                    useConsoleLog && console.highlight(child.name, { id: group._id, index: _sequence }, 'start');
+                    useConsoleLog && console.highlight(child.name, group.id, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -669,12 +501,7 @@
                                     else {
                                         console.warn('onCompleteCallback is not defined or not a function');
                                     }
-                                    child._isRunning = false;
-                                    child._isFinished = true;
-                                    child._stopTime = now();
-                                    child._duration = calcDuration(child._startTime, child._stopTime);
-                                    useConsoleLog &&
-                                        console.highlight(child.name, { id: group._id, index: _sequence }, 'complete');
+                                    useConsoleLog && console.highlight(child.name, group.id, 'complete');
                                 });
                                 child.promise.catch(function () {
                                     if (typeof child.onRejectCallback === 'function') {
@@ -683,14 +510,9 @@
                                     else {
                                         console.warn('onRejectCallback is not defined or not a function');
                                     }
-                                    child._isRunning = false;
-                                    child._isFinished = true;
-                                    child._isRejected = true;
-                                    child._stopTime = now();
-                                    child._duration = calcDuration(child._startTime, child._stopTime);
                                     if (useConsoleLog) {
-                                        console.highlight(child.name, { id: group._id, index: _sequence }, 'rejected');
-                                        console.highlight('completed', { id: group._id, index: _sequence }, 'rejected');
+                                        console.highlight(child.name, group.id, 'rejected');
+                                        console.highlight('completed', group.id, 'rejected');
                                     }
                                     reject && reject();
                                 });
@@ -703,16 +525,13 @@
                     }
                     catch (error) {
                         console.warn('Watch: critical! error in call to (async) function:\n', error);
-                        child._stopTime = now();
-                        child._duration = calcDuration(child._startTime, child._stopTime);
-                        child._isRunning = false;
                         if (typeof group._onUnCompleteCallback === 'function')
                             group._onUnCompleteCallback();
                         return;
                     }
                 });
             });
-            if (!group._isFinished) {
+            if (!group.isFinished) {
                 grandChildren.forEach(function (gc) {
                     var validChildren = children
                         .filter(function (c) { return c.child === gc; })
@@ -726,9 +545,9 @@
                     });
                     new Watch(validChildren, [
                         function () {
-                            if (!watches.some(function (x) { return x._isRunning; }) && watches.every(function (x) { return x._isFinished; })) {
-                                if (typeof callback === 'function')
-                                    callback();
+                            if (!watches.some(function (x) { return x.isRunning; }) && watches.every(function (x) { return x.isFinished; })) {
+                                if (typeof onStartCallback === 'function')
+                                    onStartCallback();
                             }
                             watches
                                 .filter(function (x) { return x.parent === parent; })
@@ -738,7 +557,7 @@
                                 .map(function (x) { return x.child; })
                                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; })
                                 .forEach(function (x) {
-                                _watchAllInternal(group, x, callback, callback_error, resolve, reject);
+                                _watchAllInternal(group, x, onStartCallback, callback_error, resolve, reject);
                             });
                         },
                     ], callback_error);
@@ -748,15 +567,10 @@
     }
 
     var Tree = /** @class */ (function () {
-        // repeater not in use by default, -1 is infinite, >0 is number of loops
-        function Tree(options) {
-            if (options === void 0) { options = {}; }
-            var _a;
+        function Tree() {
             this.map = {};
             this.roots = [];
             this.consoleLogText = '';
-            this.repeatOptions = { repeat: 0, current: 0 };
-            this.repeatOptions.repeat = (_a = options.repeat) !== null && _a !== void 0 ? _a : 0;
         }
         // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
         Tree.prototype.buildTree = function (arr) {
@@ -834,13 +648,7 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
-            var repeatIndicator = ' ';
-            var repeatIndicatorFirstLine = '─';
-            if (this.repeatOptions.repeat != 0) {
-                repeatIndicator = ' │';
-                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
-            }
-            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+            var line = "".concat(isFirst ? '──' : prefix).concat(isLast && !isFirst ? '└─' : '├─', " ").concat(node.description);
             // Calculate the longest line length during this dry run
             if (line.length > maxLengthObj.maxLength) {
                 maxLengthObj.maxLength = line.length;
@@ -858,14 +666,8 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             var isTerminal = node.children.length === 0;
-            var repeatIndicator = ' ';
-            var repeatIndicatorFirstLine = '─';
             var terminalLabel = '';
-            if (this.repeatOptions.repeat != 0) {
-                repeatIndicator = ' │';
-                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
-            }
-            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+            var line = "".concat(isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             if (isTerminal) {
                 var index = terminalIndex.current++;
                 terminalLabel = index === 0 ? '─┐' : '─┤';
@@ -913,269 +715,11 @@
                 return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
             });
             // Step 6: Add final completion line
-            if (this.repeatOptions.repeat != 0) {
-                var repeatText = this.repeatOptions.repeat == -1
-                    ? ' ∞ '
-                    : ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
-                this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
-            }
             this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
+            // Return the console output as string
             return this.consoleLogText;
         };
         return Tree;
-    }());
-    /*
-    Corner and Tee Shapes:
-
-    └ (Box Drawings Light Up and Right)
-    ┘ (Box Drawings Light Up and Left)
-    ┌ (Box Drawings Light Down and Right)
-    ┐ (Box Drawings Light Down and Left)
-    ├ (Box Drawings Light Vertical and Right)
-    ┤ (Box Drawings Light Vertical and Left)
-    ┬ (Box Drawings Light Down and Horizontal)
-    ┴ (Box Drawings Light Up and Horizontal)
-    ┼ (Box Drawings Light Vertical and Horizontal)
-
-    */
-
-    var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-            if (ar || !(i in from)) {
-                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-                ar[i] = from[i];
-            }
-        }
-        return to.concat(ar || Array.prototype.slice.call(from));
-    };
-    document['async-monitor-groups'] = [];
-    var regexRepeat = function (repeat) {
-        var l = repeat.toString().length;
-        // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
-        return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
-    };
-    var _group_id = 0;
-    var Group = /** @class */ (function () {
-        function Group(options) {
-            if (options === void 0) { options = { repeat: 0, runs: 1 }; }
-            var _this = this;
-            this.options = { repeat: 0, runs: 0 };
-            this.useConsoleLog = true;
-            this._id = _group_id++;
-            this._functions = [];
-            this._startTime = 0;
-            this._stopTime = 0;
-            this._duration = 0;
-            this._seq = 0;
-            // Default Callbacks
-            this._onStartCallback = function () {
-                console.group('Group: ' + _this._id, _this._id);
-                if (_this.useConsoleLog) {
-                    console.log("*** START ".concat(_this._id, " ***"));
-                    console.highlight('completed', { id: _this._id }, 'start');
-                    console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
-                }
-            };
-            this._onCompleteCallback = function () {
-                var _a;
-                _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
-                if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
-                    _this.reset(false);
-                    _this.WatchAll(_this.__callback, _this.__callback_error);
-                    return;
-                }
-                else {
-                    if (_this.useConsoleLog) {
-                        console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, [
-                            'complete',
-                        ]);
-                    }
-                }
-                if (_this.useConsoleLog) {
-                    console.log("*** COMPLETE ".concat(_this._id, " ***"));
-                    console.highlight('completed', { id: _this._id }, 'complete');
-                    console.groupEnd();
-                }
-            };
-            this._onUnCompleteCallback = function () {
-                if (_this.useConsoleLog)
-                    console.log("*** ABORTED? ".concat(_this._id, " ***"));
-            };
-            this._onRejectedCallback = function () {
-                if (_this.useConsoleLog)
-                    console.log("*** REJECTED? ".concat(_this._id, " ***"));
-            };
-            this._abort = new AbortController(); // Declare abort controller
-            // Add a watch function
-            this.addWatch = function (addWatchFunction) {
-                var watchFunction;
-                if (typeof addWatchFunction === 'function') {
-                    watchFunction = new Element(addWatchFunction);
-                    if (_this._seq === 0) {
-                        watchFunction.parent = watchFunction.parent || undefined;
-                        watchFunction.child = '_monitor_1';
-                        _this._seq = 1;
-                    }
-                    else {
-                        watchFunction.parent = '_monitor_' + _this._seq++;
-                        watchFunction.child = '_monitor_' + _this._seq;
-                    }
-                }
-                else {
-                    // Create a new Element and add it to the group
-                    watchFunction = new Element(addWatchFunction);
-                }
-                watchFunction.group = _this;
-                _this._functions.push(watchFunction);
-            };
-            this.options = options;
-            document['async-monitor-groups'].push(this);
-        }
-        Object.defineProperty(Group.prototype, "_isRunning", {
-            get: function () {
-                return !!this._functions.map(function (x) { return x._isRunning; }).reduce(function (a, b) { return a || b; }, false);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Group.prototype, "_isFinished", {
-            get: function () {
-                return !!this._functions.map(function (x) { return x._isFinished; }).reduce(function (a, b) { return a && b; }, true);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Group.prototype, "_isRejected", {
-            get: function () {
-                return !!this._functions.map(function (x) { return x._isRejected; }).reduce(function (a, b) { return a || b; }, true);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        // Abort the group TODO
-        Group.prototype.abort = function () {
-            this._abort.abort();
-        };
-        // Reset all watch functions in the group
-        Group.prototype.reset = function (resetRuns) {
-            var _a, _b;
-            if (resetRuns === void 0) { resetRuns = true; }
-            this._functions.forEach(function (fn) {
-                fn._isRunning = false;
-                fn._isFinished = false;
-                fn._isRejected = false;
-            });
-            if (resetRuns) {
-                this.options.runs = 1;
-            }
-            displayRepeat(this._id, (_a = this.options.runs) !== null && _a !== void 0 ? _a : 1, (_b = this.options.repeat) !== null && _b !== void 0 ? _b : 1);
-            clearHighlights(this._id);
-        };
-        // Get all functions in the group
-        Group.prototype.getAll = function () {
-            return this._functions;
-        };
-        // Remove all functions from the group
-        Group.prototype.removeAll = function () {
-            this._functions = [];
-        };
-        // Add and remove placeholders
-        Group.prototype.add = function () { };
-        Group.prototype.remove = function () { };
-        Group.prototype.Watch = function (callback, callback_error) {
-            var _this = this;
-            var watchArray = this._functions.map(function (fn) {
-                var _a;
-                return ({
-                    promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
-                    onRejectCallback: fn.onRejectCallback, // The callback if the function fails
-                    group: _this, // The current group
-                });
-            });
-            return new Watch(watchArray, callback, callback_error);
-        };
-        Group.prototype.WatchAll = function (callback, callback_error) {
-            var _this = this;
-            this.__callback = callback !== null && callback !== void 0 ? callback : (function () { });
-            this.__callback_error = callback_error !== null && callback_error !== void 0 ? callback_error : (function () { });
-            callback = this.__callback;
-            callback_error = this.__callback_error;
-            if (this._isRunning) {
-                console.warn('This WatchAll group is already being monitored.');
-                return;
-            }
-            this._startTime = now();
-            if (typeof this._onStartCallback === 'function')
-                this._onStartCallback();
-            this._functions.map(function (fn) {
-                var _a;
-                return ({
-                    promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined, // Use the promise if it exists, otherwise undefined
-                    onRejectCallback: fn.onRejectCallback, // The callback for rejection
-                    group: _this, // The current group,
-                    _startTime: now(),
-                });
-            });
-            // Pass the array to the WatchAll function
-            return WatchAll(this, callback, callback_error);
-        };
-        Object.defineProperty(Group.prototype, "consoleTree", {
-            get: function () {
-                var treeData = this._functions.map(function (f) {
-                    return { name: f.name, parent: f.parent, child: f.child };
-                });
-                var treeBuilder = new Tree({ repeat: this.options.repeat });
-                return treeBuilder.processTree(treeData);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Group.prototype, "metrics", {
-            get: function () {
-                var _a, _b, _c;
-                return __spreadArray(__spreadArray([], this._functions.map(function (f, i) {
-                    var _a, _b, _c, _d;
-                    return {
-                        index: i,
-                        name: f.name,
-                        sequence: (_a = f.sequence) !== null && _a !== void 0 ? _a : 0,
-                        start: f.group ? f._startTime - f.group._startTime : undefined,
-                        duration: f._duration,
-                        f: f.f.toString(),
-                        isRunning: (_b = f._isRunning) !== null && _b !== void 0 ? _b : false,
-                        isFinished: (_c = f._isFinished) !== null && _c !== void 0 ? _c : false,
-                        isRejected: (_d = f._isRejected) !== null && _d !== void 0 ? _d : false,
-                    };
-                }), true), [
-                    {
-                        index: 0,
-                        name: '',
-                        sequence: 0,
-                        start: 0,
-                        duration: this._duration,
-                        f: '',
-                        isRunning: (_a = this._isRunning) !== null && _a !== void 0 ? _a : false,
-                        isFinished: (_b = this._isFinished) !== null && _b !== void 0 ? _b : false,
-                        isRejected: (_c = this._isRejected) !== null && _c !== void 0 ? _c : false,
-                    },
-                ], false);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Group.prototype.onRejected = function (callback) {
-            this._onRejectedCallback = callback;
-            return this;
-        };
-        Group.prototype.onStart = function (callback) {
-            this._onStartCallback = callback;
-            return this;
-        };
-        Group.prototype.onComplete = function (callback) {
-            this._onCompleteCallback = callback;
-            return this;
-        };
-        return Group;
     }());
 
     /**
@@ -1195,7 +739,530 @@
         return Sequence;
     }());
 
+    var WatchFunction = /** @class */ (function () {
+        function WatchFunction(arg, name, parent, child, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
+            var _this = this;
+            this._id = Sequence.nextId();
+            this._isAborted = false;
+            this._isFinished = false;
+            this._isRejected = false;
+            this._isRunning = false;
+            this._startTime = 0;
+            this._stopTime = 0;
+            this._duration = 0;
+            this.abortController = new AbortController();
+            this.abort = function () { return _this.abortController.abort(); };
+            this.signal = this.abortController.signal;
+            this.sequence = 0;
+            this.reset = function () {
+                _this._isAborted = false;
+                _this._isFinished = false;
+                _this._isRejected = false;
+                _this._isRunning = false;
+                _this._startTime = 0;
+                _this._stopTime = 0;
+                _this._duration = 0;
+                _this.sequence = 0;
+                _this.abortController = new AbortController();
+                _this.signal = _this.abortController.signal;
+                _this.abort = function () { return _this.abortController.abort(); };
+            };
+            if (typeof arg === 'object') {
+                this.f = arg.f;
+                this.name = arg.name;
+                this.parent = arg.parent;
+                this.child = arg.child;
+                this.onStartCallback = function () {
+                    _this._isRunning = true;
+                    _this._startTime = now();
+                    console.log("\"".concat(_this.name, "\" has started."));
+                    if (arg.onStartCallback)
+                        arg.onStartCallback();
+                };
+                this.onCompleteCallback = function () {
+                    _this._isFinished = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.log("\"".concat(_this.name, "\" has completed."));
+                    if (arg.onCompleteCallback)
+                        arg.onCompleteCallback();
+                };
+                this.onRejectCallback = function () {
+                    if (_this._isAborted)
+                        return;
+                    _this._isRejected = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.warn("\"".concat(_this.name, "\" was rejected."));
+                    if (arg.onRejectCallback)
+                        arg.onRejectCallback();
+                };
+                this.onAbortCallback = function () {
+                    if (_this._isFinished)
+                        return;
+                    _this._isAborted = true;
+                    _this._isRunning = false;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    console.warn("\"".concat(_this.name, "\" was aborted."));
+                    if (arg.onAbortCallback)
+                        arg.onAbortCallback();
+                };
+            }
+            else {
+                this.f = arg;
+                this.name = name;
+                this.parent = parent;
+                this.child = child;
+                if (onStartCallback)
+                    this.onStartCallback = function () {
+                        _this._isRunning = true;
+                        _this._startTime = now();
+                        console.log("\"".concat(_this.name, "\" has started."));
+                        onStartCallback();
+                    };
+                if (onCompleteCallback)
+                    this.onCompleteCallback = function () {
+                        _this._isFinished = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.log("\"".concat(_this.name, "\" has completed."));
+                        onCompleteCallback();
+                    };
+                if (onRejectCallback)
+                    this.onRejectCallback = function () {
+                        _this._isRejected = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was rejected."));
+                        onRejectCallback();
+                    };
+                if (onAbortCallback)
+                    this.onAbortCallback = function () {
+                        if (_this._isFinished)
+                            return;
+                        _this._isAborted = true;
+                        _this._isRunning = false;
+                        _this._stopTime = now();
+                        _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                        console.warn("\"".concat(_this.name, "\" was aborted."));
+                        onAbortCallback();
+                    };
+            }
+            var self = this;
+            var originalFunction = this.f;
+            this.f = function () {
+                return new Promise(function (resolve, reject) {
+                    self.signal.addEventListener('abort', function () {
+                        self.onAbortCallback && self.onAbortCallback();
+                        reject("\"".concat(self.name, "\" was aborted."));
+                    });
+                    var result = originalFunction();
+                    if (result instanceof Promise) {
+                        result.then(resolve).catch(reject);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+            };
+        }
+        Object.defineProperty(WatchFunction.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isAborted", {
+            get: function () {
+                return this._isAborted;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isFinished", {
+            get: function () {
+                return this._isFinished;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isRejected", {
+            get: function () {
+                return this._isRejected;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "isRunning", {
+            get: function () {
+                return this._isRunning;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(WatchFunction.prototype, "metrics", {
+            get: function () {
+                return {
+                    id: this._id,
+                    name: this.name,
+                    start: this.group ? this._startTime - this.group.startTime : 0,
+                    duration: this._duration,
+                    isRunning: this._isRunning,
+                    isFinished: this._isFinished,
+                    isRejected: this._isRejected,
+                    isAborted: this._isAborted,
+                    sequence: this.sequence,
+                };
+            },
+            enumerable: false,
+            configurable: true
+        });
+        return WatchFunction;
+    }());
+
+    var Group = /** @class */ (function () {
+        function Group() {
+            var _this = this;
+            this.useConsoleLog = true;
+            this._id = Sequence.nextId();
+            this._functions = [];
+            this._startTime = 0;
+            this._stopTime = 0;
+            this._duration = 0;
+            this._onStartCallback = function () { };
+            this._onCompleteCallback = function () { };
+            this._onRejectCallback = function () { };
+            this._onAbortCallback = function () { };
+            this.sequence = 0;
+            this.reset = function () {
+                _this._duration = 0;
+                _this._startTime = 0;
+                _this._stopTime = 0;
+                _this._functions.forEach(function (fn) { return fn.reset(); });
+            };
+            this._onUnCompleteCallback = function () {
+                if (_this.useConsoleLog)
+                    console.log("*** ABORTED? ".concat(_this._id, " ***"));
+            };
+            this._onRejectedCallback = function () {
+                if (_this.useConsoleLog)
+                    console.log("*** REJECTED? ".concat(_this._id, " ***"));
+            };
+            // Add a watch function
+            this.addWatch = function (addWatchFunction) {
+                var watchFunction;
+                if (typeof addWatchFunction === 'function') {
+                    watchFunction = new WatchFunction(addWatchFunction);
+                    if (_this.sequence === 0) {
+                        watchFunction.parent = watchFunction.parent || '';
+                        watchFunction.child = '_monitor_1';
+                        _this.sequence = 1;
+                    }
+                    else {
+                        watchFunction.parent = '_monitor_' + _this.sequence++;
+                        watchFunction.child = '_monitor_' + _this.sequence;
+                    }
+                }
+                else {
+                    // Create a new WatchFunction and add it to the group
+                    watchFunction = new WatchFunction(addWatchFunction);
+                }
+                // Assign an AbortController to the watch function
+                watchFunction.group = _this;
+                _this._functions.push(watchFunction);
+            };
+        }
+        Object.defineProperty(Group.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "functions", {
+            get: function () {
+                return this._functions;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "isRunning", {
+            get: function () {
+                return !!this._functions.map(function (x) { return x.isRunning; }).reduce(function (a, b) { return a || b; }, false);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "isFinished", {
+            get: function () {
+                return !!this._functions.map(function (x) { return x.isFinished; }).reduce(function (a, b) { return a && b; }, true);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "isRejected", {
+            get: function () {
+                return !!this._functions.map(function (x) { return x.isRejected; }).reduce(function (a, b) { return a || b; }, false);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "isAborted", {
+            get: function () {
+                return !!this._functions.map(function (x) { return x.isAborted; }).reduce(function (a, b) { return a || b; }, false);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "startTime", {
+            get: function () {
+                return this._startTime;
+            },
+            set: function (value) {
+                this._startTime = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "stopTime", {
+            get: function () {
+                return this._stopTime;
+            },
+            set: function (value) {
+                this._stopTime = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "duration", {
+            get: function () {
+                return Math.min(0, this._duration);
+            },
+            set: function (value) {
+                this._duration = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onStartCallback", {
+            get: function () {
+                var _this = this;
+                return function () {
+                    var _a;
+                    _this._startTime = now();
+                    if (_this.useConsoleLog) {
+                        console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
+                        console.log(_this.consoleTree, ['tree', "tree-".concat(_this._id)]);
+                        console.group('Group: ' + _this._id, _this._id);
+                        console.log("*** START ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'start');
+                    }
+                    _this._onStartCallback();
+                };
+            },
+            set: function (value) {
+                if (typeof value === 'function')
+                    this._onStartCallback = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onCompleteCallback", {
+            get: function () {
+                var _this = this;
+                return function () {
+                    var _a;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.useConsoleLog) {
+                        console.log("*** COMPLETE ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'complete');
+                        console.groupEnd();
+                        console.log(_this.metrics);
+                    }
+                    (_a = _this._onCompleteCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+                };
+            },
+            set: function (value) {
+                if (typeof value === 'function')
+                    this._onCompleteCallback = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onRejectCallback", {
+            get: function () {
+                var _this = this;
+                return function () {
+                    var _a;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.useConsoleLog) {
+                        console.log("*** REJECTED ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'complete');
+                        console.groupEnd();
+                        console.log(_this.metrics);
+                    }
+                    (_a = _this._onRejectCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+                };
+            },
+            set: function (value) {
+                if (typeof value === 'function')
+                    this._onRejectCallback = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onAbortCallback", {
+            get: function () {
+                var _this = this;
+                return function () {
+                    var _a;
+                    _this._stopTime = now();
+                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.useConsoleLog) {
+                        console.log("*** ABORTED ".concat(_this._id, " ***"));
+                        console.highlight('completed', _this._id, 'complete');
+                        console.groupEnd();
+                        console.log(_this.metrics);
+                    }
+                    (_a = _this._onAbortCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+                };
+            },
+            set: function (value) {
+                if (typeof value === 'function')
+                    this._onAbortCallback = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        // Abort a specific watch function by name
+        Group.prototype.abortWatch = function (name) {
+            var watchFunction = this._functions.find(function (fn) { return fn.name === name; });
+            if (watchFunction) {
+                watchFunction.abort();
+            }
+            else {
+                console.warn("+++ No watch function found with name \"".concat(name, "\""));
+            }
+        };
+        // Abort the entire group
+        Group.prototype.abort = function () {
+            this._functions.forEach(function (fn) {
+                fn.abort();
+            });
+        };
+        // Get all functions in the group
+        Group.prototype.getAll = function () {
+            return this._functions;
+        };
+        // Remove all functions from the group
+        Group.prototype.removeAll = function () {
+            this._functions = [];
+        };
+        // Add and remove placeholders
+        Group.prototype.add = function () { };
+        Group.prototype.remove = function () { };
+        Group.prototype.Watch = function (onStartCallback, onRejectCallback) {
+            var _this = this;
+            var watchArray = this._functions.map(function (fn) {
+                var _a;
+                return ({
+                    promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined,
+                    onRejectCallback: fn.onRejectCallback,
+                    group: _this,
+                });
+            });
+            return new Watch(watchArray, onStartCallback, onRejectCallback);
+        };
+        Group.prototype.WatchAll = function (onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
+            if (typeof onStartCallback === 'object') {
+                var startCb = onStartCallback.onStartCallback, onCompleteCallback_1 = onStartCallback.onCompleteCallback, onRejectCallback_1 = onStartCallback.onRejectCallback, onAbortCallback_1 = onStartCallback.onAbortCallback;
+                if (startCb) {
+                    this.onStartCallback = startCb;
+                }
+                if (onCompleteCallback_1) {
+                    this.onCompleteCallback = onCompleteCallback_1;
+                }
+                if (onRejectCallback_1) {
+                    this.onRejectCallback = onRejectCallback_1;
+                }
+                if (onAbortCallback_1) {
+                    this.onAbortCallback = onAbortCallback_1;
+                }
+            }
+            else {
+                if (onStartCallback) {
+                    this.onStartCallback = onStartCallback;
+                }
+                if (onCompleteCallback) {
+                    this.onCompleteCallback = onCompleteCallback;
+                }
+                if (onRejectCallback) {
+                    this.onRejectCallback = onRejectCallback;
+                }
+                if (onAbortCallback) {
+                    this.onAbortCallback = onAbortCallback;
+                }
+            }
+            if (this.isRunning) {
+                console.warn('This WatchAll group is already being monitored.');
+                return;
+            }
+            this._startTime = now();
+            if (typeof this.onStartCallback === 'function')
+                this.onStartCallback();
+            // const watchArray = this._functions.map(fn => ({
+            // 	promise: fn.promise ?? undefined,
+            // 	onRejectCallback: fn.onRejectCallback,
+            // 	group: this,
+            // 	_startTime: now(),
+            // }));
+            return WatchAll(this); //, onStartCallback, onRejectCallback);
+        };
+        Object.defineProperty(Group.prototype, "consoleTree", {
+            get: function () {
+                var treeData = this._functions.map(function (f) {
+                    return { name: f.name, parent: f.parent, child: f.child };
+                });
+                var treeBuilder = new Tree();
+                return treeBuilder.processTree(treeData);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "metrics", {
+            get: function () {
+                return this._functions.map(function (f) {
+                    return f.metrics;
+                });
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Group.prototype.onRejected = function (cbf) {
+            this._onRejectedCallback = cbf;
+            return this;
+        };
+        Group.prototype.onStart = function (cbf) {
+            this._onStartCallback = cbf;
+            return this;
+        };
+        Group.prototype.onComplete = function (cbf) {
+            this._onCompleteCallback = cbf;
+            return this;
+        };
+        return Group;
+    }());
+
     var nextId = Sequence.nextId;
+    // Export types and interfaces.
     // Use default export if necessary
     var Index = {
         Group: Group,
@@ -1207,7 +1274,7 @@
         Watch: Watch,
         sleep: sleep,
         Tree: Tree,
-        makeAsync: makeAsync,
+        WatchFunction: WatchFunction,
     };
 
     exports.Group = Group;
@@ -1215,8 +1282,8 @@
     exports.Sequence = Sequence;
     exports.Tree = Tree;
     exports.Watch = Watch;
+    exports.WatchFunction = WatchFunction;
     exports.default = Index;
-    exports.makeAsync = makeAsync;
     exports.nextId = nextId;
     exports.now = now;
     exports.sleep = sleep;

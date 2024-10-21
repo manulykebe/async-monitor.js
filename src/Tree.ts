@@ -10,24 +10,10 @@ interface TreeData {
 	name: string | undefined;
 }
 
-interface TreeOptions {
-	repeat?: number; // Optional parameter for the repeat count
-}
-
-interface TreeOptionsRepeat {
-	repeat: number;
-	current: number;
-}
-
 export default class Tree {
 	private map: {[key: string]: TreeNode} = {};
 	private roots: TreeNode[] = [];
 	private consoleLogText: string = '';
-	private repeatOptions: TreeOptionsRepeat = {repeat: 0, current: 0};
-	// repeater not in use by default, -1 is infinite, >0 is number of loops
-	constructor(options: TreeOptions = {}) {
-		this.repeatOptions.repeat = options.repeat ?? 0;
-	}
 
 	// Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
 	private buildTree(arr: TreeData[]): TreeNode[] {
@@ -104,16 +90,7 @@ export default class Tree {
 		isLast: boolean = true,
 		maxLengthObj = {maxLength: 0},
 	): void {
-		let repeatIndicator = ' ';
-		let repeatIndicatorFirstLine = '─';
-		let terminalLabel = '';
-
-		if (this.repeatOptions.repeat != 0) {
-			repeatIndicator = ' │';
-			repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
-		}
-
-		const line = `${isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
+		const line = `${isFirst ? '──' : prefix}${isLast && !isFirst ? '└─' : '├─'} ${node.description}`;
 
 		// Calculate the longest line length during this dry run
 		if (line.length > maxLengthObj.maxLength) {
@@ -139,16 +116,8 @@ export default class Tree {
 		encounteredTerminalRef: {value: boolean},
 	): void {
 		const isTerminal = node.children.length === 0;
-		let repeatIndicator = ' ';
-		let repeatIndicatorFirstLine = '─';
 		let terminalLabel = '';
-
-		if (this.repeatOptions.repeat != 0) {
-			repeatIndicator = ' │';
-			repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
-		}
-
-		let line = `${isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
+		let line = `${isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
 
 		if (isTerminal) {
 			const index = terminalIndex.current++;
@@ -222,30 +191,9 @@ export default class Tree {
 		);
 
 		// Step 6: Add final completion line
-		if (this.repeatOptions.repeat != 0) {
-			const repeatText =
-				this.repeatOptions.repeat == -1
-					? ' ∞ '
-					: ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
-			this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
-		}
 		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
 
+		// Return the console output as string
 		return this.consoleLogText;
 	}
 }
-
-/*
-Corner and Tee Shapes:
-
-└ (Box Drawings Light Up and Right)
-┘ (Box Drawings Light Up and Left)
-┌ (Box Drawings Light Down and Right)
-┐ (Box Drawings Light Down and Left)
-├ (Box Drawings Light Vertical and Right)
-┤ (Box Drawings Light Vertical and Left)
-┬ (Box Drawings Light Down and Horizontal)
-┴ (Box Drawings Light Up and Horizontal)
-┼ (Box Drawings Light Vertical and Horizontal)
-
-*/

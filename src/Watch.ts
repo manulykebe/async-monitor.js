@@ -1,6 +1,7 @@
-import Group, {type WatchFunction} from './Group';
+import Group from './Group';
 import Monitor from './Monitor';
 import now, {calcDuration} from './Now';
+import WatchFunction from './WatchFunction';
 
 export class Watch {
 	constructor(
@@ -61,12 +62,13 @@ export class Watch {
 				} else {
 					if (!Array.isArray(f)) f = [f];
 					if (Array.isArray(f)) {
-						f.forEach(callback => {
-							if (typeof callback === 'function') {
+						f.forEach(cbf => {
+							if (typeof cbf === 'function') {
 								try {
-									callback();
+									cbf();
 								} catch (error) {
-									console.warn('Error while executing callback.', error);
+									console.warn('Error while executing cbf.', error);
+									console.log(cbf);
 								}
 							}
 						});
@@ -76,40 +78,40 @@ export class Watch {
 	}
 }
 
+export class Progress {
+	constructor(group: Group) {
+		// Call the private function with the default parent value as undefined
+	}
+}
 let _sequence = 0;
-
-export async function WatchAll(
-	group: Group,
-	callback: (() => void) | undefined,
-	callback_error?: () => void,
-): Promise<void> {
+export async function WatchAll(group: Group, onStartCallback?: () => void, callback_error?: () => void): Promise<void> {
 	// Call the private function with the default parent value as undefined
 	return new Promise<void>((resolve, reject) => {
-		_watchAllInternal(group, undefined, callback, callback_error, resolve, reject);
+		_watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
 	});
 }
 
 function _watchAllInternal(
 	group: Group,
 	parent: string | undefined,
-	callback: (() => void) | undefined,
+	onStartCallback: (() => void) | undefined,
 	callback_error?: () => void,
 	resolve?: () => void,
 	reject?: () => void,
 ): void {
-	const watches = group._functions;
+	const watches = group.functions;
 	const useConsoleLog = group.useConsoleLog;
-	if (watches.every(f => f._isFinished)) {
+	if (watches.every(f => f.isFinished)) {
 		// All watches are finished
-		group._stopTime = now();
-		group._duration = calcDuration(group._startTime, group._stopTime);
-		if (typeof group._onCompleteCallback === 'function') {
-			group._onCompleteCallback();
+		group.stopTime = now();
+		group.duration = calcDuration(group.startTime, group.stopTime);
+		if (typeof group.onCompleteCallback === 'function') {
+			group.onCompleteCallback();
 			resolve && resolve();
 		}
 		return;
 	}
-	if (watches.some(f => f._isRejected)) {
+	if (watches.some(f => f.isRejected)) {
 		// Some watch was rejected
 		console.warn('Some watch was rejected');
 		reject && reject();
@@ -117,8 +119,8 @@ function _watchAllInternal(
 	}
 
 	if (typeof parent === 'function') {
-		callback_error = callback as () => void;
-		callback = parent as () => void;
+		callback_error = onStartCallback as () => void;
+		onStartCallback = parent as () => void;
 		parent = undefined;
 	}
 
@@ -128,11 +130,11 @@ function _watchAllInternal(
 		if (children.length === 0) {
 			console.warn('Nothing to do.');
 			console.warn('Nothing to do.');
-			if (typeof group._onCompleteCallback === 'function') group._onCompleteCallback();
+			if (typeof group.onCompleteCallback === 'function') group.onCompleteCallback();
 			return;
 		}
 		_sequence = 0;
-		watches.forEach((x, i) => (x._index = i));
+		// watches.forEach((x, i) => (x._index = i));
 	}
 
 	if (children.length > 0) {
@@ -144,10 +146,7 @@ function _watchAllInternal(
 			children
 				.filter(c => c.child === gc)
 				.forEach(child => {
-					child._isRunning = true;
-					child._startTime = now();
-					child.sequence = _sequence;
-					useConsoleLog && (console as any).highlight(child.name, {id: group._id, index: _sequence}, 'start');
+					useConsoleLog && (console as any).highlight(child.name, group.id, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {
@@ -173,12 +172,7 @@ function _watchAllInternal(
 									} else {
 										console.warn('onCompleteCallback is not defined or not a function');
 									}
-									child._isRunning = false;
-									child._isFinished = true;
-									child._stopTime = now();
-									child._duration = calcDuration(child._startTime, child._stopTime);
-									useConsoleLog &&
-										(console as any).highlight(child.name, {id: group._id, index: _sequence}, 'complete');
+									useConsoleLog && (console as any).highlight(child.name, group.id, 'complete');
 								});
 
 								child.promise.catch(() => {
@@ -187,14 +181,9 @@ function _watchAllInternal(
 									} else {
 										console.warn('onRejectCallback is not defined or not a function');
 									}
-									child._isRunning = false;
-									child._isFinished = true;
-									child._isRejected = true;
-									child._stopTime = now();
-									child._duration = calcDuration(child._startTime, child._stopTime);
 									if (useConsoleLog) {
-										(console as any).highlight(child.name, {id: group._id, index: _sequence}, 'rejected');
-										(console as any).highlight('completed', {id: group._id, index: _sequence}, 'rejected');
+										(console as any).highlight(child.name, group.id, 'rejected');
+										(console as any).highlight('completed', group.id, 'rejected');
 									}
 									reject && reject();
 								});
@@ -206,15 +195,12 @@ function _watchAllInternal(
 						}
 					} catch (error) {
 						console.warn('Watch: critical! error in call to (async) function:\n', error);
-						child._stopTime = now();
-						child._duration = calcDuration(child._startTime, child._stopTime);
-						child._isRunning = false;
 						if (typeof group._onUnCompleteCallback === 'function') group._onUnCompleteCallback();
 						return;
 					}
 				});
 		});
-		if (!group._isFinished) {
+		if (!group.isFinished) {
 			grandChildren.forEach(gc => {
 				const validChildren = children
 					.filter(c => c.child === gc)
@@ -228,8 +214,8 @@ function _watchAllInternal(
 					validChildren,
 					[
 						() => {
-							if (!watches.some(x => x._isRunning) && watches.every(x => x._isFinished)) {
-								if (typeof callback === 'function') callback();
+							if (!watches.some(x => x.isRunning) && watches.every(x => x.isFinished)) {
+								if (typeof onStartCallback === 'function') onStartCallback();
 							}
 
 							watches
@@ -240,7 +226,7 @@ function _watchAllInternal(
 								.map(x => x.child)
 								.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index)
 								.forEach(x => {
-									_watchAllInternal(group, x, callback, callback_error, resolve, reject);
+									_watchAllInternal(group, x, onStartCallback, callback_error, resolve, reject);
 								});
 						},
 					],

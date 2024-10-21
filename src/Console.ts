@@ -2,7 +2,7 @@ import version from './Version';
 
 declare global {
 	interface Console {
-		highlight(text: string, ids: {id: number; index: number}, className?: string): void;
+		highlight(text: string, _id: number, className?: string): void;
 	}
 }
 
@@ -31,7 +31,11 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 			const row = document.createElement('tr');
 			keys.forEach(key => {
 				const td = document.createElement('td');
-				td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				try {
+					td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				} catch (error) {
+					td.textContent = `${key}`;
+				}
 				td.classList.add('log-table-cell');
 				row.appendChild(td);
 			});
@@ -86,7 +90,6 @@ function appendLogToConsole(
 	classnames: string | string[],
 	_id?: number,
 ) {
-	if (message === null) return;
 	if (!message && message.trim() === '') return;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
@@ -172,51 +175,35 @@ console.warn = function (message, _id) {
 function escapeRegExp(text: string) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-// text is string or regex
-function findSpanElementWithClassAndText(text: string | RegExp, _id: number, className: string = 'start') {
-	if (text instanceof RegExp) debugger;
-
+function findSpanElementWithClassAndText(text: string, _id: number, className: string = 'start') {
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) return null;
 	const spanElements = treeElement.querySelectorAll(`span.highlight-${className}`);
 
 	for (let span of Array.from(spanElements)) {
-		if (typeof text === 'string' && span.textContent === text) {
-			return span;
-		} else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
+		if (span.textContent === text) {
 			return span;
 		}
 	}
 
 	return null;
 }
-// _id is number or object {_id: number = 1, _index: number = 0}
-console.highlight = function (
-	text: RegExp | string,
-	ids: {id: number; index: number},
-	className: string | string[] = 'start',
-) {
-	const treeElement = document.querySelector(`pre[class*="tree-${ids.id}"]`);
+console.highlight = function (text, _id, className = 'start') {
+	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) {
-		console.warn(`could not highlight tree-${ids.id}.`);
+		console.warn(`could not highlight tree-${_id}.`);
 		return;
 	}
-	if (!Array.isArray(className)) className = [className];
 
-	if (className.includes('start')) {
-		let regex;
-		if (typeof text === 'string') {
-			regex = new RegExp(escapeRegExp(text), 'gi');
-		} else {
-			regex = new RegExp(text, 'g');
-		}
+	if (className === 'start') {
+		const regex = new RegExp(escapeRegExp(text), 'gi');
 		const highlightedText = treeElement.innerHTML.replace(regex, match => {
-			return `<span data-monitor-tree="${ids.id}" data-monitor-index="${ids.index}" class="highlight-${className.join(' highlight-')}"><i class="fas fa-info-circle icon" onclick="interact();"></i>${match}</span>`;
+			return `<span class="highlight-${className}">${match}</span>`;
 		});
 
 		treeElement.innerHTML = highlightedText;
 	} else {
-		const spanElement = findSpanElementWithClassAndText(text, ids.id, 'start');
+		const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
 		if (spanElement) {
 			spanElement.classList.remove(`highlight-start`);
 			spanElement.classList.add(`highlight-${className}`);
@@ -224,23 +211,11 @@ console.highlight = function (
 	}
 };
 
-export function clearHighlights(_id: number) {
-	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
+function clearHighlights(_id: number) {
+	const treeElement = document.querySelector(`pre[class="tree-${_id}"]`);
 	if (treeElement) {
 		treeElement.querySelectorAll(`span`).forEach(span => {
-			if (!span.classList.contains('highlight-repeat')) span.outerHTML = span.innerHTML;
+			span.outerHTML = span.innerHTML;
 		});
-	}
-}
-
-export function displayRepeat(_id: number, runsNo: number, repeatNo: number) {
-	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
-	if (treeElement) {
-		const repeatElement = treeElement.querySelector(`span[class*="highlight-repeat"]`);
-		if (repeatElement) {
-			(repeatElement as HTMLElement).innerText =
-				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
-				runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
-		}
 	}
 }

@@ -1,20 +1,19 @@
 import './Console';
 
 import {sleep} from './Sleep';
-import Group, {type WatchFunction} from './Group';
+import Group from './Group';
 import now from './Now';
 import Sequence from './Sequence';
 import Tree from './Tree';
 import Monitor from './Monitor';
 import version from './Version';
 import {Watch} from './Watch';
-import {makeAsync} from './Element';
+import WatchFunction from './WatchFunction';
 
 const nextId = Sequence.nextId;
 // Directly export the items as named exports
-export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree, makeAsync};
+export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree, WatchFunction};
 // Export types and interfaces.
-export {WatchFunction};
 
 // Use default export if necessary
 export default {
@@ -27,5 +26,5 @@ export default {
 	Watch,
 	sleep,
 	Tree,
-	makeAsync,
+	WatchFunction,
 };

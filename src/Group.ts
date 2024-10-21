@@ -1,106 +1,143 @@
-import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
-import now from './Now';
-import {clearHighlights, displayRepeat} from './Console';
+import now, {calcDuration} from './Now';
+import WatchFunction, {Metric} from './WatchFunction';
+import Sequence from './Sequence';
 
-interface CustomDocument extends Document {
-	['async-monitor-groups']: Group[];
-}
-declare let document: CustomDocument;
-
-document['async-monitor-groups'] = [];
-
-type Metric = {
-	index: number;
-	name: string;
-	start: number | undefined;
-	duration: number | undefined;
-	f: string;
-	isRunning: boolean;
-	isFinished: boolean;
-	sequence: number;
-};
-
-const regexRepeat = (repeat: number): RegExp => {
-	const l = repeat.toString().length;
-	// regex that matches "(l)spaces" "1/" "l numbers" "1 space"
-	return new RegExp(`\\s{${l}}1\\/${repeat}\\s`);
-};
-
-export interface WatchFunction {
-	name: string;
-	parent?: string | undefined;
-	child?: string | undefined;
-	group?: Group | undefined;
-	sequence?: number | undefined;
-	promise?: Promise<any> | void;
-	f: () => Promise<any> | void;
-	onStartCallback?: (() => void) | undefined;
-	onCompleteCallback?: (() => void) | undefined;
-	onRejectCallback?: (() => void) | undefined;
-	_isRunning?: boolean;
-	_isFinished?: boolean;
-	_isRejected?: boolean;
-	_index?: number | undefined;
-	_startTime: number;
-	_stopTime: number;
-	_duration: number;
-}
-
-interface GroupOptions {
-	repeat: number;
-	runs?: number;
-}
-
-let _group_id: number = 0;
 export default class Group {
-	options: GroupOptions = {repeat: 0, runs: 0};
-	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
-		this.options = options;
-		document['async-monitor-groups'].push(this);
-	}
 	useConsoleLog: boolean = true;
-	_id = _group_id++;
-	_functions: WatchFunction[] = [];
-	_startTime: number = 0;
-	_stopTime: number = 0;
-	_duration: number = 0;
-	_seq: number = 0;
+
+	private _id: number = Sequence.nextId();
+	get id(): number {
+		return this._id!;
+	}
+	private _functions: WatchFunction[] = [];
+	get functions(): WatchFunction[] {
+		return this._functions;
+	}
+	get isRunning(): boolean {
+		return !!this._functions.map(x => x.isRunning).reduce((a, b) => a || b, false);
+	}
+
+	get isFinished(): boolean {
+		return !!this._functions.map(x => x.isFinished).reduce((a, b) => a && b, true);
+	}
+
+	get isRejected(): boolean {
+		return !!this._functions.map(x => x.isRejected).reduce((a, b) => a || b, false);
+	}
+
+	get isAborted(): boolean {
+		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
+	}
+	private _startTime: number = 0;
+	get startTime(): number {
+		return this._startTime;
+	}
+	set startTime(value: number) {
+		this._startTime = value;
+	}
+	private _stopTime: number = 0;
+	get stopTime(): number {
+		return this._stopTime;
+	}
+	set stopTime(value: number) {
+		this._stopTime = value;
+	}
+	private _duration: number = 0;
+	get duration(): number {
+		return Math.min(0, this._duration);
+	}
+	set duration(value: number) {
+		this._duration = value;
+	}
+	name?: string | undefined;
+	private _onStartCallback?: () => void = () => {};
+	get onStartCallback(): () => void {
+		return () => {
+			this._startTime = now();
+
+			if (this.useConsoleLog) {
+				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
+				console.log(this.consoleTree, ['tree', `tree-${this._id}`]);
+				console.group('Group: ' + this._id, this._id);
+				console.log(`*** START ${this._id} ***`);
+				console.highlight('completed', this._id, 'start');
+			}
+			this._onStartCallback!();
+		};
+	}
+	set onStartCallback(value: () => void) {
+		if (typeof value === 'function') this._onStartCallback = value;
+	}
+
+	private _onCompleteCallback?: () => void = () => {};
+	get onCompleteCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** COMPLETE ${this._id} ***`);
+				console.highlight('completed', this._id, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
+			this._onCompleteCallback?.();
+		};
+	}
+	set onCompleteCallback(value: () => void) {
+		if (typeof value === 'function') this._onCompleteCallback = value;
+	}
+
+	private _onRejectCallback?: () => void = () => {};
+	get onRejectCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** REJECTED ${this._id} ***`);
+				console.highlight('completed', this._id, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
+			this._onRejectCallback?.();
+		};
+	}
+	set onRejectCallback(value: () => void) {
+		if (typeof value === 'function') this._onRejectCallback = value;
+	}
+
+	private _onAbortCallback?: () => void = () => {};
+	get onAbortCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** ABORTED ${this._id} ***`);
+				console.highlight('completed', this._id, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
+			this._onAbortCallback?.();
+		};
+	}
+	set onAbortCallback(value: () => void) {
+		if (typeof value === 'function') this._onAbortCallback = value;
+	}
+
+	sequence: number = 0;
+	reset = () => {
+		this._duration = 0;
+		this._startTime = 0;
+		this._stopTime = 0;
+		this._functions.forEach(fn => fn.reset());
+	};
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
-
-	// Default Callbacks
-	_onStartCallback: () => void = () => {
-		console.group('Group: ' + this._id, this._id);
-		if (this.useConsoleLog) {
-			console.log(`*** START ${this._id} ***`);
-			(console as any).highlight('completed', {id: this._id}, 'start');
-			(console as any).highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
-		}
-	};
-
-	_onCompleteCallback: () => void = () => {
-		this.options.runs = (this.options.runs ?? 1) + 1;
-		if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
-			this.reset(false);
-			this.WatchAll(this.__callback, this.__callback_error);
-			return;
-		} else {
-			if (this.useConsoleLog) {
-				(console as any).highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, [
-					'complete',
-				]);
-			}
-		}
-
-		if (this.useConsoleLog) {
-			console.log(`*** COMPLETE ${this._id} ***`);
-			(console as any).highlight('completed', {id: this._id}, 'complete');
-			console.groupEnd();
-		}
-	};
 
 	_onUnCompleteCallback: () => void = () => {
 		if (this.useConsoleLog) console.log(`*** ABORTED? ${this._id} ***`);
@@ -110,56 +147,41 @@ export default class Group {
 		if (this.useConsoleLog) console.log(`*** REJECTED? ${this._id} ***`);
 	};
 
-	_abort: AbortController = new AbortController(); // Declare abort controller
-
-	get _isRunning(): boolean {
-		return !!this._functions.map(x => x._isRunning).reduce((a, b) => a || b, false);
-	}
-
-	get _isFinished(): boolean {
-		return !!this._functions.map(x => x._isFinished).reduce((a, b) => a && b, true);
-	}
-
-	get _isRejected(): boolean {
-		return !!this._functions.map(x => x._isRejected).reduce((a, b) => a || b, true);
-	}
-
 	// Add a watch function
-	addWatch = (addWatchFunction: WatchFunction | (() => void)) => {
+	addWatch = (addWatchFunction: WatchFunction) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
-			watchFunction = new Element(addWatchFunction);
-			if (this._seq === 0) {
-				watchFunction.parent = watchFunction.parent || undefined;
+			watchFunction = new WatchFunction(addWatchFunction);
+			if (this.sequence === 0) {
+				watchFunction.parent = watchFunction.parent || '';
 				watchFunction.child = '_monitor_1';
-				this._seq = 1;
+				this.sequence = 1;
 			} else {
-				watchFunction.parent = '_monitor_' + this._seq++;
-				watchFunction.child = '_monitor_' + this._seq;
+				watchFunction.parent = '_monitor_' + this.sequence++;
+				watchFunction.child = '_monitor_' + this.sequence;
 			}
 		} else {
-			// Create a new Element and add it to the group
-			watchFunction = new Element(addWatchFunction);
+			// Create a new WatchFunction and add it to the group
+			watchFunction = new WatchFunction(addWatchFunction);
 		}
+		// Assign an AbortController to the watch function
 		watchFunction.group = this;
 		this._functions.push(watchFunction);
 	};
-	// Abort the group TODO
-	abort(): void {
-		this._abort.abort();
-	}
-	// Reset all watch functions in the group
-	reset(resetRuns: boolean = true): void {
-		this._functions.forEach(fn => {
-			fn._isRunning = false;
-			fn._isFinished = false;
-			fn._isRejected = false;
-		});
-		if (resetRuns) {
-			this.options.runs = 1;
+	// Abort a specific watch function by name
+	abortWatch(name: string): void {
+		const watchFunction = this._functions.find(fn => fn.name === name);
+		if (watchFunction) {
+			watchFunction.abort();
+		} else {
+			console.warn(`+++ No watch function found with name "${name}"`);
 		}
-		displayRepeat(this._id, this.options.runs ?? 1, this.options.repeat ?? 1);
-		clearHighlights(this._id);
+	}
+	// Abort the entire group
+	abort(): void {
+		this._functions.forEach(fn => {
+			fn.abort();
+		});
 	}
 
 	// Get all functions in the group
@@ -176,40 +198,74 @@ export default class Group {
 	add(): void {}
 	remove(): void {}
 
-	Watch(callback: () => void, callback_error: () => void) {
+	Watch(onStartCallback: () => void, onRejectCallback: () => void) {
 		const watchArray = this._functions.map(fn => ({
-			promise: fn.promise ?? undefined, // Use the promise if it exists, otherwise undefined
-			onRejectCallback: fn.onRejectCallback, // The callback if the function fails
-			group: this, // The current group
+			promise: fn.promise ?? undefined,
+			onRejectCallback: fn.onRejectCallback,
+			group: this,
 		}));
 
-		return new Watch(watchArray, callback, callback_error);
+		return new Watch(watchArray, onStartCallback, onRejectCallback);
 	}
 
-	WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined) {
-		this.__callback = callback ?? (() => {});
-		this.__callback_error = callback_error ?? (() => {});
+	WatchAll(
+		onStartCallback?:
+			| (() => void)
+			| {
+					onStartCallback?: () => void;
+					onCompleteCallback?: () => void;
+					onRejectCallback?: () => void;
+					onAbortCallback?: () => void;
+			  },
+		onCompleteCallback?: () => void,
+		onRejectCallback?: () => void,
+		onAbortCallback?: () => void,
+	) {
+		if (typeof onStartCallback === 'object') {
+			const {onStartCallback: startCb, onCompleteCallback, onRejectCallback, onAbortCallback} = onStartCallback;
+			if (startCb) {
+				this.onStartCallback = startCb;
+			}
+			if (onCompleteCallback) {
+				this.onCompleteCallback = onCompleteCallback;
+			}
+			if (onRejectCallback) {
+				this.onRejectCallback = onRejectCallback;
+			}
+			if (onAbortCallback) {
+				this.onAbortCallback = onAbortCallback;
+			}
+		} else {
+			if (onStartCallback) {
+				this.onStartCallback = onStartCallback;
+			}
+			if (onCompleteCallback) {
+				this.onCompleteCallback = onCompleteCallback;
+			}
+			if (onRejectCallback) {
+				this.onRejectCallback = onRejectCallback;
+			}
+			if (onAbortCallback) {
+				this.onAbortCallback = onAbortCallback;
+			}
+		}
 
-		callback = this.__callback;
-		callback_error = this.__callback_error;
-
-		if (this._isRunning) {
+		if (this.isRunning) {
 			console.warn('This WatchAll group is already being monitored.');
 			return;
 		}
 
 		this._startTime = now();
-		if (typeof this._onStartCallback === 'function') this._onStartCallback();
+		if (typeof this.onStartCallback === 'function') this.onStartCallback();
 
-		const watchArray = this._functions.map(fn => ({
-			promise: fn.promise ?? undefined, // Use the promise if it exists, otherwise undefined
-			onRejectCallback: fn.onRejectCallback, // The callback for rejection
-			group: this, // The current group,
-			_startTime: now(),
-		}));
+		// const watchArray = this._functions.map(fn => ({
+		// 	promise: fn.promise ?? undefined,
+		// 	onRejectCallback: fn.onRejectCallback,
+		// 	group: this,
+		// 	_startTime: now(),
+		// }));
 
-		// Pass the array to the WatchAll function
-		return WatchAll(this, callback, callback_error);
+		return WatchAll(this); //, onStartCallback, onRejectCallback);
 	}
 
 	get consoleTree(): string {
@@ -217,49 +273,26 @@ export default class Group {
 			return {name: f.name, parent: f.parent, child: f.child};
 		});
 
-		const treeBuilder = new Tree({repeat: this.options.repeat});
+		const treeBuilder = new Tree();
 		return treeBuilder.processTree(treeData);
 	}
 
 	get metrics(): Metric[] {
-		return [
-			...this._functions.map((f, i) => {
-				return {
-					index: i,
-					name: f.name,
-					sequence: f.sequence ?? 0,
-					start: f.group ? f._startTime - f.group._startTime : undefined,
-					duration: f._duration,
-					f: f.f.toString(),
-					isRunning: f._isRunning ?? false,
-					isFinished: f._isFinished ?? false,
-					isRejected: f._isRejected ?? false,
-				};
-			}),
-			{
-				index: 0,
-				name: '',
-				sequence: 0,
-				start: 0,
-				duration: this._duration,
-				f: '',
-				isRunning: this._isRunning ?? false,
-				isFinished: this._isFinished ?? false,
-				isRejected: this._isRejected ?? false,
-			},
-		];
+		return this._functions.map(f => {
+			return f.metrics;
+		});
 	}
 
-	onRejected(callback: () => void) {
-		this._onRejectedCallback = callback;
+	onRejected(cbf: () => void) {
+		this._onRejectedCallback = cbf;
 		return this;
 	}
-	onStart(callback: () => void) {
-		this._onStartCallback = callback;
+	onStart(cbf: () => void) {
+		this._onStartCallback = cbf;
 		return this;
 	}
-	onComplete(callback: () => void) {
-		this._onCompleteCallback = callback;
+	onComplete(cbf: () => void) {
+		this._onCompleteCallback = cbf;
 		return this;
 	}
 }

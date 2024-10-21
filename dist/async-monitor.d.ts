@@ -1,30 +1,16 @@
 declare global {
     interface Console {
-        highlight(text: string, ids: {
-            id: number;
-            index: number;
-        }, className?: string): void;
+        highlight(text: string, _id: number, className?: string): void;
     }
 }
 
 /**
- * Pauses execution for a specified number of seconds, with an option to abort using AbortController.
- * If the `fail` parameter is not provided, it defaults to a random rejection based on the `seconds` value.
+ * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
+ * has a random option when param fail is not set.
  *
- * @param seconds - The number of seconds to sleep (when set to 'undefined' a random timer between 0 and 3 seconds is set).
- * @param fail - Optional. If `true`, the promise will reject after the specified time. If `false`, it will resolve. If `undefined`, it will randomly reject based on the `seconds` value.
- * @returns A promise that resolves after the specified number of seconds, rejects based on the `fail` condition, or aborts if the signal is triggered.
- *
- * @example
- * const sleepPromise = sleep(2, false);
- * sleepPromise
- *   .then((result) => console.log(`Resolved after ${result / 1000} seconds`))
- *   .catch((error) => console.error(error.message));
- *
- * // Abort the sleep after 1 second
- * setTimeout(() => {
- *   sleepPromise.abort();
- * }, 1000);
+ * @param seconds - The number of seconds (default is a random number between 0 and 3).
+ * @param fail - Whether the function should reject or not (default is `false`).
+ * @returns A promise that resolves after `seconds` seconds or rejects based on the `fail` condition.
  */
 declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<number>;
 
@@ -37,72 +23,115 @@ declare class Watch {
 }
 
 type Metric = {
-    index: number;
+    id: number;
     name: string;
     start: number | undefined;
     duration: number | undefined;
-    f: string;
     isRunning: boolean;
     isFinished: boolean;
+    isRejected: boolean;
+    isAborted: boolean;
     sequence: number;
 };
-interface WatchFunction {
+declare class WatchFunction {
+    private _id;
+    get id(): number;
+    private _isAborted;
+    get isAborted(): boolean;
+    private _isFinished;
+    get isFinished(): boolean;
+    private _isRejected;
+    get isRejected(): boolean;
+    private _isRunning;
+    get isRunning(): boolean;
+    private _startTime;
+    private _stopTime;
+    private _duration;
+    private abortController;
+    abort: () => void;
+    signal: AbortSignal;
     name: string;
-    parent?: string | undefined;
-    child?: string | undefined;
+    parent: string;
+    child: string;
     group?: Group | undefined;
-    sequence?: number | undefined;
-    promise?: Promise<any> | void;
     f: () => Promise<any> | void;
-    onStartCallback?: (() => void) | undefined;
-    onCompleteCallback?: (() => void) | undefined;
-    onRejectCallback?: (() => void) | undefined;
-    _isRunning?: boolean;
-    _isFinished?: boolean;
-    _isRejected?: boolean;
-    _index?: number | undefined;
-    _startTime: number;
-    _stopTime: number;
-    _duration: number;
+    onStartCallback?: () => void;
+    onCompleteCallback?: () => void;
+    onRejectCallback?: () => void;
+    onAbortCallback?: () => void;
+    sequence: number;
+    reset: () => void;
+    'promise': Promise<any>;
+    get metrics(): Metric;
+    constructor(arg: {
+        f: () => Promise<any> | void;
+        name: string;
+        parent: string;
+        child: string;
+        onStartCallback?: () => void;
+        onCompleteCallback?: () => void;
+        onRejectCallback?: () => void;
+        onAbortCallback?: () => void;
+    } | (() => Promise<any> | void), name?: string, parent?: string, child?: string, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void);
 }
-interface GroupOptions {
-    repeat: number;
-    runs?: number;
-}
+
 declare class Group {
-    options: GroupOptions;
-    constructor(options?: GroupOptions);
     useConsoleLog: boolean;
-    _id: number;
-    _functions: WatchFunction[];
-    _startTime: number;
-    _stopTime: number;
-    _duration: number;
-    _seq: number;
+    private _id;
+    get id(): number;
+    private _functions;
+    get functions(): WatchFunction[];
+    get isRunning(): boolean;
+    get isFinished(): boolean;
+    get isRejected(): boolean;
+    get isAborted(): boolean;
+    private _startTime;
+    get startTime(): number;
+    set startTime(value: number);
+    private _stopTime;
+    get stopTime(): number;
+    set stopTime(value: number);
+    private _duration;
+    get duration(): number;
+    set duration(value: number);
+    name?: string | undefined;
+    private _onStartCallback?;
+    get onStartCallback(): () => void;
+    set onStartCallback(value: () => void);
+    private _onCompleteCallback?;
+    get onCompleteCallback(): () => void;
+    set onCompleteCallback(value: () => void);
+    private _onRejectCallback?;
+    get onRejectCallback(): () => void;
+    set onRejectCallback(value: () => void);
+    private _onAbortCallback?;
+    get onAbortCallback(): () => void;
+    set onAbortCallback(value: () => void);
+    sequence: number;
+    reset: () => void;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
-    _onStartCallback: () => void;
-    _onCompleteCallback: () => void;
     _onUnCompleteCallback: () => void;
     _onRejectedCallback: () => void;
-    _abort: AbortController;
-    get _isRunning(): boolean;
-    get _isFinished(): boolean;
-    get _isRejected(): boolean;
-    addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
+    addWatch: (addWatchFunction: WatchFunction) => void;
+    abortWatch(name: string): void;
     abort(): void;
-    reset(resetRuns?: boolean): void;
     getAll(): Array<WatchFunction>;
     removeAll(): void;
     add(): void;
     remove(): void;
-    Watch(callback: () => void, callback_error: () => void): Watch;
-    WatchAll(callback?: () => void | undefined, callback_error?: () => void | undefined): Promise<void> | undefined;
+    Watch(onStartCallback: () => void, onRejectCallback: () => void): Watch;
+    WatchAll(onStartCallback?: (() => void) | {
+        onStartCallback?: () => void;
+        onCompleteCallback?: () => void;
+        onRejectCallback?: () => void;
+        onAbortCallback?: () => void;
+    }, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void): Promise<void> | undefined;
     get consoleTree(): string;
     get metrics(): Metric[];
-    onRejected(callback: () => void): this;
-    onStart(callback: () => void): this;
-    onComplete(callback: () => void): this;
+    onRejected(cbf: () => void): this;
+    onStart(cbf: () => void): this;
+    onComplete(cbf: () => void): this;
 }
 
 declare const now: () => number;
@@ -124,15 +153,10 @@ interface TreeData {
     child: string | number | undefined;
     name: string | undefined;
 }
-interface TreeOptions {
-    repeat?: number;
-}
 declare class Tree {
     private map;
     private roots;
     private consoleLogText;
-    private repeatOptions;
-    constructor(options?: TreeOptions);
     private buildTree;
     private collectTerminalNodes;
     private calculateMaxLength;
@@ -151,8 +175,6 @@ declare class Monitor {
 
 declare const version = "1.1.2";
 
-declare function makeAsync<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => Promise<ReturnType<T>>;
-
 declare const nextId: typeof Sequence.nextId;
 
 declare const _default: {
@@ -165,7 +187,7 @@ declare const _default: {
     Watch: typeof Watch;
     sleep: typeof sleep;
     Tree: typeof Tree;
-    makeAsync: typeof makeAsync;
+    WatchFunction: typeof WatchFunction;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, type WatchFunction, _default as default, makeAsync, nextId, now, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, WatchFunction, _default as default, nextId, now, sleep, version };
