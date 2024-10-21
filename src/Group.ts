@@ -4,6 +4,13 @@ import Tree from './Tree';
 import now from './Now';
 import {clearHighlights, displayRepeat} from './Console';
 
+interface CustomDocument extends Document {
+	['async-monitor-groups']: Group[];
+}
+declare let document: CustomDocument;
+
+document['async-monitor-groups'] = [];
+
 type Metric = {
 	index: number;
 	name: string;
@@ -51,6 +58,7 @@ export default class Group {
 	options: GroupOptions = {repeat: 0, runs: 0};
 	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
 		this.options = options;
+		document['async-monitor-groups'].push(this);
 	}
 	useConsoleLog: boolean = true;
 	_id = _group_id++;
@@ -68,8 +76,8 @@ export default class Group {
 		console.group('Group: ' + this._id, this._id);
 		if (this.useConsoleLog) {
 			console.log(`*** START ${this._id} ***`);
-			(console as any).highlight('completed', this._id, 'start');
-			(console as any).highlight(regexRepeat(this.options.repeat), this._id, ['start', 'repeat']);
+			(console as any).highlight('completed', {id: this._id}, 'start');
+			(console as any).highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
 		}
 	};
 
@@ -81,13 +89,15 @@ export default class Group {
 			return;
 		} else {
 			if (this.useConsoleLog) {
-				(console as any).highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', this._id, ['complete']);
+				(console as any).highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, [
+					'complete',
+				]);
 			}
 		}
 
 		if (this.useConsoleLog) {
 			console.log(`*** COMPLETE ${this._id} ***`);
-			(console as any).highlight('completed', this._id, 'complete');
+			(console as any).highlight('completed', {id: this._id}, 'complete');
 			console.groupEnd();
 		}
 	};

@@ -147,7 +147,7 @@ function _watchAllInternal(
 					child._isRunning = true;
 					child._startTime = now();
 					child.sequence = _sequence;
-					useConsoleLog && (console as any).highlight(child.name, group._id, 'start');
+					useConsoleLog && (console as any).highlight(child.name, {id: group._id, index: _sequence}, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {
@@ -177,7 +177,8 @@ function _watchAllInternal(
 									child._isFinished = true;
 									child._stopTime = now();
 									child._duration = calcDuration(child._startTime, child._stopTime);
-									useConsoleLog && (console as any).highlight(child.name, group._id, 'complete');
+									useConsoleLog &&
+										(console as any).highlight(child.name, {id: group._id, index: _sequence}, 'complete');
 								});
 
 								child.promise.catch(() => {
@@ -192,8 +193,8 @@ function _watchAllInternal(
 									child._stopTime = now();
 									child._duration = calcDuration(child._startTime, child._stopTime);
 									if (useConsoleLog) {
-										(console as any).highlight(child.name, group._id, 'rejected');
-										(console as any).highlight('completed', group._id, 'rejected');
+										(console as any).highlight(child.name, {id: group._id, index: _sequence}, 'rejected');
+										(console as any).highlight('completed', {id: group._id, index: _sequence}, 'rejected');
 									}
 									reject && reject();
 								});

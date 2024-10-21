@@ -18,6 +18,17 @@
 				window.open(url, 'popupWindow', 'width=600,height=400,scrollbars=yes');
 			}
 		</script>
+		<script>
+			function interact() {
+				const currentTarget = event.currentTarget;
+				if (currentTarget) {
+					const span = currentTarget.parentElement;
+					const group = document['async-monitor-groups'][span.getAttribute('data-monitor-tree')];
+					const element = group._functions[span.getAttribute('data-monitor-index')];
+					element.abort();
+				}
+			}
+		</script>
 	</head>
 
 	<body>

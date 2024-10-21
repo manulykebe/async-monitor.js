@@ -71,6 +71,8 @@
     var originalConsoleTable = console.table;
     var originalConsoleWarn = console.warn;
     function appendLogToConsole(message, classnames, _id) {
+        if (message === null)
+            return;
         if (!message && message.trim() === '')
             return;
         var consoleDiv = document.getElementById('console');
@@ -164,11 +166,12 @@
         }
         return null;
     }
-    console.highlight = function (text, _id, className) {
+    // _id is number or object {_id: number = 1, _index: number = 0}
+    console.highlight = function (text, ids, className) {
         if (className === void 0) { className = 'start'; }
-        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(ids.id, "\"]"));
         if (!treeElement) {
-            console.warn("could not highlight tree-".concat(_id, "."));
+            console.warn("could not highlight tree-".concat(ids.id, "."));
             return;
         }
         if (!Array.isArray(className))
@@ -182,18 +185,16 @@
                 regex = new RegExp(text, 'g');
             }
             var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-                return "<span class=\"highlight-".concat(className.join(' highlight-'), "\">").concat(match, "</span>");
+                return "<span data-monitor-tree=\"".concat(ids.id, "\" data-monitor-index=\"").concat(ids.index, "\" class=\"highlight-").concat(className.join(' highlight-'), "\"><i class=\"fas fa-info-circle icon\" onclick=\"interact();\"></i>").concat(match, "</span>");
             });
             treeElement.innerHTML = highlightedText;
         }
         else {
-            //if (typeof text === 'string') {
-            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+            var spanElement = findSpanElementWithClassAndText(text, ids.id, 'start');
             if (spanElement) {
                 spanElement.classList.remove("highlight-start");
                 spanElement.classList.add("highlight-".concat(className));
             }
-            //}
         }
     };
     function clearHighlights(_id) {
@@ -275,7 +276,7 @@
     function sleep() {
         return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
             var controller, signal, promise;
-            if (seconds === void 0) { seconds = Math.random() * 3; }
+            if (seconds === void 0) { seconds = Math.random() * 10; }
             return __generator$3(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds / 3 < 0.5;
@@ -642,7 +643,7 @@
                     child._isRunning = true;
                     child._startTime = now();
                     child.sequence = _sequence;
-                    useConsoleLog && console.highlight(child.name, group._id, 'start');
+                    useConsoleLog && console.highlight(child.name, { id: group._id, index: _sequence }, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -672,7 +673,8 @@
                                     child._isFinished = true;
                                     child._stopTime = now();
                                     child._duration = calcDuration(child._startTime, child._stopTime);
-                                    useConsoleLog && console.highlight(child.name, group._id, 'complete');
+                                    useConsoleLog &&
+                                        console.highlight(child.name, { id: group._id, index: _sequence }, 'complete');
                                 });
                                 child.promise.catch(function () {
                                     if (typeof child.onRejectCallback === 'function') {
@@ -687,8 +689,8 @@
                                     child._stopTime = now();
                                     child._duration = calcDuration(child._startTime, child._stopTime);
                                     if (useConsoleLog) {
-                                        console.highlight(child.name, group._id, 'rejected');
-                                        console.highlight('completed', group._id, 'rejected');
+                                        console.highlight(child.name, { id: group._id, index: _sequence }, 'rejected');
+                                        console.highlight('completed', { id: group._id, index: _sequence }, 'rejected');
                                     }
                                     reject && reject();
                                 });
@@ -946,6 +948,7 @@
         }
         return to.concat(ar || Array.prototype.slice.call(from));
     };
+    document['async-monitor-groups'] = [];
     var regexRepeat = function (repeat) {
         var l = repeat.toString().length;
         // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
@@ -969,8 +972,8 @@
                 console.group('Group: ' + _this._id, _this._id);
                 if (_this.useConsoleLog) {
                     console.log("*** START ".concat(_this._id, " ***"));
-                    console.highlight('completed', _this._id, 'start');
-                    console.highlight(regexRepeat(_this.options.repeat), _this._id, ['start', 'repeat']);
+                    console.highlight('completed', { id: _this._id }, 'start');
+                    console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                 }
             };
             this._onCompleteCallback = function () {
@@ -983,12 +986,14 @@
                 }
                 else {
                     if (_this.useConsoleLog) {
-                        console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', _this._id, ['complete']);
+                        console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, [
+                            'complete',
+                        ]);
                     }
                 }
                 if (_this.useConsoleLog) {
                     console.log("*** COMPLETE ".concat(_this._id, " ***"));
-                    console.highlight('completed', _this._id, 'complete');
+                    console.highlight('completed', { id: _this._id }, 'complete');
                     console.groupEnd();
                 }
             };
@@ -1024,6 +1029,7 @@
                 _this._functions.push(watchFunction);
             };
             this.options = options;
+            document['async-monitor-groups'].push(this);
         }
         Object.defineProperty(Group.prototype, "_isRunning", {
             get: function () {

@@ -2,7 +2,7 @@ import version from './Version';
 
 declare global {
 	interface Console {
-		highlight(text: string, _id: number, className?: string): void;
+		highlight(text: string, ids: {id: number; index: number}, className?: string): void;
 	}
 }
 
@@ -86,6 +86,7 @@ function appendLogToConsole(
 	classnames: string | string[],
 	_id?: number,
 ) {
+	if (message === null) return;
 	if (!message && message.trim() === '') return;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
@@ -189,10 +190,15 @@ function findSpanElementWithClassAndText(text: string | RegExp, _id: number, cla
 
 	return null;
 }
-console.highlight = function (text: RegExp | string, _id: number, className: string | string[] = 'start') {
-	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
+// _id is number or object {_id: number = 1, _index: number = 0}
+console.highlight = function (
+	text: RegExp | string,
+	ids: {id: number; index: number},
+	className: string | string[] = 'start',
+) {
+	const treeElement = document.querySelector(`pre[class*="tree-${ids.id}"]`);
 	if (!treeElement) {
-		console.warn(`could not highlight tree-${_id}.`);
+		console.warn(`could not highlight tree-${ids.id}.`);
 		return;
 	}
 	if (!Array.isArray(className)) className = [className];
@@ -205,18 +211,16 @@ console.highlight = function (text: RegExp | string, _id: number, className: str
 			regex = new RegExp(text, 'g');
 		}
 		const highlightedText = treeElement.innerHTML.replace(regex, match => {
-			return `<span class="highlight-${className.join(' highlight-')}">${match}</span>`;
+			return `<span data-monitor-tree="${ids.id}" data-monitor-index="${ids.index}" class="highlight-${className.join(' highlight-')}"><i class="fas fa-info-circle icon" onclick="interact();"></i>${match}</span>`;
 		});
 
 		treeElement.innerHTML = highlightedText;
 	} else {
-		//if (typeof text === 'string') {
-		const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+		const spanElement = findSpanElementWithClassAndText(text, ids.id, 'start');
 		if (spanElement) {
 			spanElement.classList.remove(`highlight-start`);
 			spanElement.classList.add(`highlight-${className}`);
 		}
-		//}
 	}
 };
 

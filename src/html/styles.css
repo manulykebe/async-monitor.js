@@ -146,6 +146,10 @@ button:hover {
 	background-color: #f4f4f4; /* Optional, for visibility */
 }
 
+span {
+	position: relative;
+	display: inline-block;
+}
 /* Styling for table cells */
 .log-table-cell {
 	border: 1px solid black;
@@ -177,4 +181,15 @@ button:hover {
 
 .log-table {
 	border-collapse: collapse;
+}
+
+.icon {
+	position: absolute;
+	left: -10px;
+	top: 1px;
+	cursor: pointer;
+}
+
+.highlight-complete .icon {
+	display: none;
 }

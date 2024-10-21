@@ -1,6 +1,9 @@
 declare global {
     interface Console {
-        highlight(text: string, _id: number, className?: string): void;
+        highlight(text: string, ids: {
+            id: number;
+            index: number;
+        }, className?: string): void;
     }
 }
 
