@@ -186,7 +186,7 @@ define(['exports'], (function (exports) { 'use strict';
                 regex = new RegExp(text, 'g');
             }
             var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-                return "<span data-monitor-tree=\"".concat(ids.id, "\" data-monitor-index=\"").concat(ids.index, "\" class=\"highlight-").concat(className.join(' highlight-'), "\"><i class=\"fas fa-info-circle icon\" onclick=\"interact();\"></i>").concat(match, "</span>");
+                return "<span data-monitor-tree=\"".concat(ids.id, "\" data-monitor-index=\"").concat(ids.index, "\" class=\"highlight-").concat(className.join(' highlight-'), "\"><i class=\"fas fa-stop icon\" onclick=\"interact();\"></i>").concat(match, "</span>");
             });
             treeElement.innerHTML = highlightedText;
         }
@@ -455,6 +455,7 @@ define(['exports'], (function (exports) { 'use strict';
         }
         return Watch;
     }());
+    var _sequence = 0;
     function WatchAll(group, onStartCallback, callback_error) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -498,6 +499,7 @@ define(['exports'], (function (exports) { 'use strict';
                     group.onCompleteCallback();
                 return;
             }
+            _sequence = 0;
             // watches.forEach((x, i) => (x._index = i));
         }
         if (children.length > 0) {
@@ -505,10 +507,12 @@ define(['exports'], (function (exports) { 'use strict';
                 .map(function (x) { return x.child; })
                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; });
             grandChildren.forEach(function (gc) {
+                _sequence++;
                 children
                     .filter(function (c) { return c.child === gc; })
                     .forEach(function (child) {
-                    useConsoleLog && console.highlight(child.name, { id: group.id }, 'start');
+                    child.sequence = _sequence;
+                    useConsoleLog && console.highlight(child.name, { id: group.id, index: child.id }, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -858,8 +862,10 @@ define(['exports'], (function (exports) { 'use strict';
                         arg.onCompleteCallback();
                 };
                 this.onRejectCallback = function () {
-                    if (_this._isAborted)
+                    if (_this._isAborted) {
                         return;
+                    }
+                    debugger;
                     _this._isRejected = true;
                     _this._isRunning = false;
                     _this._stopTime = now();
@@ -919,7 +925,8 @@ define(['exports'], (function (exports) { 'use strict';
                         _this._stopTime = now();
                         _this._duration = calcDuration(_this._startTime, _this._stopTime);
                         console.warn("\"".concat(_this.name, "\" was aborted."));
-                        onAbortCallback();
+                        debugger;
+                        self.onAbortCallback && self.onAbortCallback();
                     };
             }
             var self = this;
@@ -927,6 +934,8 @@ define(['exports'], (function (exports) { 'use strict';
             this.f = function () {
                 return new Promise(function (resolve, reject) {
                     self.signal.addEventListener('abort', function () {
+                        if (!self._isRunning)
+                            return;
                         self.onAbortCallback && self.onAbortCallback();
                         reject("\"".concat(self.name, "\" was aborted."));
                     });
@@ -1128,7 +1137,6 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     var _a;
-                    debugger;
                     _this._startTime = now();
                     if (_this.useConsoleLog) {
                         console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));

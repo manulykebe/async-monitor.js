@@ -127,7 +127,10 @@ export default class WatchFunction {
 			};
 
 			this.onRejectCallback = () => {
-				if (this._isAborted) return;
+				if (this._isAborted) {
+					return;
+				}
+				debugger;
 				this._isRejected = true;
 				this._isRunning = false;
 				this._stopTime = now();
@@ -182,7 +185,8 @@ export default class WatchFunction {
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
 					console.warn(`"${this.name}" was aborted.`);
-					onAbortCallback();
+					debugger;
+					self.onAbortCallback && self.onAbortCallback();
 				};
 		}
 
@@ -191,6 +195,7 @@ export default class WatchFunction {
 		this.f = () => {
 			return new Promise((resolve, reject) => {
 				self.signal.addEventListener('abort', () => {
+					if (!self._isRunning) return;
 					self.onAbortCallback && self.onAbortCallback();
 					reject(`"${self.name}" was aborted.`);
 				});

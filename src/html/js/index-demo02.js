@@ -9,9 +9,8 @@ const importModule = async () => {
 	}
 
 	const {Group, Tree, sleep, version} = module;
-	const demo02 = new Group({
-		repeat: 7,
-	});
+	// const demo02 = new Group({repeat: 7});
+	const demo02 = new Group({repeat: -1});
 
 	demo02.addWatch({
 		name: 'preparation step',
@@ -78,15 +77,11 @@ const importModule = async () => {
 				const button = document.getElementById('demo02');
 				button.disabled = false;
 				button.innerText = 'demo02';
-				console.log('Metrics:');
-				console.table(demo02.metrics);
 			},
 			() => {
 				const button = document.getElementById('demo02');
 				button.disabled = false;
 				button.innerText = 'demo02 (aborted)';
-				console.log('Metrics:');
-				console.table(demo02.metrics);
 			},
 		);
 	}

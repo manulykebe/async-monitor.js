@@ -77,8 +77,6 @@ export default class Group {
 	private _onStartCallback?: () => void = () => {};
 	get onStartCallback(): () => void {
 		return () => {
-			debugger;
-
 			this._startTime = now();
 
 			if (this.useConsoleLog) {

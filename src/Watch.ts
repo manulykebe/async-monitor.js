@@ -146,7 +146,8 @@ function _watchAllInternal(
 			children
 				.filter(c => c.child === gc)
 				.forEach(child => {
-					useConsoleLog && console.highlight(child.name, {id: group.id}, 'start');
+					child.sequence = _sequence;
+					useConsoleLog && console.highlight(child.name, {id: group.id, index: child.id}, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {

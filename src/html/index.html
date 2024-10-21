@@ -23,9 +23,20 @@
 				const currentTarget = event.currentTarget;
 				if (currentTarget) {
 					const span = currentTarget.parentElement;
-					const group = document['async-monitor-groups'][span.getAttribute('data-monitor-tree')];
-					const element = group._functions[span.getAttribute('data-monitor-index')];
-					element.abort();
+					const group = document['async-monitor-groups'].find(
+						g => g._id === parseInt(span.getAttribute('data-monitor-tree')),
+					);
+					if (group) {
+						const index = parseInt(span.getAttribute('data-monitor-index'));
+						if (isNaN(index) || index === 0) {
+							group.abort();
+						} else {
+							const element = group._functions.find(f => f._id === index);
+							if (element && element.abort) {
+								element.abort();
+							}
+						}
+					}
 				}
 			}
 		</script>

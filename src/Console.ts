@@ -215,7 +215,7 @@ console.highlight = function (
 			regex = new RegExp(text, 'g');
 		}
 		const highlightedText = treeElement.innerHTML.replace(regex, match => {
-			return `<span data-monitor-tree="${ids.id}" data-monitor-index="${ids.index}" class="highlight-${className.join(' highlight-')}"><i class="fas fa-info-circle icon" onclick="interact();"></i>${match}</span>`;
+			return `<span data-monitor-tree="${ids.id}" data-monitor-index="${ids.index}" class="highlight-${className.join(' highlight-')}"><i class="fas fa-stop icon" onclick="interact();"></i>${match}</span>`;
 		});
 
 		treeElement.innerHTML = highlightedText;
