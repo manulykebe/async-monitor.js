@@ -27,7 +27,6 @@ export default class Tree {
 	// repeater not in use by default, -1 is infinite, >0 is number of loops
 	constructor(options: TreeOptions = {}) {
 		this.repeatOptions.repeat = options.repeat ?? 0;
-		console.log('Repeat value set to:', this.repeatOptions.repeat); // Debugging the value
 	}
 
 	// Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
@@ -227,7 +226,7 @@ export default class Tree {
 			const repeatText =
 				this.repeatOptions.repeat == -1
 					? ' ∞ '
-					: ' ' + 'x'.repeat(String(this.repeatOptions.repeat).length) + '/' + this.repeatOptions.repeat + ' ';
+					: ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
 			this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
 		}
 		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
@@ -235,3 +234,18 @@ export default class Tree {
 		return this.consoleLogText;
 	}
 }
+
+/*
+Corner and Tee Shapes:
+
+└ (Box Drawings Light Up and Right)
+┘ (Box Drawings Light Up and Left)
+┌ (Box Drawings Light Down and Right)
+┐ (Box Drawings Light Down and Left)
+├ (Box Drawings Light Vertical and Right)
+┤ (Box Drawings Light Vertical and Left)
+┬ (Box Drawings Light Down and Horizontal)
+┴ (Box Drawings Light Up and Horizontal)
+┼ (Box Drawings Light Vertical and Horizontal)
+
+*/

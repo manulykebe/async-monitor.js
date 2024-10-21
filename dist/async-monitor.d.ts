@@ -88,7 +88,7 @@ declare class Group {
     get _isRejected(): boolean;
     addWatch: (addWatchFunction: WatchFunction | (() => void)) => void;
     abort(): void;
-    reset(): void;
+    reset(resetRuns?: boolean): void;
     getAll(): Array<WatchFunction>;
     removeAll(): void;
     add(): void;

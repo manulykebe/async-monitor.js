@@ -171,13 +171,18 @@ console.warn = function (message, _id) {
 function escapeRegExp(text: string) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-function findSpanElementWithClassAndText(text: string, _id: number, className: string = 'start') {
+// text is string or regex
+function findSpanElementWithClassAndText(text: string | RegExp, _id: number, className: string = 'start') {
+	if (text instanceof RegExp) debugger;
+
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) return null;
 	const spanElements = treeElement.querySelectorAll(`span.highlight-${className}`);
 
 	for (let span of Array.from(spanElements)) {
-		if (span.textContent === text) {
+		if (typeof text === 'string' && span.textContent === text) {
+			return span;
+		} else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
 			return span;
 		}
 	}
@@ -205,13 +210,13 @@ console.highlight = function (text: RegExp | string, _id: number, className: str
 
 		treeElement.innerHTML = highlightedText;
 	} else {
-		if (typeof text === 'string') {
-			const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
-			if (spanElement) {
-				spanElement.classList.remove(`highlight-start`);
-				spanElement.classList.add(`highlight-${className}`);
-			}
+		//if (typeof text === 'string') {
+		const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+		if (spanElement) {
+			spanElement.classList.remove(`highlight-start`);
+			spanElement.classList.add(`highlight-${className}`);
 		}
+		//}
 	}
 };
 
@@ -229,9 +234,9 @@ export function displayRepeat(_id: number, runsNo: number, repeatNo: number) {
 	if (treeElement) {
 		const repeatElement = treeElement.querySelector(`span[class*="highlight-repeat"]`);
 		if (repeatElement) {
-			debugger;
 			(repeatElement as HTMLElement).innerText =
-				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) + runsNo.toString().concat('/');
+				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+				runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
 		}
 	}
 }

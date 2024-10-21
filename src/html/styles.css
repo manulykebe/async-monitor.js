@@ -166,7 +166,9 @@ button:hover {
 	font-style: normal;
 	font-weight: bold;
 }
-
+.highlight-repeat {
+	border: 0px solid black;
+}
 .tree {
 	padding: 2px 0;
 	border: 1px solid #ccc;

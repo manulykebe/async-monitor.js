@@ -139,14 +139,20 @@ console.warn = function (message, _id) {
 function escapeRegExp(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+// text is string or regex
 function findSpanElementWithClassAndText(text, _id, className) {
+    if (text instanceof RegExp)
+        debugger;
     var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
     if (!treeElement)
         return null;
     var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
     for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
         var span = _a[_i];
-        if (span.textContent === text) {
+        if (typeof text === 'string' && span.textContent === text) {
+            return span;
+        }
+        else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
             return span;
         }
     }
@@ -175,13 +181,13 @@ console.highlight = function (text, _id, className) {
         treeElement.innerHTML = highlightedText;
     }
     else {
-        if (typeof text === 'string') {
-            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
-            if (spanElement) {
-                spanElement.classList.remove("highlight-start");
-                spanElement.classList.add("highlight-".concat(className));
-            }
+        //if (typeof text === 'string') {
+        var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+        if (spanElement) {
+            spanElement.classList.remove("highlight-start");
+            spanElement.classList.add("highlight-".concat(className));
         }
+        //}
     }
 };
 function clearHighlights(_id) {
@@ -198,9 +204,9 @@ function displayRepeat(_id, runsNo, repeatNo) {
     if (treeElement) {
         var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
         if (repeatElement) {
-            debugger;
             repeatElement.innerText =
-                ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) + runsNo.toString().concat('/');
+                ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+                    runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
         }
     }
 }
@@ -743,7 +749,6 @@ var Tree = /** @class */ (function () {
         this.consoleLogText = '';
         this.repeatOptions = { repeat: 0, current: 0 };
         this.repeatOptions.repeat = (_a = options.repeat) !== null && _a !== void 0 ? _a : 0;
-        console.log('Repeat value set to:', this.repeatOptions.repeat); // Debugging the value
     }
     // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
     Tree.prototype.buildTree = function (arr) {
@@ -903,7 +908,7 @@ var Tree = /** @class */ (function () {
         if (this.repeatOptions.repeat != 0) {
             var repeatText = this.repeatOptions.repeat == -1
                 ? ' ∞ '
-                : ' ' + 'x'.repeat(String(this.repeatOptions.repeat).length) + '/' + this.repeatOptions.repeat + ' ';
+                : ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
             this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
         }
         this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
@@ -911,6 +916,20 @@ var Tree = /** @class */ (function () {
     };
     return Tree;
 }());
+/*
+Corner and Tee Shapes:
+
+└ (Box Drawings Light Up and Right)
+┘ (Box Drawings Light Up and Left)
+┌ (Box Drawings Light Down and Right)
+┐ (Box Drawings Light Down and Left)
+├ (Box Drawings Light Vertical and Right)
+┤ (Box Drawings Light Vertical and Left)
+┬ (Box Drawings Light Down and Horizontal)
+┴ (Box Drawings Light Up and Horizontal)
+┼ (Box Drawings Light Vertical and Horizontal)
+
+*/
 
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -920,6 +939,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         }
     }
     return to.concat(ar || Array.prototype.slice.call(from));
+};
+var regexRepeat = function (repeat) {
+    var l = repeat.toString().length;
+    // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
+    return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
 };
 var _group_id = 0;
 var Group = /** @class */ (function () {
@@ -940,16 +964,21 @@ var Group = /** @class */ (function () {
             if (_this.useConsoleLog) {
                 console.log("*** START ".concat(_this._id, " ***"));
                 console.highlight('completed', _this._id, 'start');
-                console.highlight(/ x+\//, _this._id, ['start', 'repeat']);
+                console.highlight(regexRepeat(_this.options.repeat), _this._id, ['start', 'repeat']);
             }
         };
         this._onCompleteCallback = function () {
             var _a;
             _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
-            if (_this.options.runs < _this.options.repeat || _this.options.repeat === -1) {
-                _this.reset();
+            if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
+                _this.reset(false);
                 _this.WatchAll(_this.__callback, _this.__callback_error);
                 return;
+            }
+            else {
+                if (_this.useConsoleLog) {
+                    console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', _this._id, ['complete']);
+                }
             }
             if (_this.useConsoleLog) {
                 console.log("*** COMPLETE ".concat(_this._id, " ***"));
@@ -1016,13 +1045,17 @@ var Group = /** @class */ (function () {
         this._abort.abort();
     };
     // Reset all watch functions in the group
-    Group.prototype.reset = function () {
+    Group.prototype.reset = function (resetRuns) {
         var _a, _b;
+        if (resetRuns === void 0) { resetRuns = true; }
         this._functions.forEach(function (fn) {
             fn._isRunning = false;
             fn._isFinished = false;
             fn._isRejected = false;
         });
+        if (resetRuns) {
+            this.options.runs = 1;
+        }
         displayRepeat(this._id, (_a = this.options.runs) !== null && _a !== void 0 ? _a : 1, (_b = this.options.repeat) !== null && _b !== void 0 ? _b : 1);
         clearHighlights(this._id);
     };
