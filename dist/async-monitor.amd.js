@@ -272,7 +272,7 @@ define(['exports'], (function (exports) { 'use strict';
     function sleep() {
         return __awaiter$3(this, arguments, void 0, function (seconds, fail) {
             var controller, signal, promise;
-            if (seconds === void 0) { seconds = Math.random() * 10; }
+            if (seconds === void 0) { seconds = Math.random() * 3; }
             return __generator$3(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds / 3 < 0.5;
