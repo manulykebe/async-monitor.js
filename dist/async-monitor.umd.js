@@ -76,6 +76,8 @@
     var originalConsoleTable = console.table;
     var originalConsoleWarn = console.warn;
     function appendLogToConsole(message, classnames, _id) {
+        if (message === null)
+            return;
         if (!message && message.trim() === '')
             return;
         var consoleDiv = document.getElementById('console');
@@ -150,41 +152,76 @@
     function escapeRegExp(text) {
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
+    // text is string or regex
     function findSpanElementWithClassAndText(text, _id, className) {
+        if (text instanceof RegExp)
+            debugger;
         var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
         if (!treeElement)
             return null;
         var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
         for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
             var span = _a[_i];
-            if (span.textContent === text) {
+            if (typeof text === 'string' && span.textContent === text) {
+                return span;
+            }
+            else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
                 return span;
             }
         }
         return null;
     }
-    console.highlight = function (text, _id, className) {
+    // _id is number or object {_id: number = 1, _index: number = 0}
+    console.highlight = function (text, ids, className) {
         if (className === void 0) { className = 'start'; }
-        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(ids.id, "\"]"));
         if (!treeElement) {
-            console.warn("could not highlight tree-".concat(_id, "."));
+            console.warn("could not highlight tree-".concat(ids.id, "."));
             return;
         }
-        if (className === 'start') {
-            var regex = new RegExp(escapeRegExp(text), 'gi');
+        if (!Array.isArray(className))
+            className = [className];
+        if (className.includes('start')) {
+            var regex = void 0;
+            if (typeof text === 'string') {
+                regex = new RegExp(escapeRegExp(text), 'gi');
+            }
+            else {
+                regex = new RegExp(text, 'g');
+            }
             var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-                return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
+                return "<span data-monitor-tree=\"".concat(ids.id, "\" data-monitor-index=\"").concat(ids.index, "\" class=\"highlight-").concat(className.join(' highlight-'), "\"><i class=\"fas fa-info-circle icon\" onclick=\"interact();\"></i>").concat(match, "</span>");
             });
             treeElement.innerHTML = highlightedText;
         }
         else {
-            var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
+            var spanElement = findSpanElementWithClassAndText(text, ids.id, 'start');
             if (spanElement) {
                 spanElement.classList.remove("highlight-start");
                 spanElement.classList.add("highlight-".concat(className));
             }
         }
     };
+    function clearHighlights(_id) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (treeElement) {
+            treeElement.querySelectorAll("span").forEach(function (span) {
+                if (!span.classList.contains('highlight-repeat'))
+                    span.outerHTML = span.innerHTML;
+            });
+        }
+    }
+    function displayRepeat(_id, runsNo, repeatNo) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (treeElement) {
+            var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
+            if (repeatElement) {
+                repeatElement.innerText =
+                    ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+                        runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
+            }
+        }
+    }
 
     var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -475,7 +512,7 @@
                 children
                     .filter(function (c) { return c.child === gc; })
                     .forEach(function (child) {
-                    useConsoleLog && console.highlight(child.name, group.id, 'start');
+                    useConsoleLog && console.highlight(child.name, { id: group.id }, 'start');
                     if (typeof child.onStartCallback === 'function') {
                         try {
                             child.onStartCallback();
@@ -501,7 +538,7 @@
                                     else {
                                         console.warn('onCompleteCallback is not defined or not a function');
                                     }
-                                    useConsoleLog && console.highlight(child.name, group.id, 'complete');
+                                    useConsoleLog && console.highlight(child.name, { id: group.id }, 'complete');
                                 });
                                 child.promise.catch(function () {
                                     if (typeof child.onRejectCallback === 'function') {
@@ -511,8 +548,8 @@
                                         console.warn('onRejectCallback is not defined or not a function');
                                     }
                                     if (useConsoleLog) {
-                                        console.highlight(child.name, group.id, 'rejected');
-                                        console.highlight('completed', group.id, 'rejected');
+                                        console.highlight(child.name, { id: group.id }, 'rejected');
+                                        console.highlight('completed', { id: group.id }, 'rejected');
                                     }
                                     reject && reject();
                                 });
@@ -567,10 +604,15 @@
     }
 
     var Tree = /** @class */ (function () {
-        function Tree() {
+        // repeater not in use by default, -1 is infinite, >0 is number of loops
+        function Tree(options) {
+            if (options === void 0) { options = {}; }
+            var _a;
             this.map = {};
             this.roots = [];
             this.consoleLogText = '';
+            this.repeatOptions = { repeat: 0, current: 0 };
+            this.repeatOptions.repeat = (_a = options.repeat) !== null && _a !== void 0 ? _a : 0;
         }
         // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
         Tree.prototype.buildTree = function (arr) {
@@ -648,7 +690,13 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
-            var line = "".concat(isFirst ? '──' : prefix).concat(isLast && !isFirst ? '└─' : '├─', " ").concat(node.description);
+            var repeatIndicator = ' ';
+            var repeatIndicatorFirstLine = '─';
+            if (this.repeatOptions.repeat != 0) {
+                repeatIndicator = ' │';
+                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+            }
+            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             // Calculate the longest line length during this dry run
             if (line.length > maxLengthObj.maxLength) {
                 maxLengthObj.maxLength = line.length;
@@ -666,8 +714,14 @@
             if (isFirst === void 0) { isFirst = true; }
             if (isLast === void 0) { isLast = true; }
             var isTerminal = node.children.length === 0;
+            var repeatIndicator = ' ';
+            var repeatIndicatorFirstLine = '─';
             var terminalLabel = '';
-            var line = "".concat(isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+            if (this.repeatOptions.repeat != 0) {
+                repeatIndicator = ' │';
+                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+            }
+            var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             if (isTerminal) {
                 var index = terminalIndex.current++;
                 terminalLabel = index === 0 ? '─┐' : '─┤';
@@ -715,12 +769,31 @@
                 return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
             });
             // Step 6: Add final completion line
+            if (this.repeatOptions.repeat != 0) {
+                var repeatText = this.repeatOptions.repeat == -1
+                    ? ' ∞ '
+                    : ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
+                this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
+            }
             this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
-            // Return the console output as string
             return this.consoleLogText;
         };
         return Tree;
     }());
+    /*
+    Corner and Tee Shapes:
+
+    └ (Box Drawings Light Up and Right)
+    ┘ (Box Drawings Light Up and Left)
+    ┌ (Box Drawings Light Down and Right)
+    ┐ (Box Drawings Light Down and Left)
+    ├ (Box Drawings Light Vertical and Right)
+    ┤ (Box Drawings Light Vertical and Left)
+    ┬ (Box Drawings Light Down and Horizontal)
+    ┴ (Box Drawings Light Up and Horizontal)
+    ┼ (Box Drawings Light Vertical and Horizontal)
+
+    */
 
     /**
      * Sequence
@@ -926,9 +999,17 @@
         return WatchFunction;
     }());
 
+    document['async-monitor-groups'] = [];
+    var regexRepeat = function (repeat) {
+        var l = repeat.toString().length;
+        // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
+        return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
+    };
     var Group = /** @class */ (function () {
-        function Group() {
+        function Group(options) {
+            if (options === void 0) { options = { repeat: 0, runs: 1 }; }
             var _this = this;
+            this.options = { repeat: 0, runs: 0 };
             this.useConsoleLog = true;
             this._id = Sequence.nextId();
             this._functions = [];
@@ -939,13 +1020,7 @@
             this._onCompleteCallback = function () { };
             this._onRejectCallback = function () { };
             this._onAbortCallback = function () { };
-            this.sequence = 0;
-            this.reset = function () {
-                _this._duration = 0;
-                _this._startTime = 0;
-                _this._stopTime = 0;
-                _this._functions.forEach(function (fn) { return fn.reset(); });
-            };
+            this.sequence = 0; //??
             this._onUnCompleteCallback = function () {
                 if (_this.useConsoleLog)
                     console.log("*** ABORTED? ".concat(_this._id, " ***"));
@@ -977,6 +1052,8 @@
                 watchFunction.group = _this;
                 _this._functions.push(watchFunction);
             };
+            this.options = options;
+            document['async-monitor-groups'].push(this);
         }
         Object.defineProperty(Group.prototype, "id", {
             get: function () {
@@ -1055,13 +1132,13 @@
                 var _this = this;
                 return function () {
                     var _a;
+                    debugger;
                     _this._startTime = now();
                     if (_this.useConsoleLog) {
                         console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
-                        console.log(_this.consoleTree, ['tree', "tree-".concat(_this._id)]);
-                        console.group('Group: ' + _this._id, _this._id);
                         console.log("*** START ".concat(_this._id, " ***"));
-                        console.highlight('completed', _this._id, 'start');
+                        console.highlight('completed', { id: _this._id }, 'start');
+                        console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                     }
                     _this._onStartCallback();
                 };
@@ -1077,16 +1154,27 @@
             get: function () {
                 var _this = this;
                 return function () {
-                    var _a;
+                    var _a, _b;
+                    _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
+                    if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
+                        _this.reset(false);
+                        _this.WatchAll(_this.__callback, _this.__callback_error);
+                        return;
+                    }
+                    else {
+                        if (_this.useConsoleLog) {
+                            console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, ['complete']);
+                        }
+                    }
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
                     if (_this.useConsoleLog) {
                         console.log("*** COMPLETE ".concat(_this._id, " ***"));
-                        console.highlight('completed', _this._id, 'complete');
+                        console.highlight('completed', { id: _this._id }, 'complete');
                         console.groupEnd();
                         console.log(_this.metrics);
                     }
-                    (_a = _this._onCompleteCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+                    (_b = _this._onCompleteCallback) === null || _b === void 0 ? void 0 : _b.call(_this);
                 };
             },
             set: function (value) {
@@ -1105,7 +1193,7 @@
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
                     if (_this.useConsoleLog) {
                         console.log("*** REJECTED ".concat(_this._id, " ***"));
-                        console.highlight('completed', _this._id, 'complete');
+                        console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
                         console.groupEnd();
                         console.log(_this.metrics);
                     }
@@ -1128,7 +1216,7 @@
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
                     if (_this.useConsoleLog) {
                         console.log("*** ABORTED ".concat(_this._id, " ***"));
-                        console.highlight('completed', _this._id, 'complete');
+                        console.highlight('completed', { id: _this._id }, 'complete');
                         console.groupEnd();
                         console.log(_this.metrics);
                     }
@@ -1157,6 +1245,20 @@
             this._functions.forEach(function (fn) {
                 fn.abort();
             });
+        };
+        // Reset all watch functions in the group
+        Group.prototype.reset = function (resetRuns) {
+            var _a, _b;
+            if (resetRuns === void 0) { resetRuns = true; }
+            this._duration = 0;
+            this._startTime = 0;
+            this._stopTime = 0;
+            this._functions.forEach(function (fn) { return fn.reset(); });
+            if (resetRuns) {
+                this.options.runs = 1;
+            }
+            displayRepeat(this._id, (_a = this.options.runs) !== null && _a !== void 0 ? _a : 1, (_b = this.options.repeat) !== null && _b !== void 0 ? _b : 1);
+            clearHighlights(this._id);
         };
         // Get all functions in the group
         Group.prototype.getAll = function () {
@@ -1231,7 +1333,7 @@
                 var treeData = this._functions.map(function (f) {
                     return { name: f.name, parent: f.parent, child: f.child };
                 });
-                var treeBuilder = new Tree();
+                var treeBuilder = new Tree({ repeat: this.options.repeat });
                 return treeBuilder.processTree(treeData);
             },
             enumerable: false,

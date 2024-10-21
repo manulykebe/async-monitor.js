@@ -190,6 +190,7 @@ span {
 	cursor: pointer;
 }
 
-.highlight-complete .icon {
+.highlight-complete .icon,
+.highlight-rejected .icon {
 	display: none;
 }

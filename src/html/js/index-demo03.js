@@ -17,9 +17,7 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			const button = document.getElementById('demo03');
-			button.disabled = true;
-			button.innerText = 'Executing...';
+			debugger;
 			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
@@ -131,15 +129,11 @@ const importModule = async () => {
 				const button = document.getElementById('demo03');
 				button.disabled = false;
 				button.innerText = 'demo03';
-				console.log('Metrics:');
-				console.table(demo03.metrics);
 			},
 			() => {
 				const button = document.getElementById('demo03');
 				button.disabled = false;
 				button.innerText = 'demo03 (aborted)';
-				console.log('Metrics:');
-				console.table(demo03.metrics);
 			},
 		);
 	}

@@ -1,6 +1,9 @@
 declare global {
     interface Console {
-        highlight(text: string, _id: number, className?: string): void;
+        highlight(text: RegExp | string, ids: {
+            id: number;
+            index?: number;
+        }, className?: string | string[]): void;
     }
 }
 
@@ -75,7 +78,13 @@ declare class WatchFunction {
     } | (() => Promise<any> | void), name?: string, parent?: string, child?: string, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void);
 }
 
+interface GroupOptions {
+    repeat: number;
+    runs?: number;
+}
 declare class Group {
+    options: GroupOptions;
+    constructor(options?: GroupOptions);
     useConsoleLog: boolean;
     private _id;
     get id(): number;
@@ -108,7 +117,6 @@ declare class Group {
     get onAbortCallback(): () => void;
     set onAbortCallback(value: () => void);
     sequence: number;
-    reset: () => void;
     __callback?: () => void | undefined;
     __callback_error?: () => void | undefined;
     _onUnCompleteCallback: () => void;
@@ -116,6 +124,7 @@ declare class Group {
     addWatch: (addWatchFunction: WatchFunction) => void;
     abortWatch(name: string): void;
     abort(): void;
+    reset(resetRuns?: boolean): void;
     getAll(): Array<WatchFunction>;
     removeAll(): void;
     add(): void;
@@ -153,10 +162,15 @@ interface TreeData {
     child: string | number | undefined;
     name: string | undefined;
 }
+interface TreeOptions {
+    repeat?: number;
+}
 declare class Tree {
     private map;
     private roots;
     private consoleLogText;
+    private repeatOptions;
+    constructor(options?: TreeOptions);
     private buildTree;
     private collectTerminalNodes;
     private calculateMaxLength;

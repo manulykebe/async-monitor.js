@@ -3,8 +3,30 @@ import Tree from './Tree';
 import now, {calcDuration} from './Now';
 import WatchFunction, {Metric} from './WatchFunction';
 import Sequence from './Sequence';
+import {clearHighlights, displayRepeat} from './Console';
+interface CustomDocument extends Document {
+	['async-monitor-groups']: Group[];
+}
+declare let document: CustomDocument;
+document['async-monitor-groups'] = [];
+
+const regexRepeat = (repeat: number): RegExp => {
+	const l = repeat.toString().length;
+	// regex that matches "(l)spaces" "1/" "l numbers" "1 space"
+	return new RegExp(`\\s{${l}}1\\/${repeat}\\s`);
+};
+
+interface GroupOptions {
+	repeat: number;
+	runs?: number;
+}
 
 export default class Group {
+	options: GroupOptions = {repeat: 0, runs: 0};
+	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
+		this.options = options;
+		document['async-monitor-groups'].push(this);
+	}
 	useConsoleLog: boolean = true;
 
 	private _id: number = Sequence.nextId();
@@ -55,14 +77,15 @@ export default class Group {
 	private _onStartCallback?: () => void = () => {};
 	get onStartCallback(): () => void {
 		return () => {
+			debugger;
+
 			this._startTime = now();
 
 			if (this.useConsoleLog) {
 				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
-				console.log(this.consoleTree, ['tree', `tree-${this._id}`]);
-				console.group('Group: ' + this._id, this._id);
 				console.log(`*** START ${this._id} ***`);
-				console.highlight('completed', this._id, 'start');
+				console.highlight('completed', {id: this._id}, 'start');
+				console.highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
 			}
 			this._onStartCallback!();
 		};
@@ -74,12 +97,23 @@ export default class Group {
 	private _onCompleteCallback?: () => void = () => {};
 	get onCompleteCallback(): () => void {
 		return () => {
+			this.options.runs = (this.options.runs ?? 1) + 1;
+			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
+				this.reset(false);
+				this.WatchAll(this.__callback, this.__callback_error);
+				return;
+			} else {
+				if (this.useConsoleLog) {
+					console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
+				}
+			}
+
 			this._stopTime = now();
 			this._duration = calcDuration(this._startTime, this._stopTime);
 
 			if (this.useConsoleLog) {
 				console.log(`*** COMPLETE ${this._id} ***`);
-				console.highlight('completed', this._id, 'complete');
+				console.highlight('completed', {id: this._id}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
 			}
@@ -98,7 +132,7 @@ export default class Group {
 
 			if (this.useConsoleLog) {
 				console.log(`*** REJECTED ${this._id} ***`);
-				console.highlight('completed', this._id, 'complete');
+				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
 			}
@@ -117,7 +151,7 @@ export default class Group {
 
 			if (this.useConsoleLog) {
 				console.log(`*** ABORTED ${this._id} ***`);
-				console.highlight('completed', this._id, 'complete');
+				console.highlight('completed', {id: this._id}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
 			}
@@ -128,13 +162,7 @@ export default class Group {
 		if (typeof value === 'function') this._onAbortCallback = value;
 	}
 
-	sequence: number = 0;
-	reset = () => {
-		this._duration = 0;
-		this._startTime = 0;
-		this._stopTime = 0;
-		this._functions.forEach(fn => fn.reset());
-	};
+	sequence: number = 0; //??
 
 	__callback?: () => void | undefined;
 	__callback_error?: () => void | undefined;
@@ -182,6 +210,19 @@ export default class Group {
 		this._functions.forEach(fn => {
 			fn.abort();
 		});
+	}
+
+	// Reset all watch functions in the group
+	reset(resetRuns: boolean = true): void {
+		this._duration = 0;
+		this._startTime = 0;
+		this._stopTime = 0;
+		this._functions.forEach(fn => fn.reset());
+		if (resetRuns) {
+			this.options.runs = 1;
+		}
+		displayRepeat(this._id, this.options.runs ?? 1, this.options.repeat ?? 1);
+		clearHighlights(this._id);
 	}
 
 	// Get all functions in the group
@@ -273,7 +314,7 @@ export default class Group {
 			return {name: f.name, parent: f.parent, child: f.child};
 		});
 
-		const treeBuilder = new Tree();
+		const treeBuilder = new Tree({repeat: this.options.repeat});
 		return treeBuilder.processTree(treeData);
 	}
 

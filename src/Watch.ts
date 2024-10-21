@@ -146,7 +146,7 @@ function _watchAllInternal(
 			children
 				.filter(c => c.child === gc)
 				.forEach(child => {
-					useConsoleLog && (console as any).highlight(child.name, group.id, 'start');
+					useConsoleLog && console.highlight(child.name, {id: group.id}, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						try {
@@ -172,7 +172,7 @@ function _watchAllInternal(
 									} else {
 										console.warn('onCompleteCallback is not defined or not a function');
 									}
-									useConsoleLog && (console as any).highlight(child.name, group.id, 'complete');
+									useConsoleLog && console.highlight(child.name, {id: group.id}, 'complete');
 								});
 
 								child.promise.catch(() => {
@@ -182,8 +182,8 @@ function _watchAllInternal(
 										console.warn('onRejectCallback is not defined or not a function');
 									}
 									if (useConsoleLog) {
-										(console as any).highlight(child.name, group.id, 'rejected');
-										(console as any).highlight('completed', group.id, 'rejected');
+										console.highlight(child.name, {id: group.id}, 'rejected');
+										console.highlight('completed', {id: group.id}, 'rejected');
 									}
 									reject && reject();
 								});
