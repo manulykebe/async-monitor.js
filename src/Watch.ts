@@ -39,7 +39,6 @@ export class Watch {
 			})
 			.finally(() => {
 				if (_breakOnRejected) {
-					debugger;
 					const fs0 = fs[0];
 					if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
 					// if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();

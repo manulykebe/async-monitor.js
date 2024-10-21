@@ -143,14 +143,20 @@ console.warn = function (message, _id) {
 function escapeRegExp(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+// text is string or regex
 function findSpanElementWithClassAndText(text, _id, className) {
+    if (text instanceof RegExp)
+        debugger;
     var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
     if (!treeElement)
         return null;
     var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
     for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
         var span = _a[_i];
-        if (span.textContent === text) {
+        if (typeof text === 'string' && span.textContent === text) {
+            return span;
+        }
+        else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
             return span;
         }
     }
@@ -163,21 +169,51 @@ console.highlight = function (text, _id, className) {
         console.warn("could not highlight tree-".concat(_id, "."));
         return;
     }
-    if (className === 'start') {
-        var regex = new RegExp(escapeRegExp(text), 'gi');
+    if (!Array.isArray(className))
+        className = [className];
+    if (className.includes('start')) {
+        var regex = void 0;
+        if (typeof text === 'string') {
+            regex = new RegExp(escapeRegExp(text), 'gi');
+        }
+        else {
+            regex = new RegExp(text, 'g');
+        }
         var highlightedText = treeElement.innerHTML.replace(regex, function (match) {
-            return "<span class=\"highlight-".concat(className, "\">").concat(match, "</span>");
+            return "<span class=\"highlight-".concat(className.join(' highlight-'), "\">").concat(match, "</span>");
         });
         treeElement.innerHTML = highlightedText;
     }
     else {
+        //if (typeof text === 'string') {
         var spanElement = findSpanElementWithClassAndText(text, _id, 'start');
         if (spanElement) {
             spanElement.classList.remove("highlight-start");
             spanElement.classList.add("highlight-".concat(className));
         }
+        //}
     }
 };
+function clearHighlights(_id) {
+    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+    if (treeElement) {
+        treeElement.querySelectorAll("span").forEach(function (span) {
+            if (!span.classList.contains('highlight-repeat'))
+                span.outerHTML = span.innerHTML;
+        });
+    }
+}
+function displayRepeat(_id, runsNo, repeatNo) {
+    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+    if (treeElement) {
+        var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
+        if (repeatElement) {
+            repeatElement.innerText =
+                ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+                    runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
+        }
+    }
+}
 
 var __awaiter$3 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -504,7 +540,6 @@ var Watch = /** @class */ (function () {
             .finally(function () {
             var _a;
             if (_breakOnRejected) {
-                debugger;
                 var fs0 = fs[0];
                 if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
                     fs0.group.__callback_error();
@@ -709,10 +744,15 @@ function _watchAllInternal(group, parent, callback, callback_error, resolve, rej
 }
 
 var Tree = /** @class */ (function () {
-    function Tree() {
+    // repeater not in use by default, -1 is infinite, >0 is number of loops
+    function Tree(options) {
+        if (options === void 0) { options = {}; }
+        var _a;
         this.map = {};
         this.roots = [];
         this.consoleLogText = '';
+        this.repeatOptions = { repeat: 0, current: 0 };
+        this.repeatOptions.repeat = (_a = options.repeat) !== null && _a !== void 0 ? _a : 0;
     }
     // Step 1: Build a tree structure from the array and combine nodes with the same parent-child relation
     Tree.prototype.buildTree = function (arr) {
@@ -790,7 +830,13 @@ var Tree = /** @class */ (function () {
         if (isFirst === void 0) { isFirst = true; }
         if (isLast === void 0) { isLast = true; }
         if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
-        var line = "".concat(isFirst ? '──' : prefix).concat(isLast && !isFirst ? '└─' : '├─', " ").concat(node.description);
+        var repeatIndicator = ' ';
+        var repeatIndicatorFirstLine = '─';
+        if (this.repeatOptions.repeat != 0) {
+            repeatIndicator = ' │';
+            repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+        }
+        var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
         // Calculate the longest line length during this dry run
         if (line.length > maxLengthObj.maxLength) {
             maxLengthObj.maxLength = line.length;
@@ -808,8 +854,14 @@ var Tree = /** @class */ (function () {
         if (isFirst === void 0) { isFirst = true; }
         if (isLast === void 0) { isLast = true; }
         var isTerminal = node.children.length === 0;
+        var repeatIndicator = ' ';
+        var repeatIndicatorFirstLine = '─';
         var terminalLabel = '';
-        var line = "".concat(isFirst ? '──' : prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
+        if (this.repeatOptions.repeat != 0) {
+            repeatIndicator = ' │';
+            repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+        }
+        var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
         if (isTerminal) {
             var index = terminalIndex.current++;
             terminalLabel = index === 0 ? '─┐' : '─┤';
@@ -857,12 +909,31 @@ var Tree = /** @class */ (function () {
             return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
         });
         // Step 6: Add final completion line
+        if (this.repeatOptions.repeat != 0) {
+            var repeatText = this.repeatOptions.repeat == -1
+                ? ' ∞ '
+                : ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
+            this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
+        }
         this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
-        // Return the console output as string
         return this.consoleLogText;
     };
     return Tree;
 }());
+/*
+Corner and Tee Shapes:
+
+└ (Box Drawings Light Up and Right)
+┘ (Box Drawings Light Up and Left)
+┌ (Box Drawings Light Down and Right)
+┐ (Box Drawings Light Down and Left)
+├ (Box Drawings Light Vertical and Right)
+┤ (Box Drawings Light Vertical and Left)
+┬ (Box Drawings Light Down and Horizontal)
+┴ (Box Drawings Light Up and Horizontal)
+┼ (Box Drawings Light Vertical and Horizontal)
+
+*/
 
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -873,10 +944,17 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var regexRepeat = function (repeat) {
+    var l = repeat.toString().length;
+    // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
+    return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
+};
 var _group_id = 0;
 var Group = /** @class */ (function () {
-    function Group() {
+    function Group(options) {
+        if (options === void 0) { options = { repeat: 0, runs: 1 }; }
         var _this = this;
+        this.options = { repeat: 0, runs: 0 };
         this.useConsoleLog = true;
         this._id = _group_id++;
         this._functions = [];
@@ -890,9 +968,22 @@ var Group = /** @class */ (function () {
             if (_this.useConsoleLog) {
                 console.log("*** START ".concat(_this._id, " ***"));
                 console.highlight('completed', _this._id, 'start');
+                console.highlight(regexRepeat(_this.options.repeat), _this._id, ['start', 'repeat']);
             }
         };
         this._onCompleteCallback = function () {
+            var _a;
+            _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
+            if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
+                _this.reset(false);
+                _this.WatchAll(_this.__callback, _this.__callback_error);
+                return;
+            }
+            else {
+                if (_this.useConsoleLog) {
+                    console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', _this._id, ['complete']);
+                }
+            }
             if (_this.useConsoleLog) {
                 console.log("*** COMPLETE ".concat(_this._id, " ***"));
                 console.highlight('completed', _this._id, 'complete');
@@ -930,6 +1021,7 @@ var Group = /** @class */ (function () {
             watchFunction.group = _this;
             _this._functions.push(watchFunction);
         };
+        this.options = options;
     }
     Object.defineProperty(Group.prototype, "_isRunning", {
         get: function () {
@@ -957,12 +1049,19 @@ var Group = /** @class */ (function () {
         this._abort.abort();
     };
     // Reset all watch functions in the group
-    Group.prototype.reset = function () {
+    Group.prototype.reset = function (resetRuns) {
+        var _a, _b;
+        if (resetRuns === void 0) { resetRuns = true; }
         this._functions.forEach(function (fn) {
             fn._isRunning = false;
             fn._isFinished = false;
             fn._isRejected = false;
         });
+        if (resetRuns) {
+            this.options.runs = 1;
+        }
+        displayRepeat(this._id, (_a = this.options.runs) !== null && _a !== void 0 ? _a : 1, (_b = this.options.repeat) !== null && _b !== void 0 ? _b : 1);
+        clearHighlights(this._id);
     };
     // Get all functions in the group
     Group.prototype.getAll = function () {
@@ -1017,7 +1116,7 @@ var Group = /** @class */ (function () {
             var treeData = this._functions.map(function (f) {
                 return { name: f.name, parent: f.parent, child: f.child };
             });
-            var treeBuilder = new Tree();
+            var treeBuilder = new Tree({ repeat: this.options.repeat });
             return treeBuilder.processTree(treeData);
         },
         enumerable: false,

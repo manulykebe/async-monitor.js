@@ -171,47 +171,72 @@ console.warn = function (message, _id) {
 function escapeRegExp(text: string) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-function findSpanElementWithClassAndText(text: string, _id: number, className: string = 'start') {
+// text is string or regex
+function findSpanElementWithClassAndText(text: string | RegExp, _id: number, className: string = 'start') {
+	if (text instanceof RegExp) debugger;
+
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) return null;
 	const spanElements = treeElement.querySelectorAll(`span.highlight-${className}`);
 
 	for (let span of Array.from(spanElements)) {
-		if (span.textContent === text) {
+		if (typeof text === 'string' && span.textContent === text) {
+			return span;
+		} else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
 			return span;
 		}
 	}
 
 	return null;
 }
-console.highlight = function (text, _id, className = 'start') {
+console.highlight = function (text: RegExp | string, _id: number, className: string | string[] = 'start') {
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) {
 		console.warn(`could not highlight tree-${_id}.`);
 		return;
 	}
+	if (!Array.isArray(className)) className = [className];
 
-	if (className === 'start') {
-		const regex = new RegExp(escapeRegExp(text), 'gi');
+	if (className.includes('start')) {
+		let regex;
+		if (typeof text === 'string') {
+			regex = new RegExp(escapeRegExp(text), 'gi');
+		} else {
+			regex = new RegExp(text, 'g');
+		}
 		const highlightedText = treeElement.innerHTML.replace(regex, match => {
-			return `<span class="highlight-${className}">${match}</span>`;
+			return `<span class="highlight-${className.join(' highlight-')}">${match}</span>`;
 		});
 
 		treeElement.innerHTML = highlightedText;
 	} else {
+		//if (typeof text === 'string') {
 		const spanElement = findSpanElementWithClassAndText(text, _id, 'start');
 		if (spanElement) {
 			spanElement.classList.remove(`highlight-start`);
 			spanElement.classList.add(`highlight-${className}`);
 		}
+		//}
 	}
 };
 
-function clearHighlights(_id: number) {
-	const treeElement = document.querySelector(`pre[class="tree-${_id}"]`);
+export function clearHighlights(_id: number) {
+	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (treeElement) {
 		treeElement.querySelectorAll(`span`).forEach(span => {
-			span.outerHTML = span.innerHTML;
+			if (!span.classList.contains('highlight-repeat')) span.outerHTML = span.innerHTML;
 		});
+	}
+}
+
+export function displayRepeat(_id: number, runsNo: number, repeatNo: number) {
+	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
+	if (treeElement) {
+		const repeatElement = treeElement.querySelector(`span[class*="highlight-repeat"]`);
+		if (repeatElement) {
+			(repeatElement as HTMLElement).innerText =
+				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+				runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
+		}
 	}
 }

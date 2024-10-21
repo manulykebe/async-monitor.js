@@ -9,7 +9,9 @@ const importModule = async () => {
 
 	const {Group, Tree, sleep, version} = module;
 
-	const demo01 = new Group();
+	const demo01 = new Group({
+		repeat: 4,
+	});
 
 	demo01.addWatch({
 		name: 'preparation step 01',
@@ -89,7 +91,6 @@ const importModule = async () => {
 		demo01
 			.WatchAll(
 				() => {
-					debugger;
 					const button = document.getElementById('demo01');
 					button.disabled = false;
 					button.innerText = 'demo01';

@@ -2,6 +2,7 @@ import Element from './Element';
 import {Watch, WatchAll} from './Watch';
 import Tree from './Tree';
 import now from './Now';
+import {clearHighlights, displayRepeat} from './Console';
 
 type Metric = {
 	index: number;
@@ -12,6 +13,12 @@ type Metric = {
 	isRunning: boolean;
 	isFinished: boolean;
 	sequence: number;
+};
+
+const regexRepeat = (repeat: number): RegExp => {
+	const l = repeat.toString().length;
+	// regex that matches "(l)spaces" "1/" "l numbers" "1 space"
+	return new RegExp(`\\s{${l}}1\\/${repeat}\\s`);
 };
 
 export interface WatchFunction {
@@ -34,8 +41,17 @@ export interface WatchFunction {
 	_duration: number;
 }
 
+interface GroupOptions {
+	repeat: number;
+	runs?: number;
+}
+
 let _group_id: number = 0;
 export default class Group {
+	options: GroupOptions = {repeat: 0, runs: 0};
+	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
+		this.options = options;
+	}
 	useConsoleLog: boolean = true;
 	_id = _group_id++;
 	_functions: WatchFunction[] = [];
@@ -53,10 +69,22 @@ export default class Group {
 		if (this.useConsoleLog) {
 			console.log(`*** START ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'start');
+			(console as any).highlight(regexRepeat(this.options.repeat), this._id, ['start', 'repeat']);
 		}
 	};
 
 	_onCompleteCallback: () => void = () => {
+		this.options.runs = (this.options.runs ?? 1) + 1;
+		if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
+			this.reset(false);
+			this.WatchAll(this.__callback, this.__callback_error);
+			return;
+		} else {
+			if (this.useConsoleLog) {
+				(console as any).highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', this._id, ['complete']);
+			}
+		}
+
 		if (this.useConsoleLog) {
 			console.log(`*** COMPLETE ${this._id} ***`);
 			(console as any).highlight('completed', this._id, 'complete');
@@ -111,12 +139,17 @@ export default class Group {
 		this._abort.abort();
 	}
 	// Reset all watch functions in the group
-	reset(): void {
+	reset(resetRuns: boolean = true): void {
 		this._functions.forEach(fn => {
 			fn._isRunning = false;
 			fn._isFinished = false;
 			fn._isRejected = false;
 		});
+		if (resetRuns) {
+			this.options.runs = 1;
+		}
+		displayRepeat(this._id, this.options.runs ?? 1, this.options.repeat ?? 1);
+		clearHighlights(this._id);
 	}
 
 	// Get all functions in the group
@@ -174,7 +207,7 @@ export default class Group {
 			return {name: f.name, parent: f.parent, child: f.child};
 		});
 
-		const treeBuilder = new Tree();
+		const treeBuilder = new Tree({repeat: this.options.repeat});
 		return treeBuilder.processTree(treeData);
 	}
 
