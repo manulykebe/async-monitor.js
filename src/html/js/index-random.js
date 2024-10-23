@@ -154,9 +154,9 @@ const importModule = async () => {
 	const demo97 = new Group();
 	const demo98 = new Group();
 	const demo99 = new Group();
-	buildTree(parseInt(Math.random()*10+5), demo97);
-	buildTree(parseInt(Math.random()*10+5), demo98);
-	buildTree(parseInt(Math.random()*10+5), demo99);
+	buildTree(parseInt(Math.random() * 10 + 5), demo97);
+	buildTree(parseInt(Math.random() * 10 + 5), demo98);
+	buildTree(parseInt(Math.random() * 10 + 5), demo99);
 
 	const wrapped97 = () => demo97.WatchAll();
 	const wrapped98 = () => demo98.WatchAll();

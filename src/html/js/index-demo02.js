@@ -65,7 +65,6 @@ const importModule = async () => {
 		},
 	});
 
-
 	demo02.onStartCallback = () => {
 		const button = document.getElementById('demo02');
 		button.disabled = false;
@@ -92,7 +91,7 @@ const importModule = async () => {
 		console.log(demo02.consoleTree, ['tree', `tree-${demo02._id}`]);
 
 		demo02.reset();
-		demo02.WatchAll()
+		demo02.WatchAll();
 	}
 
 	// Make the functions available in the global scope
