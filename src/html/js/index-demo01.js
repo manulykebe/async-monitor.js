@@ -80,34 +80,34 @@ const importModule = async () => {
 		},
 	});
 
+	demo01.onStartCallback = () => {
+		const button = document.getElementById('demo01');
+		button.disabled = false;
+		button.innerText = 'onStart';
+	};
+	demo01.onCompleteCallback = () => {
+		const button = document.getElementById('demo01');
+		button.disabled = false;
+		button.innerText = 'onComplete';
+	};
+	demo01.onRejectCallback = () => {
+		const button = document.getElementById('demo01');
+		button.disabled = false;
+		button.innerText = 'onReject';
+	};
+	demo01.onAbortCallback = () => {
+		const button = document.getElementById('demo01');
+		button.disabled = false;
+		button.innerText = 'onAbort';
+	};
+
 	function demo_demo01() {
 		console.clear();
 		console.log(demo01.consoleTree, ['tree', `tree-${demo01._id}`]);
 
 		demo01.reset();
 		demo01
-			.WatchAll(
-				() => {
-					const button = document.getElementById('demo01');
-					button.disabled = false;
-					button.innerText = 'onStart';
-				},
-				() => {
-					const button = document.getElementById('demo01');
-					button.disabled = false;
-					button.innerText = 'onComplete';
-				},
-				() => {
-					const button = document.getElementById('demo01');
-					button.disabled = false;
-					button.innerText = 'onReject';
-				},
-				() => {
-					const button = document.getElementById('demo01');
-					button.disabled = false;
-					button.innerText = 'onAbort';
-				},
-			)
+			.WatchAll()
 			.then(() => {
 				console.log('++++onCompleteCallback("demo01")-> THEN');
 			})

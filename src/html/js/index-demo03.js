@@ -115,6 +115,27 @@ const importModule = async () => {
 		},
 	});
 
+	demo03.onStartCallback = () => {
+		const button = document.getElementById('demo03');
+		button.disabled = false;
+		button.innerText = 'onStart';
+	};
+	demo03.onCompleteCallback = () => {
+		const button = document.getElementById('demo03');
+		button.disabled = false;
+		button.innerText = 'onComplete';
+	};
+	demo03.onRejectCallback = () => {
+		const button = document.getElementById('demo03');
+		button.disabled = false;
+		button.innerText = 'onReject';
+	};
+	demo03.onAbortCallback = () => {
+		const button = document.getElementById('demo03');
+		button.disabled = false;
+		button.innerText = 'onAbort';
+	};
+
 	function demo_demo03() {
 		console.clear();
 		console.log(demo03.consoleTree, ['tree', `tree-${demo03._id}`]);
@@ -123,18 +144,7 @@ const importModule = async () => {
 		// demo03._onCompleteCallback = () => {
 		// 	alert('kiekeboe');
 		// };
-		demo03.WatchAll(
-			() => {
-				const button = document.getElementById('demo03');
-				button.disabled = false;
-				button.innerText = 'demo03';
-			},
-			() => {
-				const button = document.getElementById('demo03');
-				button.disabled = false;
-				button.innerText = 'demo03 (aborted)';
-			},
-		);
+		demo03.WatchAll();
 	}
 
 	// Make the functions available in the global scope

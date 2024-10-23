@@ -11,6 +11,9 @@ const importModule = async () => {
 	const {makeAsync, Group, Tree, sleep, version} = module;
 	const demo04 = new Group();
 	const demo05 = new Group();
+	demo05.name =
+		'Complex example where all previous demos are executed, demo01 & demo03 sequential, when done demo02 and demo04 in parallel.';
+	demo04.name = 'Actual copy of demo03, but some functions marked with !! can randomly fail.';
 	demo04.useConsoleLog = true;
 	demo05.useConsoleLog = true;
 
@@ -20,9 +23,6 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			const button = document.getElementById('demo04');
-			button.disabled = true;
-			button.innerText = 'Executing...';
 			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
@@ -189,15 +189,15 @@ const importModule = async () => {
 
 	function demo_demo04() {
 		console.clear();
-		console.log(`Tree: demo05 : ${demo05._id}`);
+		console.log(`demo05 : ${demo05.name || demo05._id}`);
 		console.log(demo05.consoleTree, ['tree', `tree-${demo05._id}`]);
-		console.log(`Tree: demo01 : ${document['demo01']._id}`);
+		console.log(`demo01 : ${document['demo01']._id}`);
 		console.log(document['demo01'].consoleTree, `tree-${document['demo01']._id}`);
-		console.log(`Tree: demo02 : ${document['demo02']._id}`);
+		console.log(`demo02 : ${document['demo02']._id}`);
 		console.log(document['demo02'].consoleTree, `tree-${document['demo02']._id}`);
-		console.log(`Tree: demo03 : ${document['demo03']._id}`);
+		console.log(`demo03 : ${document['demo03']._id}`);
 		console.log(document['demo03'].consoleTree, `tree-${document['demo03']._id}`);
-		console.log(`Tree: demo4 : ${demo04._id}`);
+		console.log(`demo04 : ${demo04.name || demo04._id}`);
 		console.log(demo04.consoleTree, ['tree', `tree-${demo04._id}`]);
 
 		document['demo01'].reset();
@@ -208,20 +208,32 @@ const importModule = async () => {
 		demo05
 			.WatchAll(
 				() => {
-					['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+					['demo04'].forEach(key => {
 						const button = document.getElementById(key);
 						button.disabled = false;
-						button.innerText = key;
+						button.innerText = 'onStart';
 					});
-					console.table(demo05.metrics);
 				},
 				() => {
-					['demo01', 'demo02', 'demo03', 'demo04'].forEach(key => {
+					['demo04'].forEach(key => {
 						const button = document.getElementById(key);
 						button.disabled = false;
-						button.innerText = key;
+						button.innerText = 'onComplete';
 					});
-					console.table(demo05.metrics);
+				},
+				() => {
+					['demo04'].forEach(key => {
+						const button = document.getElementById(key);
+						button.disabled = false;
+						button.innerText = 'onReject';
+					});
+				},
+				() => {
+					['demo04'].forEach(key => {
+						const button = document.getElementById(key);
+						button.disabled = false;
+						button.innerText = 'onAbort';
+					});
 				},
 			)
 			.then(() => {

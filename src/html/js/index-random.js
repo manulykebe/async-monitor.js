@@ -154,31 +154,13 @@ const importModule = async () => {
 	const demo97 = new Group();
 	const demo98 = new Group();
 	const demo99 = new Group();
-	buildTree(12, demo97);
-	buildTree(13, demo98);
-	buildTree(14, demo99);
+	buildTree(parseInt(Math.random()*10+5), demo97);
+	buildTree(parseInt(Math.random()*10+5), demo98);
+	buildTree(parseInt(Math.random()*10+5), demo99);
 
-	const wrapped97 = () =>
-		new Promise((resolve, reject) => {
-			demo97.WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	const wrapped98 = () =>
-		new Promise((resolve, reject) => {
-			demo98.WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
-	const wrapped99 = () =>
-		new Promise((resolve, reject) => {
-			demo99.WatchAll(
-				() => resolve(),
-				() => reject(),
-			);
-		});
+	const wrapped97 = () => demo97.WatchAll();
+	const wrapped98 = () => demo98.WatchAll();
+	const wrapped99 = () => demo99.WatchAll();
 
 	const demo00 = new Group();
 	demo00.addWatch({

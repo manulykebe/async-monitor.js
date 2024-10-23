@@ -18,9 +18,7 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			const button = document.getElementById('demo02');
-			button.disabled = true;
-			button.innerText = 'Executing...';
+			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
 			console.log('++++onCompleteCallback("preparation step")');
@@ -67,23 +65,34 @@ const importModule = async () => {
 		},
 	});
 
+
+	demo02.onStartCallback = () => {
+		const button = document.getElementById('demo02');
+		button.disabled = false;
+		button.innerText = 'onStart';
+	};
+	demo02.onCompleteCallback = () => {
+		const button = document.getElementById('demo02');
+		button.disabled = false;
+		button.innerText = 'onComplete';
+	};
+	demo02.onRejectCallback = () => {
+		const button = document.getElementById('demo02');
+		button.disabled = false;
+		button.innerText = 'onReject';
+	};
+	demo02.onAbortCallback = () => {
+		const button = document.getElementById('demo02');
+		button.disabled = false;
+		button.innerText = 'onAbort';
+	};
+
 	function demo_demo02() {
 		console.clear();
 		console.log(demo02.consoleTree, ['tree', `tree-${demo02._id}`]);
 
 		demo02.reset();
-		demo02.WatchAll(
-			() => {
-				const button = document.getElementById('demo02');
-				button.disabled = false;
-				button.innerText = 'demo02';
-			},
-			() => {
-				const button = document.getElementById('demo02');
-				button.disabled = false;
-				button.innerText = 'demo02 (aborted)';
-			},
-		);
+		demo02.WatchAll()
 	}
 
 	// Make the functions available in the global scope
