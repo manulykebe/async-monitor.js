@@ -78,11 +78,6 @@ export class Watch {
 	}
 }
 
-export class Progress {
-	constructor(group: Group) {
-		// Call the private function with the default parent value as undefined
-	}
-}
 let _sequence = 0;
 export async function WatchAll(
 	group: Group,
