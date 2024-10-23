@@ -16,7 +16,7 @@
 		});
 	...watches.addWatch();
 	 console.log(watches.tree);
-	watches.WatchAll()
+	watches.watchAll()
 	   .then(()=>console.log('All went well!'))
 	   .catch(()=>console.log('Oops, at least 1 promise was rejected!'));
 </script>
@@ -40,7 +40,7 @@ A lightweight and efficient monitoring engine designed to seamlessly track and m
 
 ## new in v1.1
 
-The `WatchAll` function is now an `async` function. This enhancement allows you to nest groups as needed and utilize `then`, `catch`, and `finally` for improved functionality and better control over your asynchronous workflows.
+The `watchAll` function is now an `async` function. This enhancement allows you to nest groups as needed and utilize `then`, `catch`, and `finally` for improved functionality and better control over your asynchronous workflows.
 
 # Examples
 

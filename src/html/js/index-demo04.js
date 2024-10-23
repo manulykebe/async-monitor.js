@@ -121,10 +121,10 @@ const importModule = async () => {
 		},
 	});
 
-	const wrapped01 = () => document['demo01'].WatchAll();
-	const wrapped02 = () => document['demo02'].WatchAll();
-	const wrapped03 = () => document['demo03'].WatchAll();
-	const wrapped04 = () => demo04.WatchAll();
+	const wrapped01 = () => document['demo01'].watchAll();
+	const wrapped02 = () => document['demo02'].watchAll();
+	const wrapped03 = () => document['demo03'].watchAll();
+	const wrapped04 = () => demo04.watchAll();
 
 	demo05.addWatch({
 		name: 'demo05 initiator',
@@ -139,51 +139,51 @@ const importModule = async () => {
 		},
 	});
 	demo05.addWatch({
-		name: 'wrapped demo01.WatchAll',
+		name: 'wrapped demo01.watchAll',
 		parent: 'a',
 		child: 'b',
 		f: () => wrapped01(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo01].WatchAll")');
+			console.log('++++onStartCallback("wrapped document[demo01].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo01].WatchAll")');
+			console.log('++++onCompleteCallback("wrapped document[demo01].watchAll")');
 		},
 	});
 	demo05.addWatch({
-		name: 'wrapped demo02.WatchAll',
+		name: 'wrapped demo02.watchAll',
 		parent: 'b',
 		child: 'c',
 		f: () => wrapped02(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo02].WatchAll")');
+			console.log('++++onStartCallback("wrapped document[demo02].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo02].WatchAll")');
+			console.log('++++onCompleteCallback("wrapped document[demo02].watchAll")');
 		},
 	});
 	demo05.addWatch({
-		name: 'wrapped demo03.WatchAll',
+		name: 'wrapped demo03.watchAll',
 		parent: 'a',
 		child: 'b',
 		f: () => wrapped03(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo03].WatchAll")');
+			console.log('++++onStartCallback("wrapped document[demo03].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo03].WatchAll")');
+			console.log('++++onCompleteCallback("wrapped document[demo03].watchAll")');
 		},
 	});
 	demo05.addWatch({
-		name: 'wrapped demo04.WatchAll',
+		name: 'wrapped demo04.watchAll',
 		parent: 'b',
 		child: 'd',
 		f: () => wrapped04(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped demo04.WatchAll")');
+			console.log('++++onStartCallback("wrapped demo04.watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped demo04.WatchAll")');
+			console.log('++++onCompleteCallback("wrapped demo04.watchAll")');
 		},
 	});
 
@@ -206,7 +206,7 @@ const importModule = async () => {
 		demo04.reset();
 		demo05.reset();
 		demo05
-			.WatchAll(
+			.watchAll(
 				() => {
 					['demo04'].forEach(key => {
 						const button = document.getElementById(key);
@@ -237,10 +237,10 @@ const importModule = async () => {
 				},
 			)
 			.then(() => {
-				console.log('success on WatchAll: resolved all promises!');
+				console.log('success on watchAll: resolved all promises!');
 			})
 			.catch(() => {
-				console.warn('catch on WatchAll: rejected promise!');
+				console.warn('catch on watchAll: rejected promise!');
 			})
 			.finally(() => {
 				console.log(`async-monitor.js@${version}`);

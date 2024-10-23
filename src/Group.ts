@@ -1,4 +1,4 @@
-import {Watch, WatchAll} from './Watch';
+import {Watch, watchAll} from './Watch';
 import Tree from './Tree';
 import now, {calcDuration} from './Now';
 import WatchFunction, {Metric} from './WatchFunction';
@@ -103,7 +103,7 @@ export default class Group {
 			this.options.runs = (this.options.runs ?? 1) + 1;
 			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
 				this.reset(false);
-				this.WatchAll();
+				this.watchAll();
 				return;
 			} else {
 				if (this.useConsoleLog) {
@@ -242,17 +242,7 @@ export default class Group {
 	add(): void {}
 	remove(): void {}
 
-	Watch(onStartCallback: () => void, onRejectCallback: () => void) {
-		const watchArray = this._functions.map(fn => ({
-			promise: fn.promise ?? undefined,
-			onRejectCallback: fn.onRejectCallback,
-			group: this,
-		}));
-
-		return new Watch(watchArray, onStartCallback, onRejectCallback);
-	}
-
-	WatchAll(
+	watchAll(
 		onStartCallback?:
 			| (() => void)
 			| {
@@ -295,7 +285,7 @@ export default class Group {
 		}
 
 		if (this.isRunning) {
-			console.warn('This WatchAll group is already being monitored.');
+			console.warn('This watchAll group is already being monitored.');
 			return;
 		}
 
@@ -309,7 +299,7 @@ export default class Group {
 		// 	_startTime: now(),
 		// }));
 
-		return WatchAll(this); //, onStartCallback, onRejectCallback);
+		return watchAll(this); //, onStartCallback, onRejectCallback);
 	}
 
 	get consoleTree(): string {

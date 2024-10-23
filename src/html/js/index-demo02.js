@@ -91,7 +91,7 @@ const importModule = async () => {
 		console.log(demo02.consoleTree, ['tree', `tree-${demo02._id}`]);
 
 		demo02.reset();
-		demo02.WatchAll();
+		demo02.watchAll();
 	}
 
 	// Make the functions available in the global scope

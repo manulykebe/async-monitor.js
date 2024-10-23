@@ -383,7 +383,7 @@ define(['exports'], (function (exports) { 'use strict';
         }
     };
     var Watch = /** @class */ (function () {
-        function Watch(fs, f, fr) {
+        function Watch(fs, f) {
             var _breakOnRejected = false;
             // Filter out entries where promise is undefined
             var validFs = fs
@@ -450,7 +450,7 @@ define(['exports'], (function (exports) { 'use strict';
         return Watch;
     }());
     var _sequence = 0;
-    function WatchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
+    function watchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -577,12 +577,9 @@ define(['exports'], (function (exports) { 'use strict';
                             group: child.group,
                         });
                     });
+                    debugger;
                     new Watch(validChildren, [
                         function () {
-                            if (!watches.some(function (x) { return x.isRunning; }) && watches.every(function (x) { return x.isFinished; })) {
-                                if (typeof group.onStartCallback === 'function')
-                                    group.onStartCallback();
-                            }
                             watches
                                 .filter(function (x) { return x.parent === parent; })
                                 .filter(function (c) {
@@ -1168,7 +1165,7 @@ define(['exports'], (function (exports) { 'use strict';
                     _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
                     if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
                         _this.reset(false);
-                        _this.WatchAll();
+                        _this.watchAll();
                         return;
                     }
                     else {
@@ -1296,19 +1293,7 @@ define(['exports'], (function (exports) { 'use strict';
         // Add and remove placeholders
         Group.prototype.add = function () { };
         Group.prototype.remove = function () { };
-        Group.prototype.Watch = function (onStartCallback, onRejectCallback) {
-            var _this = this;
-            var watchArray = this._functions.map(function (fn) {
-                var _a;
-                return ({
-                    promise: (_a = fn.promise) !== null && _a !== void 0 ? _a : undefined,
-                    onRejectCallback: fn.onRejectCallback,
-                    group: _this,
-                });
-            });
-            return new Watch(watchArray, onStartCallback, onRejectCallback);
-        };
-        Group.prototype.WatchAll = function (onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
+        Group.prototype.watchAll = function (onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
             if (typeof onStartCallback === 'object') {
                 var startCb = onStartCallback.onStartCallback, onCompleteCallback_1 = onStartCallback.onCompleteCallback, onRejectCallback_1 = onStartCallback.onRejectCallback, onAbortCallback_1 = onStartCallback.onAbortCallback;
                 if (startCb) {
@@ -1339,7 +1324,7 @@ define(['exports'], (function (exports) { 'use strict';
                 }
             }
             if (this.isRunning) {
-                console.warn('This WatchAll group is already being monitored.');
+                console.warn('This watchAll group is already being monitored.');
                 return;
             }
             this._startTime = now();
@@ -1351,7 +1336,7 @@ define(['exports'], (function (exports) { 'use strict';
             // 	group: this,
             // 	_startTime: now(),
             // }));
-            return WatchAll(this); //, onStartCallback, onRejectCallback);
+            return watchAll(this); //, onStartCallback, onRejectCallback);
         };
         Object.defineProperty(Group.prototype, "consoleTree", {
             get: function () {

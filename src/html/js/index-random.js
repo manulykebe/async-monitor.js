@@ -158,9 +158,9 @@ const importModule = async () => {
 	buildTree(parseInt(Math.random() * 10 + 5), demo98);
 	buildTree(parseInt(Math.random() * 10 + 5), demo99);
 
-	const wrapped97 = () => demo97.WatchAll();
-	const wrapped98 = () => demo98.WatchAll();
-	const wrapped99 = () => demo99.WatchAll();
+	const wrapped97 = () => demo97.watchAll();
+	const wrapped98 = () => demo98.watchAll();
+	const wrapped99 = () => demo99.watchAll();
 
 	const demo00 = new Group();
 	demo00.addWatch({
@@ -172,7 +172,7 @@ const importModule = async () => {
 		onCompleteCallback: function () {},
 	});
 	demo00.addWatch({
-		name: 'wrapped demo97.WatchAll',
+		name: 'wrapped demo97.watchAll',
 		parent: 'a',
 		child: 'b',
 		f: () => wrapped97(),
@@ -180,7 +180,7 @@ const importModule = async () => {
 		onCompleteCallback: function () {},
 	});
 	demo00.addWatch({
-		name: 'wrapped demo98.WatchAll',
+		name: 'wrapped demo98.watchAll',
 		parent: 'b',
 		child: 'c',
 		f: () => wrapped98(),
@@ -188,7 +188,7 @@ const importModule = async () => {
 		onCompleteCallback: function () {},
 	});
 	demo00.addWatch({
-		name: 'wrapped demo99.WatchAll',
+		name: 'wrapped demo99.watchAll',
 		parent: 'c',
 		child: 'd',
 		f: () => wrapped99(),
@@ -206,7 +206,7 @@ const importModule = async () => {
 		console.log(demo97.consoleTree, ['tree', `tree-${demo97._id}`]);
 		console.log(demo98.consoleTree, ['tree', `tree-${demo98._id}`]);
 		console.log(demo99.consoleTree, ['tree', `tree-${demo99._id}`]);
-		demo00.WatchAll(
+		demo00.watchAll(
 			() => console.log('All done!'),
 			() => console.log('Error!'),
 		);

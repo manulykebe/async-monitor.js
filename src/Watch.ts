@@ -7,7 +7,6 @@ export class Watch {
 	constructor(
 		fs: Array<{promise: Promise<any> | void; onRejectCallback?: (reason: any) => void; group?: Group}>,
 		f: (() => void) | Array<() => void>,
-		fr?: () => void, // f_rejected globally
 	) {
 		let _breakOnRejected = false;
 		let _statuses: Array<{index: string; reason: any; onRejectCallback?: (reason: any) => void}> = [];
@@ -79,7 +78,7 @@ export class Watch {
 }
 
 let _sequence = 0;
-export async function WatchAll(
+export async function watchAll(
 	group: Group,
 	onStartCallback?: () => void,
 	onCompleteCallback?: () => void,
@@ -212,12 +211,9 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 						group: child.group,
 					}));
 
+				debugger;
 				new Watch(validChildren, [
 					() => {
-						if (!watches.some(x => x.isRunning) && watches.every(x => x.isFinished)) {
-							if (typeof group.onStartCallback === 'function') group.onStartCallback();
-						}
-
 						watches
 							.filter(x => x.parent === parent)
 							.filter(function (c) {

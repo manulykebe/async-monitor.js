@@ -106,14 +106,14 @@
 // 	// 	expect(result).toBeInstanceOf(MONITOR.Watch);
 // 	// });
 
-// 	//   it('should call WatchAll with correct arguments', () => {
+// 	//   it('should call watchAll with correct arguments', () => {
 // 	//     const callback = jest.fn();
 // 	//     const callback_error = jest.fn();
 
-// 	//     // Call WatchAll with a callback and error callback
-// 	//     const result = group.WatchAll(callback, callback_error);
+// 	//     // Call watchAll with a callback and error callback
+// 	//     const result = group.watchAll(callback, callback_error);
 
-// 	//     // Ensure it returns the result of WatchAll
+// 	//     // Ensure it returns the result of watchAll
 // 	//     expect(result).toBeDefined(); // Define behavior if needed
 // 	//   });
 // });

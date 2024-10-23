@@ -144,7 +144,7 @@
 
 // 		// Now run the watches and capture the metrics
 // 		await new Promise<void>((resolve, reject) => {
-// 			mixedWatches.WatchAll(
+// 			mixedWatches.watchAll(
 // 				() => {
 // 					if (mixedWatches.useConsoleLog) console.log('All watches completed');
 // 					resolve();

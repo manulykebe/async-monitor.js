@@ -144,7 +144,7 @@ const importModule = async () => {
 		// demo03._onCompleteCallback = () => {
 		// 	alert('kiekeboe');
 		// };
-		demo03.WatchAll();
+		demo03.watchAll();
 	}
 
 	// Make the functions available in the global scope

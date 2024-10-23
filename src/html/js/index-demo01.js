@@ -107,7 +107,7 @@ const importModule = async () => {
 
 		demo01.reset();
 		demo01
-			.WatchAll()
+			.watchAll()
 			.then(() => {
 				console.log('++++onCompleteCallback("demo01")-> THEN');
 			})

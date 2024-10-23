@@ -17,14 +17,6 @@ declare global {
  */
 declare function sleep(seconds?: number, fail?: boolean | undefined): Promise<number>;
 
-declare class Watch {
-    constructor(fs: Array<{
-        promise: Promise<any> | void;
-        onRejectCallback?: (reason: any) => void;
-        group?: Group;
-    }>, f: (() => void) | Array<() => void>, fr?: () => void);
-}
-
 type Metric = {
     id: number;
     name: string;
@@ -130,8 +122,7 @@ declare class Group {
     removeAll(): void;
     add(): void;
     remove(): void;
-    Watch(onStartCallback: () => void, onRejectCallback: () => void): Watch;
-    WatchAll(onStartCallback?: (() => void) | {
+    watchAll(onStartCallback?: (() => void) | {
         onStartCallback?: () => void;
         onCompleteCallback?: () => void;
         onRejectCallback?: () => void;
@@ -189,6 +180,14 @@ declare class Monitor {
 }
 
 declare const version = "1.1.4";
+
+declare class Watch {
+    constructor(fs: Array<{
+        promise: Promise<any> | void;
+        onRejectCallback?: (reason: any) => void;
+        group?: Group;
+    }>, f: (() => void) | Array<() => void>);
+}
 
 declare const nextId: typeof Sequence.nextId;
 
