@@ -31,11 +31,11 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 			const row = document.createElement('tr');
 			keys.forEach(key => {
 				const td = document.createElement('td');
-				try {
-					td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
-				} catch (error) {
-					td.textContent = `${key}`;
-				}
+				// try {
+				td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				// } catch (error) {
+				// 	td.textContent = `${key}`;
+				// }
 				td.classList.add('log-table-cell');
 				row.appendChild(td);
 			});
@@ -230,7 +230,8 @@ export function clearHighlights(_id: number) {
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (treeElement) {
 		treeElement.querySelectorAll(`span`).forEach(span => {
-			if (!span.classList.contains('highlight-repeat')) span.outerHTML = span.innerHTML;
+			if (!(span.innerText === 'completed' || span.classList.contains('highlight-repeat')))
+				span.outerHTML = span.innerHTML;
 		});
 	}
 }
@@ -241,7 +242,7 @@ export function displayRepeat(_id: number, runsNo: number, repeatNo: number) {
 		const repeatElement = treeElement.querySelector(`span[class*="highlight-repeat"]`);
 		if (repeatElement) {
 			(repeatElement as HTMLElement).innerText =
-				' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+				' '.repeat(1 - runsNo.toString().length + repeatNo.toString().length) +
 				runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
 		}
 	}

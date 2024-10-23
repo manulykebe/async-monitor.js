@@ -89,7 +89,7 @@
 // 		group.onRejected(onRejectedCallback);
 
 // 		// Simulate rejecting the group
-// 		group._onRejectedCallback();
+// 		group.onRejectCallback();
 
 // 		// Check that the callback was called
 // 		expect(onRejectedCallback).toHaveBeenCalled();

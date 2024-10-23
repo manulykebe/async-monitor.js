@@ -47,6 +47,7 @@ declare class WatchFunction {
     get isRejected(): boolean;
     private _isRunning;
     get isRunning(): boolean;
+    get isProcessed(): boolean;
     private _startTime;
     private _stopTime;
     private _duration;
@@ -94,6 +95,7 @@ declare class Group {
     get isFinished(): boolean;
     get isRejected(): boolean;
     get isAborted(): boolean;
+    get isProcessed(): boolean;
     private _startTime;
     get startTime(): number;
     set startTime(value: number);
@@ -117,10 +119,9 @@ declare class Group {
     get onAbortCallback(): () => void;
     set onAbortCallback(value: () => void);
     sequence: number;
-    __callback?: () => void | undefined;
-    __callback_error?: () => void | undefined;
-    _onUnCompleteCallback: () => void;
-    _onRejectedCallback: () => void;
+    private _onErrorCallback;
+    get onErrorCallback(): () => void;
+    set onErrorCallback(value: () => void);
     addWatch: (addWatchFunction: WatchFunction) => void;
     abortWatch(name: string): void;
     abort(): void;

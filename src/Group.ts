@@ -52,6 +52,9 @@ export default class Group {
 	get isAborted(): boolean {
 		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
 	}
+	get isProcessed(): boolean {
+		return this.isFinished || this.isRejected || this.isAborted;
+	}
 	private _startTime: number = 0;
 	get startTime(): number {
 		return this._startTime;
@@ -77,8 +80,10 @@ export default class Group {
 	private _onStartCallback?: () => void = () => {};
 	get onStartCallback(): () => void {
 		return () => {
+			if (this.isProcessed) {
+				return;
+			}
 			this._startTime = now();
-
 			if (this.useConsoleLog) {
 				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
 				console.log(`*** START ${this._id} ***`);
@@ -98,7 +103,7 @@ export default class Group {
 			this.options.runs = (this.options.runs ?? 1) + 1;
 			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
 				this.reset(false);
-				this.WatchAll(this.__callback, this.__callback_error);
+				this.WatchAll();
 				return;
 			} else {
 				if (this.useConsoleLog) {
@@ -149,9 +154,8 @@ export default class Group {
 
 			if (this.useConsoleLog) {
 				console.log(`*** ABORTED ${this._id} ***`);
-				console.highlight('completed', {id: this._id}, 'complete');
+				console.highlight('completed', {id: this._id}, 'aborted');
 				console.groupEnd();
-				console.log(this.metrics);
 			}
 			this._onAbortCallback?.();
 		};
@@ -162,16 +166,17 @@ export default class Group {
 
 	sequence: number = 0; //??
 
-	__callback?: () => void | undefined;
-	__callback_error?: () => void | undefined;
+	private _onErrorCallback: () => void = () => {};
+	get onErrorCallback(): () => void {
+		return () => {
+			if (this.useConsoleLog) console.log(`*** ERROR in group "${this.name || this._id}" ***`);
 
-	_onUnCompleteCallback: () => void = () => {
-		if (this.useConsoleLog) console.log(`*** ABORTED? ${this._id} ***`);
-	};
-
-	_onRejectedCallback: () => void = () => {
-		if (this.useConsoleLog) console.log(`*** REJECTED? ${this._id} ***`);
-	};
+			this._onErrorCallback();
+		};
+	}
+	set onErrorCallback(value: () => void) {
+		if (typeof value === 'function') this._onErrorCallback = value;
+	}
 
 	// Add a watch function
 	addWatch = (addWatchFunction: WatchFunction) => {
@@ -323,7 +328,7 @@ export default class Group {
 	}
 
 	onRejected(cbf: () => void) {
-		this._onRejectedCallback = cbf;
+		this.onRejectCallback = cbf;
 		return this;
 	}
 	onStart(cbf: () => void) {

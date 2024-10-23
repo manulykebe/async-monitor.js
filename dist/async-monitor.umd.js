@@ -27,12 +27,11 @@
                 var row = document.createElement('tr');
                 keys_1.forEach(function (key) {
                     var td = document.createElement('td');
-                    try {
-                        td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
-                    }
-                    catch (error) {
-                        td.textContent = "".concat(key);
-                    }
+                    // try {
+                    td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                    // } catch (error) {
+                    // 	td.textContent = `${key}`;
+                    // }
                     td.classList.add('log-table-cell');
                     row.appendChild(td);
                 });
@@ -204,7 +203,7 @@
         var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
         if (treeElement) {
             treeElement.querySelectorAll("span").forEach(function (span) {
-                if (!span.classList.contains('highlight-repeat'))
+                if (!(span.innerText === 'completed' || span.classList.contains('highlight-repeat')))
                     span.outerHTML = span.innerHTML;
             });
         }
@@ -215,7 +214,7 @@
             var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
             if (repeatElement) {
                 repeatElement.innerText =
-                    ' '.repeat(1 + runsNo.toString().length - repeatNo.toString().length) +
+                    ' '.repeat(1 - runsNo.toString().length + repeatNo.toString().length) +
                         runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
             }
         }
@@ -413,12 +412,10 @@
                 console.warn('error:', err);
             })
                 .finally(function () {
-                var _a;
                 if (_breakOnRejected) {
-                    var fs0 = fs[0];
-                    if (typeof ((_a = fs0.group) === null || _a === void 0 ? void 0 : _a.__callback_error) === 'function')
-                        fs0.group.__callback_error();
-                    // if (fs0.group && typeof fs0.group._onRejectedCallback === 'function') fs0.group._onRejectedCallback();
+                    fs[0];
+                    // if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
+                    // if (fs0.group && typeof fs0.group.onRejectCallback === 'function') fs0.group.onRejectCallback();
                     // if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
                     // // f_rejected for specific function
                     // _statuses.forEach(x => {
@@ -442,13 +439,12 @@
                     if (Array.isArray(f)) {
                         f.forEach(function (cbf) {
                             if (typeof cbf === 'function') {
-                                try {
-                                    cbf();
-                                }
-                                catch (error) {
-                                    console.warn('Error while executing cbf.', error);
-                                    console.log(cbf);
-                                }
+                                // try {
+                                cbf();
+                                // } catch (error) {
+                                // 	console.warn('Error while executing cbf.', error);
+                                // 	console.log(cbf);
+                                // }
                             }
                         });
                     }
@@ -458,52 +454,59 @@
         return Watch;
     }());
     var _sequence = 0;
-    function WatchAll(group, onStartCallback, callback_error) {
+    function WatchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                // Call the private function with the default parent value as undefined
-                debugger;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
+                        _watchAllInternal(group, undefined, resolve, reject);
                     })];
             });
         });
     }
-    function _watchAllInternal(group, parent, onStartCallback, callback_error, resolve, reject) {
+    function _watchAllInternal(group, parent, resolve, reject) {
+        var _a;
         var watches = group.functions;
         var useConsoleLog = group.useConsoleLog;
+        var children = watches.filter(function (x) { return x.parent === parent; });
+        alert(parent);
         if (watches.every(function (f) { return f.isFinished; })) {
-            // All watches are finished
-            group.stopTime = now();
-            group.duration = calcDuration(group.startTime, group.stopTime);
-            if (typeof group.onCompleteCallback === 'function') {
-                group.onCompleteCallback();
+            if (group.options.repeat === 0 || (group.options.repeat > 0 && group.options.repeat <= (group.options.runs || 0))) {
+                // All watches are finished
+                group.stopTime = now();
+                group.duration = calcDuration(group.startTime, group.stopTime);
+                if (typeof group.onCompleteCallback === 'function') {
+                    group.onCompleteCallback();
+                }
                 resolve && resolve();
+                return;
             }
-            return;
+            else {
+                group.options.runs = ((_a = group.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
+                group.reset(false);
+            }
         }
         if (watches.some(function (f) { return f.isRejected; })) {
-            // Some watch was rejected
             console.warn('Some watch was rejected');
+            if (typeof group.onRejectCallback === 'function') {
+                group.onRejectCallback();
+            }
             reject && reject();
             return;
         }
-        if (typeof parent === 'function') {
-            callback_error = onStartCallback;
-            onStartCallback = parent;
-            parent = undefined;
+        if (watches.some(function (f) { return f.isAborted; })) {
+            // Some watch was aborted
+            console.warn('Some watch was aborted');
+            if (typeof group.onAbortCallback === 'function') {
+                group.onAbortCallback();
+            }
+            reject && reject();
+            return;
         }
-        var children = watches.filter(function (x) { return x.parent === parent; });
         if (parent === undefined) {
             if (children.length === 0) {
-                console.warn('Nothing to do.');
-                console.warn('Nothing to do.');
-                if (typeof group.onCompleteCallback === 'function')
-                    group.onCompleteCallback();
                 return;
             }
             _sequence = 0;
-            // watches.forEach((x, i) => (x._index = i));
         }
         if (children.length > 0) {
             var grandChildren = children
@@ -517,61 +520,57 @@
                     child.sequence = _sequence;
                     useConsoleLog && console.highlight(child.name, { id: group.id, index: child.id }, 'start');
                     if (typeof child.onStartCallback === 'function') {
-                        try {
-                            child.onStartCallback();
-                        }
-                        catch (error) {
-                            console.warn("Watch: onStartCallback failed (sequence: ".concat(child.sequence, "):\n"), error);
-                        }
+                        child.onStartCallback();
                     }
-                    try {
-                        if (typeof child.f === 'function') {
-                            var result = child.f();
-                            // If result is void (undefined), log a warning or handle it accordingly
-                            if (result === undefined || result === null) {
-                                console.warn('Function returned void');
-                            }
-                            // Check if result is a promise by checking the presence of the then method
-                            else if (typeof result.then === 'function') {
-                                child.promise = result;
-                                child.promise.then(function () {
-                                    if (typeof child.onCompleteCallback === 'function') {
-                                        child.onCompleteCallback();
-                                    }
-                                    else {
-                                        console.warn('onCompleteCallback is not defined or not a function');
-                                    }
-                                    useConsoleLog && console.highlight(child.name, { id: group.id }, 'complete');
-                                });
-                                child.promise.catch(function () {
-                                    if (typeof child.onRejectCallback === 'function') {
-                                        child.onRejectCallback();
-                                    }
-                                    else {
-                                        console.warn('onRejectCallback is not defined or not a function');
-                                    }
-                                    if (useConsoleLog) {
-                                        console.highlight(child.name, { id: group.id }, 'rejected');
-                                        console.highlight('completed', { id: group.id }, 'rejected');
-                                    }
-                                    reject && reject();
-                                });
-                            }
-                            // Handle any other unexpected return values
-                            else {
-                                console.warn('Function did not return a promise');
-                            }
+                    // try {
+                    if (typeof child.f === 'function') {
+                        var result = child.f();
+                        // If result is void (undefined), log a warning or handle it accordingly
+                        if (result === undefined || result === null) {
+                            console.warn('Function returned void');
+                        }
+                        // Check if result is a promise by checking the presence of the then method
+                        else if (typeof result.then === 'function') {
+                            child.promise = result;
+                            child.promise.then(function () {
+                                if (typeof child.onCompleteCallback === 'function') {
+                                    child.onCompleteCallback();
+                                }
+                                else {
+                                    console.warn('onCompleteCallback is not defined or not a function');
+                                }
+                                useConsoleLog && console.highlight(child.name, { id: group.id }, 'complete');
+                            });
+                            child.promise.catch(function () {
+                                if (typeof child.onRejectCallback === 'function') {
+                                    child.onRejectCallback();
+                                }
+                                else {
+                                    console.warn('onRejectCallback is not defined or not a function');
+                                }
+                                if (useConsoleLog) {
+                                    console.highlight(child.name, { id: group.id }, 'rejected');
+                                    console.highlight('completed', { id: group.id }, 'rejected');
+                                }
+                                reject && reject();
+                            });
+                        }
+                        // Handle any other unexpected return values
+                        else {
+                            console.warn('Function did not return a promise');
                         }
                     }
-                    catch (error) {
-                        console.warn('Watch: critical! error in call to (async) function:\n', error);
-                        if (typeof group._onUnCompleteCallback === 'function')
-                            group._onUnCompleteCallback();
-                        return;
-                    }
+                    // } catch (error) {
+                    // 	console.warn('Watch: critical! error in call to (async) function:\n', error);
+                    // 	if (typeof group.onErrorCallback === 'function') group.onErrorCallback();
+                    // 	return;
+                    // }
                 });
             });
-            if (!group.isFinished) {
+            if (group.isFinished) {
+                debugger;
+            }
+            else {
                 grandChildren.forEach(function (gc) {
                     var validChildren = children
                         .filter(function (c) { return c.child === gc; })
@@ -586,8 +585,8 @@
                     new Watch(validChildren, [
                         function () {
                             if (!watches.some(function (x) { return x.isRunning; }) && watches.every(function (x) { return x.isFinished; })) {
-                                if (typeof onStartCallback === 'function')
-                                    onStartCallback();
+                                if (typeof group.onStartCallback === 'function')
+                                    group.onStartCallback();
                             }
                             watches
                                 .filter(function (x) { return x.parent === parent; })
@@ -597,10 +596,10 @@
                                 .map(function (x) { return x.child; })
                                 .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; })
                                 .forEach(function (x) {
-                                _watchAllInternal(group, x, onStartCallback, callback_error, resolve, reject);
+                                _watchAllInternal(group, x, resolve, reject);
                             });
                         },
-                    ], callback_error);
+                    ]);
                 });
             }
         }
@@ -851,7 +850,7 @@
                 this.onStartCallback = function () {
                     _this._isRunning = true;
                     _this._startTime = now();
-                    console.log("\"".concat(_this.name, "\" has started."));
+                    console.log("\u2500\u2500\"".concat(_this.name, "\" has started."));
                     if (arg.onStartCallback)
                         arg.onStartCallback();
                 };
@@ -860,7 +859,7 @@
                     _this._isRunning = false;
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.log("\"".concat(_this.name, "\" has completed."));
+                    console.log("\u2500\u2500\"".concat(_this.name, "\" has completed."));
                     if (arg.onCompleteCallback)
                         arg.onCompleteCallback();
                 };
@@ -872,7 +871,7 @@
                     _this._isRunning = false;
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.warn("\"".concat(_this.name, "\" was rejected."));
+                    console.warn("\u2500\u2500\"".concat(_this.name, "\" was rejected."));
                     if (arg.onRejectCallback)
                         arg.onRejectCallback();
                 };
@@ -883,12 +882,13 @@
                     _this._isRunning = false;
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.warn("\"".concat(_this.name, "\" was aborted."));
-                    if (arg.onAbortCallback)
-                        arg.onAbortCallback();
+                    console.warn("\u2500\u2500\"".concat(_this.name, "\" was aborted."));
+                    arg.onAbortCallback && arg.onAbortCallback();
+                    _this.group.onAbortCallback && _this.group.onAbortCallback();
                 };
             }
             else {
+                alert('arg is not an object');
                 this.f = arg;
                 this.name = name;
                 this.parent = parent;
@@ -926,7 +926,7 @@
                         _this._isRunning = false;
                         _this._stopTime = now();
                         _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                        console.warn("\"".concat(_this.name, "\" was aborted."));
+                        console.warn("\"".concat(_this.name, "\" was aborted d."));
                         self.onAbortCallback && self.onAbortCallback();
                     };
             }
@@ -985,6 +985,13 @@
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(WatchFunction.prototype, "isProcessed", {
+            get: function () {
+                return this._isFinished || this._isRejected || this._isAborted;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(WatchFunction.prototype, "metrics", {
             get: function () {
                 return {
@@ -1027,14 +1034,7 @@
             this._onRejectCallback = function () { };
             this._onAbortCallback = function () { };
             this.sequence = 0; //??
-            this._onUnCompleteCallback = function () {
-                if (_this.useConsoleLog)
-                    console.log("*** ABORTED? ".concat(_this._id, " ***"));
-            };
-            this._onRejectedCallback = function () {
-                if (_this.useConsoleLog)
-                    console.log("*** REJECTED? ".concat(_this._id, " ***"));
-            };
+            this._onErrorCallback = function () { };
             // Add a watch function
             this.addWatch = function (addWatchFunction) {
                 var watchFunction;
@@ -1103,6 +1103,13 @@
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Group.prototype, "isProcessed", {
+            get: function () {
+                return this.isFinished || this.isRejected || this.isAborted;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Group.prototype, "startTime", {
             get: function () {
                 return this._startTime;
@@ -1138,6 +1145,9 @@
                 var _this = this;
                 return function () {
                     var _a;
+                    if (_this.isProcessed) {
+                        return;
+                    }
                     _this._startTime = now();
                     if (_this.useConsoleLog) {
                         console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
@@ -1163,7 +1173,7 @@
                     _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
                     if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
                         _this.reset(false);
-                        _this.WatchAll(_this.__callback, _this.__callback_error);
+                        _this.WatchAll();
                         return;
                     }
                     else {
@@ -1221,9 +1231,8 @@
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
                     if (_this.useConsoleLog) {
                         console.log("*** ABORTED ".concat(_this._id, " ***"));
-                        console.highlight('completed', { id: _this._id }, 'complete');
+                        console.highlight('completed', { id: _this._id }, 'aborted');
                         console.groupEnd();
-                        console.log(_this.metrics);
                     }
                     (_a = _this._onAbortCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
                 };
@@ -1231,6 +1240,22 @@
             set: function (value) {
                 if (typeof value === 'function')
                     this._onAbortCallback = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onErrorCallback", {
+            get: function () {
+                var _this = this;
+                return function () {
+                    if (_this.useConsoleLog)
+                        console.log("*** ERROR in group \"".concat(_this.name || _this._id, "\" ***"));
+                    _this._onErrorCallback();
+                };
+            },
+            set: function (value) {
+                if (typeof value === 'function')
+                    this._onErrorCallback = value;
             },
             enumerable: false,
             configurable: true
@@ -1354,7 +1379,7 @@
             configurable: true
         });
         Group.prototype.onRejected = function (cbf) {
-            this._onRejectedCallback = cbf;
+            this.onRejectCallback = cbf;
             return this;
         };
         Group.prototype.onStart = function (cbf) {

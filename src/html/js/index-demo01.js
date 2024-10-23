@@ -10,7 +10,7 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 
 	// const demo01 = new Group();
-	const demo01 = new Group({repeat: 4});
+	const demo01 = new Group({repeat: 13});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
 	demo01.addWatch({
@@ -19,10 +19,10 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("preparation step")');
+			// console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("preparation step")');
+			// console.log('++++onCompleteCallback("preparation step")');
 		},
 	});
 
@@ -32,10 +32,10 @@ const importModule = async () => {
 		child: ' 	',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s1")');
+			// console.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+			// console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 		},
 		onRejectCallback: function () {
 			console.warn('++++onRejectCallback("fetch data from ETL store: s1")');
@@ -48,10 +48,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s2")');
+			// console.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+			// console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 		},
 	});
 
@@ -61,10 +61,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s3")');
+			// console.log('++++onStartCallback("fetch data from ETL store: s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+			// console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 		},
 	});
 
@@ -73,10 +73,10 @@ const importModule = async () => {
 		parent: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("build snowflake")');
+			// console.log('++++onStartCallback("build snowflake")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake")');
+			// console.log('++++onCompleteCallback("build snowflake")');
 		},
 	});
 
@@ -89,13 +89,23 @@ const importModule = async () => {
 			.WatchAll(
 				() => {
 					const button = document.getElementById('demo01');
-					button.disabled = true;
-					button.innerText = 'Executing...';
+					button.disabled = false;
+					button.innerText = 'onStart';
 				},
 				() => {
 					const button = document.getElementById('demo01');
 					button.disabled = false;
-					button.innerText = 'demo01 (aborted)';
+					button.innerText = 'onComplete';
+				},
+				() => {
+					const button = document.getElementById('demo01');
+					button.disabled = false;
+					button.innerText = 'onReject';
+				},
+				() => {
+					const button = document.getElementById('demo01');
+					button.disabled = false;
+					button.innerText = 'onAbort';
 				},
 			)
 			.then(() => {

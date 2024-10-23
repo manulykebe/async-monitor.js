@@ -165,6 +165,7 @@ span {
 	font-style: normal;
 	font-weight: bold;
 }
+.highlight-aborted,
 .highlight-rejected {
 	background-color: rgba(255, 0, 0, 0.2);
 	font-style: normal;
@@ -192,6 +193,7 @@ span {
 }
 
 .highlight-complete .icon,
-.highlight-rejected .icon {
+.highlight-rejected .icon,
+.highlight-aborted .icon {
 	display: none;
 }

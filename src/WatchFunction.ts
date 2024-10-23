@@ -35,6 +35,10 @@ export default class WatchFunction {
 	get isRunning(): boolean {
 		return this._isRunning;
 	}
+
+	get isProcessed(): boolean {
+		return this._isFinished || this._isRejected || this._isAborted;
+	}
 	private _startTime: number = 0;
 	private _stopTime: number = 0;
 	private _duration: number = 0;
@@ -113,7 +117,7 @@ export default class WatchFunction {
 			this.onStartCallback = () => {
 				this._isRunning = true;
 				this._startTime = now();
-				console.log(`"${this.name}" has started.`);
+				console.log(`──"${this.name}" has started.`);
 				if (arg.onStartCallback) arg.onStartCallback!();
 			};
 
@@ -122,7 +126,7 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.log(`"${this.name}" has completed.`);
+				console.log(`──"${this.name}" has completed.`);
 				if (arg.onCompleteCallback) arg.onCompleteCallback!();
 			};
 
@@ -134,7 +138,7 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.warn(`"${this.name}" was rejected.`);
+				console.warn(`──"${this.name}" was rejected.`);
 				if (arg.onRejectCallback) arg.onRejectCallback!();
 			};
 			this.onAbortCallback = () => {
@@ -143,10 +147,12 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.warn(`"${this.name}" was aborted.`);
-				if (arg.onAbortCallback) arg.onAbortCallback!();
+				console.warn(`──"${this.name}" was aborted.`);
+				arg.onAbortCallback && arg.onAbortCallback();
+				this.group!.onAbortCallback && this.group!.onAbortCallback();
 			};
 		} else {
+			alert('arg is not an object');
 			this.f = arg;
 			this.name = name!;
 			this.parent = parent!;
@@ -183,7 +189,7 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.warn(`"${this.name}" was aborted.`);
+					console.warn(`"${this.name}" was aborted d.`);
 					self.onAbortCallback && self.onAbortCallback();
 				};
 		}
