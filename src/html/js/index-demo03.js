@@ -17,7 +17,6 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			debugger;
 			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {

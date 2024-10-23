@@ -11,16 +11,14 @@ const importModule = async () => {
 
 	// const demo01 = new Group();
 	const demo01 = new Group({repeat: 4});
+	demo01.name = '3 paralle tasks, followed by a single task';
 
 	demo01.addWatch({
 		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(2, false),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			const button = document.getElementById('demo01');
-			button.disabled = true;
-			button.innerText = 'Executing...';
 			console.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
@@ -31,7 +29,7 @@ const importModule = async () => {
 	demo01.addWatch({
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
-		child: 'b',
+		child: ' 	',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			console.log('++++onStartCallback("fetch data from ETL store: s1")');
@@ -91,8 +89,8 @@ const importModule = async () => {
 			.WatchAll(
 				() => {
 					const button = document.getElementById('demo01');
-					button.disabled = false;
-					button.innerText = 'demo01';
+					button.disabled = true;
+					button.innerText = 'Executing...';
 				},
 				() => {
 					const button = document.getElementById('demo01');

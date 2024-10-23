@@ -178,8 +178,6 @@ function escapeRegExp(text: string) {
 }
 // text is string or regex
 function findSpanElementWithClassAndText(text: string | RegExp, _id: number, className: string = 'start') {
-	if (text instanceof RegExp) debugger;
-
 	const treeElement = document.querySelector(`pre[class*="tree-${_id}"]`);
 	if (!treeElement) return null;
 	const spanElements = treeElement.querySelectorAll(`span.highlight-${className}`);

@@ -185,10 +185,10 @@ span {
 
 .icon {
 	position: absolute;
-	left: -10px;
+	left: -8px;
 	top: 1px;
 	cursor: pointer;
-	color:  rgba(255, 0, 0);
+	/* color:  rgba(255, 0, 0); */
 }
 
 .highlight-complete .icon,

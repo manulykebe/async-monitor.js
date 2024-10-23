@@ -150,8 +150,6 @@ define(['exports'], (function (exports) { 'use strict';
     }
     // text is string or regex
     function findSpanElementWithClassAndText(text, _id, className) {
-        if (text instanceof RegExp)
-            debugger;
         var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
         if (!treeElement)
             return null;
@@ -460,6 +458,7 @@ define(['exports'], (function (exports) { 'use strict';
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 // Call the private function with the default parent value as undefined
+                debugger;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         _watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
                     })];
@@ -865,7 +864,6 @@ define(['exports'], (function (exports) { 'use strict';
                     if (_this._isAborted) {
                         return;
                     }
-                    debugger;
                     _this._isRejected = true;
                     _this._isRunning = false;
                     _this._stopTime = now();
@@ -925,7 +923,6 @@ define(['exports'], (function (exports) { 'use strict';
                         _this._stopTime = now();
                         _this._duration = calcDuration(_this._startTime, _this._stopTime);
                         console.warn("\"".concat(_this.name, "\" was aborted."));
-                        debugger;
                         self.onAbortCallback && self.onAbortCallback();
                     };
             }

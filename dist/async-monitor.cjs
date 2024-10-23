@@ -152,8 +152,6 @@ function escapeRegExp(text) {
 }
 // text is string or regex
 function findSpanElementWithClassAndText(text, _id, className) {
-    if (text instanceof RegExp)
-        debugger;
     var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
     if (!treeElement)
         return null;
@@ -462,6 +460,7 @@ function WatchAll(group, onStartCallback, callback_error) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             // Call the private function with the default parent value as undefined
+            debugger;
             return [2 /*return*/, new Promise(function (resolve, reject) {
                     _watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
                 })];
@@ -867,7 +866,6 @@ var WatchFunction = /** @class */ (function () {
                 if (_this._isAborted) {
                     return;
                 }
-                debugger;
                 _this._isRejected = true;
                 _this._isRunning = false;
                 _this._stopTime = now();
@@ -927,7 +925,6 @@ var WatchFunction = /** @class */ (function () {
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
                     console.warn("\"".concat(_this.name, "\" was aborted."));
-                    debugger;
                     self.onAbortCallback && self.onAbortCallback();
                 };
         }

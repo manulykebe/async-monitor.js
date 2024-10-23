@@ -130,7 +130,6 @@ export default class WatchFunction {
 				if (this._isAborted) {
 					return;
 				}
-				debugger;
 				this._isRejected = true;
 				this._isRunning = false;
 				this._stopTime = now();
@@ -185,7 +184,6 @@ export default class WatchFunction {
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
 					console.warn(`"${this.name}" was aborted.`);
-					debugger;
 					self.onAbortCallback && self.onAbortCallback();
 				};
 		}

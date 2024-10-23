@@ -84,8 +84,17 @@ export class Progress {
 	}
 }
 let _sequence = 0;
-export async function WatchAll(group: Group, onStartCallback?: () => void, callback_error?: () => void): Promise<void> {
-	// Call the private function with the default parent value as undefined
+export async function WatchAll(
+	group: Group,
+	onStartCallback?: () => void,
+	onCompleteCallback?: () => void,
+	onRejectCallback?: () => void,
+	onAbortCallback?: () => void,
+): Promise<void> {
+	if (typeof onStartCallback === 'function') group.onStartCallback = onStartCallback;
+	if (typeof onCompleteCallback === 'function') group.onCompleteCallback = onCompleteCallback;
+	if (typeof onRejectCallback === 'function') group.onRejectCallback = onRejectCallback;
+	if (typeof onAbortCallback === 'function') group.onAbortCallback = onAbortCallback;
 	return new Promise<void>((resolve, reject) => {
 		_watchAllInternal(group, undefined, onStartCallback, callback_error, resolve, reject);
 	});
