@@ -104,7 +104,7 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 	const watches = group.functions;
 	const useConsoleLog = group.useConsoleLog;
 	const children: WatchFunction[] = watches.filter(x => x.parent === parent);
-	alert(parent);
+
 	if (watches.every(f => f.isFinished)) {
 		if (group.options.repeat === 0 || (group.options.repeat > 0 && group.options.repeat <= (group.options.runs || 0))) {
 			// All watches are finished

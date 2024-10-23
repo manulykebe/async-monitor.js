@@ -10,7 +10,7 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 
 	// const demo01 = new Group();
-	const demo01 = new Group({repeat: 13});
+	const demo01 = new Group({repeat: 0});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
 	demo01.addWatch({
@@ -29,7 +29,7 @@ const importModule = async () => {
 	demo01.addWatch({
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
-		child: ' 	',
+		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			// console.log('++++onStartCallback("fetch data from ETL store: s1")');

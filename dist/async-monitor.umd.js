@@ -468,7 +468,6 @@
         var watches = group.functions;
         var useConsoleLog = group.useConsoleLog;
         var children = watches.filter(function (x) { return x.parent === parent; });
-        alert(parent);
         if (watches.every(function (f) { return f.isFinished; })) {
             if (group.options.repeat === 0 || (group.options.repeat > 0 && group.options.repeat <= (group.options.runs || 0))) {
                 // All watches are finished
