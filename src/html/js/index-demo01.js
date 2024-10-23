@@ -10,7 +10,7 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 
 	// const demo01 = new Group();
-	const demo01 = new Group({repeat: 0});
+	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
 	demo01.addWatch({
