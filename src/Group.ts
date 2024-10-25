@@ -12,7 +12,6 @@ document['async-monitor-groups'] = [];
 
 const regexRepeat = (repeat: number): RegExp => {
 	const l = repeat.toString().length;
-	// regex that matches "(l)spaces" "1/" "l numbers" "1 space"
 	return new RegExp(`\\s{${l}}1\\/${repeat}\\s`);
 };
 
@@ -23,6 +22,9 @@ interface GroupOptions {
 
 export default class Group {
 	options: GroupOptions = {repeat: 0, runs: 0};
+	get run(): number {
+		return this.options.repeat >= 0 ? (this.options.runs ?? 0) : 0;
+	}
 	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
 		this.options = options;
 		document['async-monitor-groups'].push(this);
@@ -94,7 +96,20 @@ export default class Group {
 		};
 	}
 	set onStartCallback(value: () => void) {
-		if (typeof value === 'function') this._onStartCallback = value;
+		if (typeof value === 'function') this._onStartCallback = value.bind(this);
+	}
+
+	private _onStartRunCallback?: () => void = () => {};
+	get onStartRunCallback(): () => void {
+		return () => {
+			if (this.useConsoleLog) {
+				console.log(`*** RUN ${this.run} ***`);
+			}
+			this._onStartRunCallback!();
+		};
+	}
+	set onStartRunCallback(value: () => void) {
+		if (typeof value === 'function') this._onStartRunCallback = value.bind(this);
 	}
 
 	private _onCompleteCallback?: () => void = () => {};
@@ -124,7 +139,37 @@ export default class Group {
 		};
 	}
 	set onCompleteCallback(value: () => void) {
-		if (typeof value === 'function') this._onCompleteCallback = value;
+		if (typeof value === 'function') this._onCompleteCallback = value.bind(this);
+	}
+
+	private _onCompleteRunCallback?: () => void = () => {};
+	get onCompleteRunCallback(): () => void {
+		return () => {
+			this.options.runs = (this.options.runs ?? 1) + 1;
+			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
+				this.reset(false);
+				this.watchAll();
+				return;
+			} else {
+				if (this.useConsoleLog) {
+					console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
+				}
+			}
+
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** COMPLETE ${this._id} ***`);
+				console.highlight('completed', {id: this._id}, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
+			this._onCompleteRunCallback?.();
+		};
+	}
+	set onCompleteRunCallback(value: () => void) {
+		if (typeof value === 'function') this._onCompleteRunCallback = value.bind(this);
 	}
 
 	private _onRejectCallback?: () => void = () => {};
@@ -143,7 +188,26 @@ export default class Group {
 		};
 	}
 	set onRejectCallback(value: () => void) {
-		if (typeof value === 'function') this._onRejectCallback = value;
+		if (typeof value === 'function') this._onRejectCallback = value.bind(this);
+	}
+
+	private _onRejectRunCallback?: () => void = () => {};
+	get onRejectRunCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** REJECTED ${this._id} ***`);
+				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
+				console.groupEnd();
+				console.log(this.metrics);
+			}
+			this._onRejectRunCallback?.();
+		};
+	}
+	set onRejectRunCallback(value: () => void) {
+		if (typeof value === 'function') this._onRejectRunCallback = value.bind(this);
 	}
 
 	private _onAbortCallback?: () => void = () => {};
@@ -161,7 +225,25 @@ export default class Group {
 		};
 	}
 	set onAbortCallback(value: () => void) {
-		if (typeof value === 'function') this._onAbortCallback = value;
+		if (typeof value === 'function') this._onAbortCallback = value.bind(this);
+	}
+
+	private _onAbortRunCallback?: () => void = () => {};
+	get onAbortRunCallback(): () => void {
+		return () => {
+			this._stopTime = now();
+			this._duration = calcDuration(this._startTime, this._stopTime);
+
+			if (this.useConsoleLog) {
+				console.log(`*** ABORTED ${this._id} ***`);
+				console.highlight('completed', {id: this._id}, 'aborted');
+				console.groupEnd();
+			}
+			this._onAbortRunCallback?.();
+		};
+	}
+	set onAbortRunCallback(value: () => void) {
+		if (typeof value === 'function') this._onAbortRunCallback = value.bind(this);
 	}
 
 	sequence: number = 0; //??
@@ -317,16 +399,16 @@ export default class Group {
 		});
 	}
 
-	onRejected(cbf: () => void) {
-		this.onRejectCallback = cbf;
-		return this;
-	}
-	onStart(cbf: () => void) {
-		this._onStartCallback = cbf;
-		return this;
-	}
-	onComplete(cbf: () => void) {
-		this._onCompleteCallback = cbf;
-		return this;
-	}
+	// onRejected(cbf: () => void) {
+	// 	this.onRejectCallback = cbf;
+	// 	return this;
+	// }
+	// onStart(cbf: () => void) {
+	// 	this._onStartCallback = cbf;
+	// 	return this;
+	// }
+	// onComplete(cbf: () => void) {
+	// 	this._onCompleteCallback = cbf;
+	// 	return this;
+	// }
 }
