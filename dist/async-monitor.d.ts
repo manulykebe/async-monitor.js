@@ -85,6 +85,7 @@ interface GroupOptions {
 }
 declare class Group {
     options: GroupOptions;
+    get run(): number;
     constructor(options?: GroupOptions);
     useConsoleLog: boolean;
     private _id;
@@ -109,15 +110,27 @@ declare class Group {
     private _onStartCallback?;
     get onStartCallback(): () => void;
     set onStartCallback(value: () => void);
+    private _onStartRunCallback?;
+    get onStartRunCallback(): () => void;
+    set onStartRunCallback(value: () => void);
     private _onCompleteCallback?;
     get onCompleteCallback(): () => void;
     set onCompleteCallback(value: () => void);
+    private _onCompleteRunCallback?;
+    get onCompleteRunCallback(): () => void;
+    set onCompleteRunCallback(value: () => void);
     private _onRejectCallback?;
     get onRejectCallback(): () => void;
     set onRejectCallback(value: () => void);
+    private _onRejectRunCallback?;
+    get onRejectRunCallback(): () => void;
+    set onRejectRunCallback(value: () => void);
     private _onAbortCallback?;
     get onAbortCallback(): () => void;
     set onAbortCallback(value: () => void);
+    private _onAbortRunCallback?;
+    get onAbortRunCallback(): () => void;
+    set onAbortRunCallback(value: () => void);
     sequence: number;
     private _onErrorCallback;
     get onErrorCallback(): () => void;
@@ -138,9 +151,6 @@ declare class Group {
     }, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void): Promise<void> | undefined;
     get consoleTree(): string;
     get metrics(): Metric[];
-    onRejected(cbf: () => void): this;
-    onStart(cbf: () => void): this;
-    onComplete(cbf: () => void): this;
 }
 
 declare const now: () => number;

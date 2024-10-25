@@ -856,43 +856,43 @@ var WatchFunction = /** @class */ (function () {
             this.parent = arg.parent;
             this.child = arg.child;
             this.onStartCallback = function () {
-                _this._isRunning = true;
-                _this._startTime = now();
-                console.log("\u2500\u2500\"".concat(_this.name, "\" has started."));
+                this._isRunning = true;
+                this._startTime = now();
+                console.log("\u2500\u2500\"".concat(this.name, "\" has started."));
                 if (arg.onStartCallback)
                     arg.onStartCallback();
             };
             this.onCompleteCallback = function () {
-                _this._isFinished = true;
-                _this._isRunning = false;
-                _this._stopTime = now();
-                _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                console.log("\u2500\u2500\"".concat(_this.name, "\" has completed."));
+                this._isFinished = true;
+                this._isRunning = false;
+                this._stopTime = now();
+                this._duration = calcDuration(this._startTime, this._stopTime);
+                console.log("\u2500\u2500\"".concat(this.name, "\" has completed."));
                 if (arg.onCompleteCallback)
                     arg.onCompleteCallback();
             };
             this.onRejectCallback = function () {
-                if (_this._isAborted) {
+                if (this._isAborted) {
                     return;
                 }
-                _this._isRejected = true;
-                _this._isRunning = false;
-                _this._stopTime = now();
-                _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                console.warn("\u2500\u2500\"".concat(_this.name, "\" was rejected."));
+                this._isRejected = true;
+                this._isRunning = false;
+                this._stopTime = now();
+                this._duration = calcDuration(this._startTime, this._stopTime);
+                console.warn("\u2500\u2500\"".concat(this.name, "\" was rejected."));
                 if (arg.onRejectCallback)
                     arg.onRejectCallback();
             };
             this.onAbortCallback = function () {
-                if (_this._isFinished)
+                if (this._isFinished)
                     return;
-                _this._isAborted = true;
-                _this._isRunning = false;
-                _this._stopTime = now();
-                _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                console.warn("\u2500\u2500\"".concat(_this.name, "\" was aborted."));
+                this._isAborted = true;
+                this._isRunning = false;
+                this._stopTime = now();
+                this._duration = calcDuration(this._startTime, this._stopTime);
+                console.warn("\u2500\u2500\"".concat(this.name, "\" was aborted."));
                 arg.onAbortCallback && arg.onAbortCallback();
-                _this.group.onAbortCallback && _this.group.onAbortCallback();
+                this.group.onAbortCallback && this.group.onAbortCallback();
             };
         }
         else {
@@ -903,38 +903,38 @@ var WatchFunction = /** @class */ (function () {
             this.child = child;
             if (onStartCallback)
                 this.onStartCallback = function () {
-                    _this._isRunning = true;
-                    _this._startTime = now();
-                    console.log("\"".concat(_this.name, "\" has started."));
+                    this._isRunning = true;
+                    this._startTime = now();
+                    console.log("\"".concat(this.name, "\" has started."));
                     onStartCallback();
                 };
             if (onCompleteCallback)
                 this.onCompleteCallback = function () {
-                    _this._isFinished = true;
-                    _this._isRunning = false;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.log("\"".concat(_this.name, "\" has completed."));
+                    this._isFinished = true;
+                    this._isRunning = false;
+                    this._stopTime = now();
+                    this._duration = calcDuration(this._startTime, this._stopTime);
+                    console.log("\"".concat(this.name, "\" has completed."));
                     onCompleteCallback();
                 };
             if (onRejectCallback)
                 this.onRejectCallback = function () {
-                    _this._isRejected = true;
-                    _this._isRunning = false;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.warn("\"".concat(_this.name, "\" was rejected."));
+                    this._isRejected = true;
+                    this._isRunning = false;
+                    this._stopTime = now();
+                    this._duration = calcDuration(this._startTime, this._stopTime);
+                    console.warn("\"".concat(this.name, "\" was rejected."));
                     onRejectCallback();
                 };
             if (onAbortCallback)
                 this.onAbortCallback = function () {
-                    if (_this._isFinished)
+                    if (this._isFinished)
                         return;
-                    _this._isAborted = true;
-                    _this._isRunning = false;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
-                    console.warn("\"".concat(_this.name, "\" was aborted d."));
+                    this._isAborted = true;
+                    this._isRunning = false;
+                    this._stopTime = now();
+                    this._duration = calcDuration(this._startTime, this._stopTime);
+                    console.warn("\"".concat(this.name, "\" was aborted d."));
                     self.onAbortCallback && self.onAbortCallback();
                 };
         }
@@ -1026,7 +1026,6 @@ var WatchFunction = /** @class */ (function () {
 document['async-monitor-groups'] = [];
 var regexRepeat = function (repeat) {
     var l = repeat.toString().length;
-    // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
     return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
 };
 var Group = /** @class */ (function () {
@@ -1041,9 +1040,13 @@ var Group = /** @class */ (function () {
         this._stopTime = 0;
         this._duration = 0;
         this._onStartCallback = function () { };
+        this._onStartRunCallback = function () { };
         this._onCompleteCallback = function () { };
+        this._onCompleteRunCallback = function () { };
         this._onRejectCallback = function () { };
+        this._onRejectRunCallback = function () { };
         this._onAbortCallback = function () { };
+        this._onAbortRunCallback = function () { };
         this.sequence = 0; //??
         this._onErrorCallback = function () { };
         // Add a watch function
@@ -1072,6 +1075,14 @@ var Group = /** @class */ (function () {
         this.options = options;
         document['async-monitor-groups'].push(this);
     }
+    Object.defineProperty(Group.prototype, "run", {
+        get: function () {
+            var _a;
+            return this.options.repeat >= 0 ? ((_a = this.options.runs) !== null && _a !== void 0 ? _a : 0) : 0;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Group.prototype, "id", {
         get: function () {
             return this._id;
@@ -1171,7 +1182,24 @@ var Group = /** @class */ (function () {
         },
         set: function (value) {
             if (typeof value === 'function')
-                this._onStartCallback = value;
+                this._onStartCallback = value.bind(this);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "onStartRunCallback", {
+        get: function () {
+            var _this = this;
+            return function () {
+                if (_this.useConsoleLog) {
+                    console.log("*** RUN ".concat(_this.run, " ***"));
+                }
+                _this._onStartRunCallback();
+            };
+        },
+        set: function (value) {
+            if (typeof value === 'function')
+                this._onStartRunCallback = value.bind(this);
         },
         enumerable: false,
         configurable: true
@@ -1205,7 +1233,41 @@ var Group = /** @class */ (function () {
         },
         set: function (value) {
             if (typeof value === 'function')
-                this._onCompleteCallback = value;
+                this._onCompleteCallback = value.bind(this);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "onCompleteRunCallback", {
+        get: function () {
+            var _this = this;
+            return function () {
+                var _a, _b;
+                _this.options.runs = ((_a = _this.options.runs) !== null && _a !== void 0 ? _a : 1) + 1;
+                if (_this.options.runs <= _this.options.repeat || _this.options.repeat === -1) {
+                    _this.reset(false);
+                    _this.watchAll();
+                    return;
+                }
+                else {
+                    if (_this.useConsoleLog) {
+                        console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, ['complete']);
+                    }
+                }
+                _this._stopTime = now();
+                _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                if (_this.useConsoleLog) {
+                    console.log("*** COMPLETE ".concat(_this._id, " ***"));
+                    console.highlight('completed', { id: _this._id }, 'complete');
+                    console.groupEnd();
+                    console.log(_this.metrics);
+                }
+                (_b = _this._onCompleteRunCallback) === null || _b === void 0 ? void 0 : _b.call(_this);
+            };
+        },
+        set: function (value) {
+            if (typeof value === 'function')
+                this._onCompleteRunCallback = value.bind(this);
         },
         enumerable: false,
         configurable: true
@@ -1228,7 +1290,30 @@ var Group = /** @class */ (function () {
         },
         set: function (value) {
             if (typeof value === 'function')
-                this._onRejectCallback = value;
+                this._onRejectCallback = value.bind(this);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "onRejectRunCallback", {
+        get: function () {
+            var _this = this;
+            return function () {
+                var _a;
+                _this._stopTime = now();
+                _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                if (_this.useConsoleLog) {
+                    console.log("*** REJECTED ".concat(_this._id, " ***"));
+                    console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
+                    console.groupEnd();
+                    console.log(_this.metrics);
+                }
+                (_a = _this._onRejectRunCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+            };
+        },
+        set: function (value) {
+            if (typeof value === 'function')
+                this._onRejectRunCallback = value.bind(this);
         },
         enumerable: false,
         configurable: true
@@ -1250,7 +1335,29 @@ var Group = /** @class */ (function () {
         },
         set: function (value) {
             if (typeof value === 'function')
-                this._onAbortCallback = value;
+                this._onAbortCallback = value.bind(this);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "onAbortRunCallback", {
+        get: function () {
+            var _this = this;
+            return function () {
+                var _a;
+                _this._stopTime = now();
+                _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                if (_this.useConsoleLog) {
+                    console.log("*** ABORTED ".concat(_this._id, " ***"));
+                    console.highlight('completed', { id: _this._id }, 'aborted');
+                    console.groupEnd();
+                }
+                (_a = _this._onAbortRunCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+            };
+        },
+        set: function (value) {
+            if (typeof value === 'function')
+                this._onAbortRunCallback = value.bind(this);
         },
         enumerable: false,
         configurable: true
@@ -1377,18 +1484,6 @@ var Group = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Group.prototype.onRejected = function (cbf) {
-        this.onRejectCallback = cbf;
-        return this;
-    };
-    Group.prototype.onStart = function (cbf) {
-        this._onStartCallback = cbf;
-        return this;
-    };
-    Group.prototype.onComplete = function (cbf) {
-        this._onCompleteCallback = cbf;
-        return this;
-    };
     return Group;
 }());
 

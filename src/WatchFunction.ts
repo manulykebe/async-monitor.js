@@ -125,14 +125,14 @@ export default class WatchFunction {
 			this.parent = arg.parent;
 			this.child = arg.child;
 
-			this.onStartCallback = () => {
+			this.onStartCallback = function () {
 				this._isRunning = true;
 				this._startTime = now();
 				console.log(`──"${this.name}" has started.`);
 				if (arg.onStartCallback) arg.onStartCallback!();
 			};
 
-			this.onCompleteCallback = () => {
+			this.onCompleteCallback = function () {
 				this._isFinished = true;
 				this._isRunning = false;
 				this._stopTime = now();
@@ -141,7 +141,7 @@ export default class WatchFunction {
 				if (arg.onCompleteCallback) arg.onCompleteCallback!();
 			};
 
-			this.onRejectCallback = () => {
+			this.onRejectCallback = function () {
 				if (this._isAborted) {
 					return;
 				}
@@ -152,7 +152,7 @@ export default class WatchFunction {
 				console.warn(`──"${this.name}" was rejected.`);
 				if (arg.onRejectCallback) arg.onRejectCallback!();
 			};
-			this.onAbortCallback = () => {
+			this.onAbortCallback = function () {
 				if (this._isFinished) return;
 				this._isAborted = true;
 				this._isRunning = false;
@@ -169,14 +169,14 @@ export default class WatchFunction {
 			this.parent = parent!;
 			this.child = child!;
 			if (onStartCallback)
-				this.onStartCallback = () => {
+				this.onStartCallback = function () {
 					this._isRunning = true;
 					this._startTime = now();
 					console.log(`"${this.name}" has started.`);
 					onStartCallback();
 				};
 			if (onCompleteCallback)
-				this.onCompleteCallback = () => {
+				this.onCompleteCallback = function () {
 					this._isFinished = true;
 					this._isRunning = false;
 					this._stopTime = now();
@@ -185,7 +185,7 @@ export default class WatchFunction {
 					onCompleteCallback();
 				};
 			if (onRejectCallback)
-				this.onRejectCallback = () => {
+				this.onRejectCallback = function () {
 					this._isRejected = true;
 					this._isRunning = false;
 					this._stopTime = now();
@@ -194,7 +194,7 @@ export default class WatchFunction {
 					onRejectCallback();
 				};
 			if (onAbortCallback)
-				this.onAbortCallback = () => {
+				this.onAbortCallback = function () {
 					if (this._isFinished) return;
 					this._isAborted = true;
 					this._isRunning = false;

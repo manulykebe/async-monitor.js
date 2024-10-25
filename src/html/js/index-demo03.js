@@ -115,22 +115,22 @@ const importModule = async () => {
 		},
 	});
 
-	demo03.onStartCallback = () => {
+	demo03.onStartCallback = function () {
 		const button = document.getElementById('demo03');
 		button.disabled = false;
 		button.innerText = 'onStart';
 	};
-	demo03.onCompleteCallback = () => {
+	demo03.onCompleteCallback = function () {
 		const button = document.getElementById('demo03');
 		button.disabled = false;
 		button.innerText = 'onComplete';
 	};
-	demo03.onRejectCallback = () => {
+	demo03.onRejectCallback = function () {
 		const button = document.getElementById('demo03');
 		button.disabled = false;
 		button.innerText = 'onReject';
 	};
-	demo03.onAbortCallback = () => {
+	demo03.onAbortCallback = function () {
 		const button = document.getElementById('demo03');
 		button.disabled = false;
 		button.innerText = 'onAbort';

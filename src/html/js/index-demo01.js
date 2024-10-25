@@ -9,7 +9,6 @@ const importModule = async () => {
 
 	const {Group, Tree, sleep, version} = module;
 
-	// const demo01 = new Group();
 	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
@@ -89,23 +88,27 @@ const importModule = async () => {
 		},
 	});
 
-	demo01.onStartCallback = () => {
+	demo01.onStartCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onStart';
+		console.log(`this.run: ${this.run}`);
 	};
-	demo01.onCompleteCallback = () => {
+	demo01.onStartRunCallback = function () {
+		console.log(`this.run: ${this.run}`);
+	};
+	demo01.onCompleteCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onComplete';
 	};
-	demo01.onRejectCallback = () => {
+	demo01.onRejectCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onReject';
 		console.log('GROUP ++++onRejectCallback("demo01")');
 	};
-	demo01.onAbortCallback = () => {
+	demo01.onAbortCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onAbort';
