@@ -12,6 +12,9 @@ export type Metric = {
 	isRejected: boolean;
 	isAborted: boolean;
 	sequence: number;
+	status: string;
+	reason: any;
+	value: any;
 };
 
 export default class WatchFunction {
@@ -73,12 +76,20 @@ export default class WatchFunction {
 	};
 
 	'promise': Promise<any>;
+	promiseStatus: {status: string; reason: any; value: any} = {
+		status: 'not started',
+		reason: undefined,
+		value: undefined,
+	};
 	get metrics(): Metric {
 		return {
 			id: this._id!,
 			name: this.name,
-			start: this.group ? this._startTime - this.group.startTime : 0,
+			start: Math.max(0, this.group ? this._startTime - this.group.startTime : 0),
 			duration: this._duration,
+			status: this.promiseStatus.status,
+			value: this.promiseStatus.value,
+			reason: this.promiseStatus.reason,
 			isRunning: this._isRunning,
 			isFinished: this._isFinished,
 			isRejected: this._isRejected,

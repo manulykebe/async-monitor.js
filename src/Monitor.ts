@@ -1,15 +1,13 @@
 export default class Monitor {
-	private fs: Promise<any>[]; // Store the promises array
+	private functions: Promise<any>[];
 
-	constructor(fs: Promise<any>[]) {
-		this.fs = fs;
+	constructor(functions: Promise<any>[]) {
+		this.functions = functions;
 	}
 
-	// Method to handle the async operation
-	async monitorStatuses(): Promise<{performance: number; statusesPromise: Array<PromiseSettledResult<any>>}> {
-		const statusesPromise = await Promise.allSettled(this.fs);
+	async settled(): Promise<{statusesPromise: Array<PromiseSettledResult<any>>}> {
+		const statusesPromise = await Promise.allSettled(this.functions);
 		return {
-			performance: performance.now(),
 			statusesPromise,
 		};
 	}

@@ -4,44 +4,48 @@ import now, {calcDuration} from './Now';
 import WatchFunction from './WatchFunction';
 
 export class Watch {
-	constructor(
-		fs: Array<{promise: Promise<any> | void; onRejectCallback?: (reason: any) => void; group?: Group}>,
-		f: (() => void) | Array<() => void>,
-	) {
-		let _breakOnRejected = false;
-		let _statuses: Array<{index: string; reason: any; onRejectCallback?: (reason: any) => void}> = [];
+	constructor(fs: Array<WatchFunction>, f: (() => void) | Array<() => void>) {
+		let breakOnReject = false;
+		// let _statuses: Array<{index: string; reason: any; onRejectCallback?: (reason: any) => void}> = [];
 
 		// Filter out entries where promise is undefined
-		const validFs: Promise<any>[] = fs
-			.filter(
-				(x): x is {promise: Promise<any>; onRejectCallback?: (reason: any) => void} => x.promise instanceof Promise,
-			)
-			.map(x => x.promise);
-		const monitorInstance = new Monitor(validFs);
-
-		// (document as any)['monitorInstance'] = monitorInstance;
+		const promises: Promise<any>[] = fs.map(x => x.promise);
+		const monitorInstance = new Monitor(promises);
 
 		return monitorInstance
-			.monitorStatuses()
-			.then((statuses: {performance: number; statusesPromise: Array<{status: string; reason?: any}>}) => {
+			.settled()
+			.then((statuses: {statusesPromise: Array<PromiseSettledResult<any>>}) => {
+				for (let i = 0; i < statuses.statusesPromise.length; i++) {
+					fs[i].promiseStatus.status = statuses.statusesPromise[i].status;
+					fs[i].promiseStatus.reason =
+						statuses.statusesPromise[i].status === 'rejected'
+							? (statuses.statusesPromise[i] as PromiseRejectedResult).reason
+							: undefined;
+					fs[i].promiseStatus.value =
+						statuses.statusesPromise[i].status === 'fulfilled'
+							? (statuses.statusesPromise[i] as PromiseFulfilledResult<any>).value
+							: undefined;
+				}
+
 				// if (statuses.statusesPromise.length > 1) {
 				// 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				// } else {
 				// 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
 				// }
-				_breakOnRejected = statuses.statusesPromise.some(x => x.status === 'rejected');
-				_statuses = statuses.statusesPromise
-					.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
-					.filter(v => v.reason !== undefined);
+				debugger;
+				breakOnReject = statuses.statusesPromise.some(x => x.status === 'rejected');
+				// _statuses = statuses.statusesPromise
+				// 	.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
+				// 	.filter(v => v.reason !== undefined);
 			})
 			.catch(err => {
 				console.warn('error:', err);
 			})
 			.finally(() => {
-				if (_breakOnRejected) {
+				if (breakOnReject) {
+					debugger;
 					const fs0 = fs[0];
 					// if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
-					// if (fs0.group && typeof fs0.group.onRejectCallback === 'function') fs0.group.onRejectCallback();
 					// if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
 					// // f_rejected for specific function
 					// _statuses.forEach(x => {
@@ -56,7 +60,9 @@ export class Watch {
 					// });
 					// // f_rejected for global watch
 					// if (typeof fr === 'function') fr();
-					console.warn('Some watch was rejected xxx');
+
+					if (fs0.group && typeof fs0.group.onRejectCallback === 'function') fs0.group.onRejectCallback();
+
 					return;
 				} else {
 					if (!Array.isArray(f)) f = [f];
@@ -203,13 +209,12 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 			debugger;
 		} else {
 			grandChildren.forEach(gc => {
-				const validChildren = children
+				const validChildren: WatchFunction[] = children
 					.filter(c => c.child === gc)
-					.map(child => ({
-						promise: child.promise ?? Promise.resolve(),
-						onRejectCallback: child.onRejectCallback,
-						group: child.group,
-					}));
+					.map(child => {
+						child.promise = child.promise ?? Promise.resolve();
+						return child;
+					});
 
 				debugger;
 				new Watch(validChildren, [
@@ -218,7 +223,7 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 							.filter(x => x.parent === parent)
 							.filter(function (c) {
 								return c.child === gc;
-							}) // && !x._isRunning && !x._isFinished)
+							})
 							.map(x => x.child)
 							.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index)
 							.forEach(x => {

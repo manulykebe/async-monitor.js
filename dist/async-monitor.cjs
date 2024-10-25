@@ -320,20 +320,18 @@ var __generator$1 = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var Monitor = /** @class */ (function () {
-    function Monitor(fs) {
-        this.fs = fs;
+    function Monitor(functions) {
+        this.functions = functions;
     }
-    // Method to handle the async operation
-    Monitor.prototype.monitorStatuses = function () {
+    Monitor.prototype.settled = function () {
         return __awaiter$1(this, void 0, void 0, function () {
             var statusesPromise;
             return __generator$1(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Promise.allSettled(this.fs)];
+                    case 0: return [4 /*yield*/, Promise.allSettled(this.functions)];
                     case 1:
                         statusesPromise = _a.sent();
                         return [2 /*return*/, {
-                                performance: performance.now(),
                                 statusesPromise: statusesPromise,
                             }];
                 }
@@ -386,34 +384,44 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var Watch = /** @class */ (function () {
     function Watch(fs, f) {
-        var _breakOnRejected = false;
+        var breakOnReject = false;
+        // let _statuses: Array<{index: string; reason: any; onRejectCallback?: (reason: any) => void}> = [];
         // Filter out entries where promise is undefined
-        var validFs = fs
-            .filter(function (x) { return x.promise instanceof Promise; })
-            .map(function (x) { return x.promise; });
-        var monitorInstance = new Monitor(validFs);
-        // (document as any)['monitorInstance'] = monitorInstance;
+        var promises = fs.map(function (x) { return x.promise; });
+        var monitorInstance = new Monitor(promises);
         return monitorInstance
-            .monitorStatuses()
+            .settled()
             .then(function (statuses) {
+            for (var i = 0; i < statuses.statusesPromise.length; i++) {
+                fs[i].promiseStatus.status = statuses.statusesPromise[i].status;
+                fs[i].promiseStatus.reason =
+                    statuses.statusesPromise[i].status === 'rejected'
+                        ? statuses.statusesPromise[i].reason
+                        : undefined;
+                fs[i].promiseStatus.value =
+                    statuses.statusesPromise[i].status === 'fulfilled'
+                        ? statuses.statusesPromise[i].value
+                        : undefined;
+            }
             // if (statuses.statusesPromise.length > 1) {
             // 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
             // } else {
             // 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
             // }
-            _breakOnRejected = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
-            statuses.statusesPromise
-                .map(function (v, i) { return ({ index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback }); })
-                .filter(function (v) { return v.reason !== undefined; });
+            debugger;
+            breakOnReject = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
+            // _statuses = statuses.statusesPromise
+            // 	.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
+            // 	.filter(v => v.reason !== undefined);
         })
             .catch(function (err) {
             console.warn('error:', err);
         })
             .finally(function () {
-            if (_breakOnRejected) {
-                fs[0];
+            if (breakOnReject) {
+                debugger;
+                var fs0 = fs[0];
                 // if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
-                // if (fs0.group && typeof fs0.group.onRejectCallback === 'function') fs0.group.onRejectCallback();
                 // if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
                 // // f_rejected for specific function
                 // _statuses.forEach(x => {
@@ -428,7 +436,8 @@ var Watch = /** @class */ (function () {
                 // });
                 // // f_rejected for global watch
                 // if (typeof fr === 'function') fr();
-                console.warn('Some watch was rejected xxx');
+                if (fs0.group && typeof fs0.group.onRejectCallback === 'function')
+                    fs0.group.onRejectCallback();
                 return;
             }
             else {
@@ -573,11 +582,8 @@ function _watchAllInternal(group, parent, resolve, reject) {
                     .filter(function (c) { return c.child === gc; })
                     .map(function (child) {
                     var _a;
-                    return ({
-                        promise: (_a = child.promise) !== null && _a !== void 0 ? _a : Promise.resolve(),
-                        onRejectCallback: child.onRejectCallback,
-                        group: child.group,
-                    });
+                    child.promise = (_a = child.promise) !== null && _a !== void 0 ? _a : Promise.resolve();
+                    return child;
                 });
                 debugger;
                 new Watch(validChildren, [
@@ -586,7 +592,7 @@ function _watchAllInternal(group, parent, resolve, reject) {
                             .filter(function (x) { return x.parent === parent; })
                             .filter(function (c) {
                             return c.child === gc;
-                        }) // && !x._isRunning && !x._isFinished)
+                        })
                             .map(function (x) { return x.child; })
                             .filter(function (currentValue, index, arr) { return arr.indexOf(currentValue) === index; })
                             .forEach(function (x) {
@@ -836,6 +842,11 @@ var WatchFunction = /** @class */ (function () {
             _this.signal = _this.abortController.signal;
             _this.abort = function () { return _this.abortController.abort(); };
         };
+        this.promiseStatus = {
+            status: 'not started',
+            reason: undefined,
+            value: undefined,
+        };
         if (typeof arg === 'object') {
             this.f = arg.f;
             this.name = arg.name;
@@ -991,8 +1002,11 @@ var WatchFunction = /** @class */ (function () {
             return {
                 id: this._id,
                 name: this.name,
-                start: this.group ? this._startTime - this.group.startTime : 0,
+                start: Math.max(0, this.group ? this._startTime - this.group.startTime : 0),
                 duration: this._duration,
+                status: this.promiseStatus.status,
+                value: this.promiseStatus.value,
+                reason: this.promiseStatus.reason,
                 isRunning: this._isRunning,
                 isFinished: this._isFinished,
                 isRejected: this._isRejected,

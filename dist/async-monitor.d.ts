@@ -27,6 +27,9 @@ type Metric = {
     isRejected: boolean;
     isAborted: boolean;
     sequence: number;
+    status: string;
+    reason: any;
+    value: any;
 };
 declare class WatchFunction {
     private _id;
@@ -58,6 +61,11 @@ declare class WatchFunction {
     sequence: number;
     reset: () => void;
     'promise': Promise<any>;
+    promiseStatus: {
+        status: string;
+        reason: any;
+        value: any;
+    };
     get metrics(): Metric;
     constructor(arg: {
         f: () => Promise<any> | void;
@@ -171,10 +179,9 @@ declare class Tree {
 }
 
 declare class Monitor {
-    private fs;
-    constructor(fs: Promise<any>[]);
-    monitorStatuses(): Promise<{
-        performance: number;
+    private functions;
+    constructor(functions: Promise<any>[]);
+    settled(): Promise<{
         statusesPromise: Array<PromiseSettledResult<any>>;
     }>;
 }
@@ -182,11 +189,7 @@ declare class Monitor {
 declare const version = "1.1.4";
 
 declare class Watch {
-    constructor(fs: Array<{
-        promise: Promise<any> | void;
-        onRejectCallback?: (reason: any) => void;
-        group?: Group;
-    }>, f: (() => void) | Array<() => void>);
+    constructor(fs: Array<WatchFunction>, f: (() => void) | Array<() => void>);
 }
 
 declare const nextId: typeof Sequence.nextId;

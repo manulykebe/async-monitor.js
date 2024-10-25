@@ -24,6 +24,12 @@ const importModule = async () => {
 		onCompleteCallback: function () {
 			// console.log('++++onCompleteCallback("preparation step")');
 		},
+		onRejectCallback: function () {
+			console.warn('++++onRejectCallback("preparation step")');
+		},
+		onAbortCallback: function () {
+			console.warn('++++onAbortCallback("preparation step")');
+		},
 	});
 
 	demo01.addWatch({
@@ -52,6 +58,9 @@ const importModule = async () => {
 		},
 		onCompleteCallback: function () {
 			// console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+		},
+		onRejectCallback: function () {
+			console.warn('++++onRejectCallback("fetch data from ETL store: s2")');
 		},
 	});
 
@@ -94,11 +103,15 @@ const importModule = async () => {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onReject';
+		console.log('GROUP ++++onRejectCallback("demo01")');
 	};
 	demo01.onAbortCallback = () => {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onAbort';
+		console.warn('GROUP ++++onAbortCallback("demo01")');
+		debugger;
+		console.log(this);
 	};
 
 	function demo_demo01() {
