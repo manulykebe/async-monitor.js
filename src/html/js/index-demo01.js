@@ -9,7 +9,7 @@ const importModule = async () => {
 
 	const {Group, Tree, sleep, version} = module;
 
-	const demo01 = new Group({repeat: 3});
+	const demo01 = new Group({repeat: -1});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
 	demo01.addWatch({
@@ -113,7 +113,6 @@ const importModule = async () => {
 		button.disabled = false;
 		button.innerText = 'onAbort';
 		console.warn('GROUP ++++onAbortCallback("demo01")');
-		console.log(this);
 	};
 
 	function demo_demo01() {

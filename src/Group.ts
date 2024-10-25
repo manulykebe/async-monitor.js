@@ -216,12 +216,15 @@ export default class Group {
 			this._stopTime = now();
 			this._duration = calcDuration(this._startTime, this._stopTime);
 
+			if (this.isAborted) return;
 			if (this.useConsoleLog) {
-				console.log(`*** ABORTED ${this._id} ***`);
+				console.log(`*** ABORTED GROUP ${this._id} ***`);
 				console.highlight('completed', {id: this._id}, 'aborted');
 				console.groupEnd();
 			}
-			this._onAbortCallback?.();
+			if (typeof this._onAbortCallback === 'function') {
+				this._onAbortCallback();
+			}
 		};
 	}
 	set onAbortCallback(value: () => void) {

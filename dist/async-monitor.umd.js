@@ -429,7 +429,6 @@
             })
                 .finally(function () {
                 if (breakOnReject) {
-                    debugger;
                     var fs0 = fs[0];
                     // if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
                     // if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
@@ -583,9 +582,7 @@
                     // }
                 });
             });
-            if (group.isFinished) {
-                debugger;
-            }
+            if (group.isFinished) ;
             else {
                 grandChildren.forEach(function (gc) {
                     var validChildren = children
@@ -892,13 +889,15 @@
                 this.onAbortCallback = function () {
                     if (this._isFinished)
                         return;
+                    if (!this._isAborted) {
+                        arg.onAbortCallback && arg.onAbortCallback();
+                        this.group.onAbortCallback && this.group.onAbortCallback();
+                    }
                     this._isAborted = true;
                     this._isRunning = false;
                     this._stopTime = now();
                     this._duration = calcDuration(this._startTime, this._stopTime);
                     console.warn("\u2500\u2500\"".concat(this.name, "\" was aborted."));
-                    arg.onAbortCallback && arg.onAbortCallback();
-                    this.group.onAbortCallback && this.group.onAbortCallback();
                 };
             }
             else {
@@ -952,7 +951,7 @@
                         if (!self._isRunning)
                             return;
                         self.onAbortCallback && self.onAbortCallback();
-                        reject("\"".concat(self.name, "\" was aborted."));
+                        reject('manually aborted.');
                     });
                     var result = originalFunction();
                     if (result instanceof Promise) {
@@ -1328,15 +1327,18 @@
             get: function () {
                 var _this = this;
                 return function () {
-                    var _a;
                     _this._stopTime = now();
                     _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    if (_this.isAborted)
+                        return;
                     if (_this.useConsoleLog) {
-                        console.log("*** ABORTED ".concat(_this._id, " ***"));
+                        console.log("*** ABORTED GROUP ".concat(_this._id, " ***"));
                         console.highlight('completed', { id: _this._id }, 'aborted');
                         console.groupEnd();
                     }
-                    (_a = _this._onAbortCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
+                    if (typeof _this._onAbortCallback === 'function') {
+                        _this._onAbortCallback();
+                    }
                 };
             },
             set: function (value) {

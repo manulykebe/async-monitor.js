@@ -37,7 +37,6 @@ export class Watch {
 			})
 			.finally(() => {
 				if (breakOnReject) {
-					debugger;
 					const fs0 = fs[0];
 					// if (typeof fs0.group?.__callback_error === 'function') fs0.group.__callback_error();
 					// if (fs0.group && typeof fs0.group._onCompleteCallback === 'function') fs0.group._onCompleteCallback();
@@ -200,7 +199,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 				});
 		});
 		if (group.isFinished) {
-			debugger;
 		} else {
 			grandChildren.forEach(gc => {
 				const validChildren: WatchFunction[] = children

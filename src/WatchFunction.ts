@@ -154,13 +154,16 @@ export default class WatchFunction {
 			};
 			this.onAbortCallback = function () {
 				if (this._isFinished) return;
+
+				if (!this._isAborted) {
+					arg.onAbortCallback && arg.onAbortCallback();
+					this.group!.onAbortCallback && this.group!.onAbortCallback();
+				}
 				this._isAborted = true;
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
 				console.warn(`──"${this.name}" was aborted.`);
-				arg.onAbortCallback && arg.onAbortCallback();
-				this.group!.onAbortCallback && this.group!.onAbortCallback();
 			};
 		} else {
 			alert('arg is not an object');
@@ -212,7 +215,7 @@ export default class WatchFunction {
 				self.signal.addEventListener('abort', () => {
 					if (!self._isRunning) return;
 					self.onAbortCallback && self.onAbortCallback();
-					reject(`"${self.name}" was aborted.`);
+					reject('manually aborted.');
 				});
 				const result = originalFunction();
 				if (result instanceof Promise) {
