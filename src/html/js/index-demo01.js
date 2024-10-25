@@ -17,7 +17,7 @@ const importModule = async () => {
 		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(undefined, false),
+		f: () => sleep(undefined, true),
 		onStartCallback: function () {
 			// console.log('++++onStartCallback("preparation step")');
 		},
@@ -110,7 +110,6 @@ const importModule = async () => {
 		button.disabled = false;
 		button.innerText = 'onAbort';
 		console.warn('GROUP ++++onAbortCallback("demo01")');
-		debugger;
 		console.log(this);
 	};
 

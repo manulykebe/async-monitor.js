@@ -25,8 +25,14 @@ function createTableFromObject(data) {
             var row = document.createElement('tr');
             keys_1.forEach(function (key) {
                 var td = document.createElement('td');
-                // try {
-                td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+                var jsonstring = '';
+                try {
+                    jsonstring = JSON.stringify(item[key]);
+                }
+                catch (error) {
+                    jsonstring = "".concat(key, ": ").concat(error);
+                }
+                td.textContent = typeof item[key] === 'object' ? jsonstring : item[key];
                 // } catch (error) {
                 // 	td.textContent = `${key}`;
                 // }
@@ -53,10 +59,15 @@ function createTableFromObject(data) {
             keyCell.textContent = key;
             keyCell.classList.add('log-table-cell');
             var valueCell = document.createElement('td');
+            var jsonstring = '';
+            try {
+                jsonstring = JSON.stringify(data[key], undefined, 4);
+            }
+            catch (error) {
+                jsonstring = "".concat(key, ": ").concat(error);
+            }
             valueCell.textContent =
-                typeof data[key] === 'object'
-                    ? JSON.stringify(data[key], undefined, 4)
-                    : data[key];
+                typeof data[key] === 'object' ? jsonstring : data[key];
             valueCell.classList.add('log-table-cell');
             row.appendChild(keyCell);
             row.appendChild(valueCell);
@@ -74,8 +85,10 @@ var originalConsoleTable = console.table;
 var originalConsoleWarn = console.warn;
 function appendLogToConsole(message, classnames, _id) {
     if (message === null)
-        return;
-    if (!message && message.trim() === '')
+        message = '<null>';
+    if (message === undefined)
+        message = '<undefined>';
+    if (typeof message === 'string' && message.trim() === '')
         return;
     var consoleDiv = document.getElementById('console');
     if (consoleDiv) {
@@ -391,26 +404,21 @@ var Watch = /** @class */ (function () {
         var monitorInstance = new Monitor(promises);
         return monitorInstance
             .settled()
-            .then(function (statuses) {
-            for (var i = 0; i < statuses.statusesPromise.length; i++) {
-                fs[i].promiseStatus.status = statuses.statusesPromise[i].status;
+            .then(function (_a) {
+            var statusesPromise = _a.statusesPromise;
+            for (var i = 0; i < statusesPromise.length; i++) {
+                fs[i].promiseStatus.status = statusesPromise[i].status;
                 fs[i].promiseStatus.reason =
-                    statuses.statusesPromise[i].status === 'rejected'
-                        ? statuses.statusesPromise[i].reason
-                        : undefined;
+                    statusesPromise[i].status === 'rejected' ? statusesPromise[i].reason : undefined;
                 fs[i].promiseStatus.value =
-                    statuses.statusesPromise[i].status === 'fulfilled'
-                        ? statuses.statusesPromise[i].value
+                    statusesPromise[i].status === 'fulfilled'
+                        ? statusesPromise[i].value
                         : undefined;
             }
-            // if (statuses.statusesPromise.length > 1) {
-            // 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-            // } else {
-            // 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-            // }
-            debugger;
-            breakOnReject = statuses.statusesPromise.some(function (x) { return x.status === 'rejected'; });
-            // _statuses = statuses.statusesPromise
+            breakOnReject = statusesPromise.some(function (x) { return x.status === 'rejected'; });
+            if (breakOnReject)
+                debugger;
+            // _statuses = statusesPromise
             // 	.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
             // 	.filter(v => v.reason !== undefined);
         })
@@ -585,7 +593,6 @@ function _watchAllInternal(group, parent, resolve, reject) {
                     child.promise = (_a = child.promise) !== null && _a !== void 0 ? _a : Promise.resolve();
                     return child;
                 });
-                debugger;
                 new Watch(validChildren, [
                     function () {
                         watches
@@ -1023,7 +1030,6 @@ var WatchFunction = /** @class */ (function () {
 document['async-monitor-groups'] = [];
 var regexRepeat = function (repeat) {
     var l = repeat.toString().length;
-    // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
     return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
 };
 var Group = /** @class */ (function () {
@@ -1163,12 +1169,16 @@ var Group = /** @class */ (function () {
                     console.highlight('completed', { id: _this._id }, 'start');
                     console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                 }
-                _this._onStartCallback();
+                if (_this._onStartCallback) {
+                    _this._onStartCallback();
+                }
             };
         },
         set: function (value) {
+            debugger;
+            var self = this;
             if (typeof value === 'function')
-                this._onStartCallback = value;
+                this._onStartCallback = value.bind(self);
         },
         enumerable: false,
         configurable: true

@@ -31,8 +31,13 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 			const row = document.createElement('tr');
 			keys.forEach(key => {
 				const td = document.createElement('td');
-				// try {
-				td.textContent = typeof item[key] === 'object' ? JSON.stringify(item[key], undefined, 4) : item[key];
+				let jsonstring = '';
+				try {
+					jsonstring = JSON.stringify(item[key]);
+				} catch (error) {
+					jsonstring = `${key}: ${error}`;
+				}
+				td.textContent = typeof item[key] === 'object' ? jsonstring : item[key];
 				// } catch (error) {
 				// 	td.textContent = `${key}`;
 				// }
@@ -63,10 +68,14 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 			keyCell.classList.add('log-table-cell');
 
 			const valueCell = document.createElement('td');
+			let jsonstring = '';
+			try {
+				jsonstring = JSON.stringify((data as Record<string, any>)[key], undefined, 4);
+			} catch (error) {
+				jsonstring = `${key}: ${error}`;
+			}
 			valueCell.textContent =
-				typeof (data as Record<string, any>)[key] === 'object'
-					? JSON.stringify((data as Record<string, any>)[key], undefined, 4)
-					: (data as Record<string, any>)[key];
+				typeof (data as Record<string, any>)[key] === 'object' ? jsonstring : (data as Record<string, any>)[key];
 			valueCell.classList.add('log-table-cell');
 
 			row.appendChild(keyCell);
@@ -90,8 +99,9 @@ function appendLogToConsole(
 	classnames: string | string[],
 	_id?: number,
 ) {
-	if (message === null) return;
-	if (!message && message.trim() === '') return;
+	if (message === null) message = '<null>';
+	if (message === undefined) message = '<undefined>';
+	if (typeof message === 'string' && message.trim() === '') return;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
 		const logEntry = document.createElement('div');

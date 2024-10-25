@@ -14,27 +14,21 @@ export class Watch {
 
 		return monitorInstance
 			.settled()
-			.then((statuses: {statusesPromise: Array<PromiseSettledResult<any>>}) => {
-				for (let i = 0; i < statuses.statusesPromise.length; i++) {
-					fs[i].promiseStatus.status = statuses.statusesPromise[i].status;
+			.then(({statusesPromise}: {statusesPromise: Array<PromiseSettledResult<any>>}) => {
+				for (let i = 0; i < statusesPromise.length; i++) {
+					fs[i].promiseStatus.status = statusesPromise[i].status;
 					fs[i].promiseStatus.reason =
-						statuses.statusesPromise[i].status === 'rejected'
-							? (statuses.statusesPromise[i] as PromiseRejectedResult).reason
-							: undefined;
+						statusesPromise[i].status === 'rejected' ? (statusesPromise[i] as PromiseRejectedResult).reason : undefined;
 					fs[i].promiseStatus.value =
-						statuses.statusesPromise[i].status === 'fulfilled'
-							? (statuses.statusesPromise[i] as PromiseFulfilledResult<any>).value
+						statusesPromise[i].status === 'fulfilled'
+							? (statusesPromise[i] as PromiseFulfilledResult<any>).value
 							: undefined;
 				}
 
-				// if (statuses.statusesPromise.length > 1) {
-				// 	useConsoleLog && console.log(`statuses: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-				// } else {
-				// 	useConsoleLog && console.log(`status: ${statuses.statusesPromise.map(x => x.status.toString()).join(',')}`);
-				// }
-				debugger;
-				breakOnReject = statuses.statusesPromise.some(x => x.status === 'rejected');
-				// _statuses = statuses.statusesPromise
+				breakOnReject = statusesPromise.some(x => x.status === 'rejected');
+
+				if (breakOnReject) debugger;
+				// _statuses = statusesPromise
 				// 	.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
 				// 	.filter(v => v.reason !== undefined);
 			})
@@ -216,7 +210,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 						return child;
 					});
 
-				debugger;
 				new Watch(validChildren, [
 					() => {
 						watches
