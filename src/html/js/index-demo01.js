@@ -17,7 +17,7 @@ const importModule = async () => {
 		name: 'preparation step 01',
 		parent: undefined,
 		child: 'a',
-		f: () => sleep(undefined, true),
+		f: () => sleep(undefined, false),
 		onStartCallback: function () {
 			// console.log('++++onStartCallback("preparation step")');
 		},

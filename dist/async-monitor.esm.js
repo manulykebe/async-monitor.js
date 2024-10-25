@@ -1026,6 +1026,7 @@ var WatchFunction = /** @class */ (function () {
 document['async-monitor-groups'] = [];
 var regexRepeat = function (repeat) {
     var l = repeat.toString().length;
+    // regex that matches "(l)spaces" "1/" "l numbers" "1 space"
     return new RegExp("\\s{".concat(l, "}1\\/").concat(repeat, "\\s"));
 };
 var Group = /** @class */ (function () {
@@ -1165,16 +1166,12 @@ var Group = /** @class */ (function () {
                     console.highlight('completed', { id: _this._id }, 'start');
                     console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                 }
-                if (_this._onStartCallback) {
-                    _this._onStartCallback();
-                }
+                _this._onStartCallback();
             };
         },
         set: function (value) {
-            debugger;
-            var self = this;
             if (typeof value === 'function')
-                this._onStartCallback = value.bind(self);
+                this._onStartCallback = value;
         },
         enumerable: false,
         configurable: true
