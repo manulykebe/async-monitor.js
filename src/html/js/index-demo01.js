@@ -92,7 +92,6 @@ const importModule = async () => {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onStart';
-		console.log(`this.run: ${this.run}`);
 	};
 	demo01.onStartRunCallback = function () {
 		console.log(`this.run: ${this.run}`);
@@ -101,6 +100,10 @@ const importModule = async () => {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onComplete';
+	};
+	demo01.onCompleteRunCallback = function () {
+		console.log(`this.run: ${this.run} - finished`);
+		console.log(this.metrics);
 	};
 	demo01.onRejectCallback = function () {
 		const button = document.getElementById('demo01');

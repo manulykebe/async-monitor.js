@@ -27,7 +27,6 @@ export class Watch {
 
 				breakOnReject = statusesPromise.some(x => x.status === 'rejected');
 
-				if (breakOnReject) debugger;
 				// _statuses = statusesPromise
 				// 	.map((v, i) => ({index: i.toString(), reason: v.reason, onRejectCallback: fs[i].onRejectCallback}))
 				// 	.filter(v => v.reason !== undefined);
@@ -99,18 +98,28 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 	const children: WatchFunction[] = watches.filter(x => x.parent === parent);
 
 	if (watches.every(f => f.isFinished)) {
-		if (group.options.repeat === 0 || (group.options.repeat > 0 && group.options.repeat <= (group.options.runs || 0))) {
-			// All watches are finished
-			group.stopTime = now();
-			group.duration = calcDuration(group.startTime, group.stopTime);
+		group.stopTime = now();
+		if (group.options.repeat === 0) {
 			if (typeof group.onCompleteCallback === 'function') {
 				group.onCompleteCallback();
 			}
 			resolve && resolve();
 			return;
-		} else {
-			group.options.runs = (group.options.runs ?? 1) + 1;
-			group.reset(false);
+		} else if (group.options.repeat > 0) {
+			if (typeof group.onCompleteRunCallback === 'function') {
+				group.onCompleteRunCallback();
+			}
+
+			if (group.options.repeat > group.options.runs) {
+				group.options.runs++;
+				group.reset(false);
+			} else {
+				if (typeof group.onCompleteCallback === 'function') {
+					group.onCompleteCallback();
+				}
+				resolve && resolve();
+				return;
+			}
 		}
 	}
 	if (watches.some(f => f.isRejected)) {
@@ -135,6 +144,10 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 		if (children.length === 0) {
 			return;
 		}
+		debugger;
+		if (group.options.repeat > 0) {
+			if (typeof group.onStartRunCallback === 'function') group.onStartRunCallback();
+		}
 		_sequence = 0;
 	}
 
@@ -142,6 +155,7 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 		const grandChildren = children
 			.map(x => x.child)
 			.filter((currentValue, index, arr) => arr.indexOf(currentValue) === index);
+
 		grandChildren.forEach(gc => {
 			_sequence++;
 			children

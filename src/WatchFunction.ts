@@ -43,8 +43,25 @@ export default class WatchFunction {
 		return this._isFinished || this._isRejected || this._isAborted;
 	}
 	private _startTime: number = 0;
+	get startTime(): number {
+		return this._startTime;
+	}
+	set startTime(value: number) {
+		this._startTime = value;
+	}
+
 	private _stopTime: number = 0;
+	get stopTime(): number {
+		return this._stopTime;
+	}
+	set stopTime(value: number) {
+		this._stopTime = value;
+		this._duration = calcDuration(this._startTime, this._stopTime);
+	}
 	private _duration: number = 0;
+	get duration(): number {
+		return Math.min(0, this._duration);
+	}
 
 	private abortController: AbortController = new AbortController();
 	abort = () => this.abortController.abort();

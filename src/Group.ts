@@ -17,7 +17,7 @@ const regexRepeat = (repeat: number): RegExp => {
 
 interface GroupOptions {
 	repeat: number;
-	runs?: number;
+	runs: number;
 }
 
 export default class Group {
@@ -25,7 +25,7 @@ export default class Group {
 	get run(): number {
 		return this.options.repeat >= 0 ? (this.options.runs ?? 0) : 0;
 	}
-	constructor(options: GroupOptions = {repeat: 0, runs: 1}) {
+	constructor(options: GroupOptions = {repeat: 0, runs: 0}) {
 		this.options = options;
 		document['async-monitor-groups'].push(this);
 	}
@@ -70,28 +70,31 @@ export default class Group {
 	}
 	set stopTime(value: number) {
 		this._stopTime = value;
+		this._duration = calcDuration(this._startTime, this._stopTime);
 	}
 	private _duration: number = 0;
 	get duration(): number {
 		return Math.min(0, this._duration);
 	}
-	set duration(value: number) {
-		this._duration = value;
-	}
+
 	name?: string | undefined;
+
 	private _onStartCallback?: () => void = () => {};
 	get onStartCallback(): () => void {
 		return () => {
-			if (this.isProcessed) {
-				return;
+			this.startTime = now();
+
+			if (this.options.repeat > 0) {
+				this.options.runs = 1;
 			}
-			this._startTime = now();
+
 			if (this.useConsoleLog) {
 				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
 				console.log(`*** START ${this._id} ***`);
 				console.highlight('completed', {id: this._id}, 'start');
 				console.highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
 			}
+
 			this._onStartCallback!();
 		};
 	}
@@ -115,27 +118,15 @@ export default class Group {
 	private _onCompleteCallback?: () => void = () => {};
 	get onCompleteCallback(): () => void {
 		return () => {
-			this.options.runs = (this.options.runs ?? 1) + 1;
-			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
-				this.reset(false);
-				this.watchAll();
-				return;
-			} else {
-				if (this.useConsoleLog) {
-					console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
-				}
-			}
+			this._onCompleteCallback!();
 
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
-
+			this.stopTime = now();
 			if (this.useConsoleLog) {
 				console.log(`*** COMPLETE ${this._id} ***`);
 				console.highlight('completed', {id: this._id}, 'complete');
+				console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
 				console.groupEnd();
-				console.log(this.metrics);
 			}
-			this._onCompleteCallback?.();
 		};
 	}
 	set onCompleteCallback(value: () => void) {
@@ -145,27 +136,10 @@ export default class Group {
 	private _onCompleteRunCallback?: () => void = () => {};
 	get onCompleteRunCallback(): () => void {
 		return () => {
-			this.options.runs = (this.options.runs ?? 1) + 1;
-			if (this.options.runs <= this.options.repeat || this.options.repeat === -1) {
-				this.reset(false);
-				this.watchAll();
-				return;
-			} else {
-				if (this.useConsoleLog) {
-					console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
-				}
-			}
-
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
-
 			if (this.useConsoleLog) {
-				console.log(`*** COMPLETE ${this._id} ***`);
-				console.highlight('completed', {id: this._id}, 'complete');
-				console.groupEnd();
-				console.log(this.metrics);
+				console.log(`*** RUN ${this.run} *** completed`);
 			}
-			this._onCompleteRunCallback?.();
+			this._onCompleteRunCallback!();
 		};
 	}
 	set onCompleteRunCallback(value: () => void) {
@@ -309,7 +283,7 @@ export default class Group {
 		if (resetRuns) {
 			this.options.runs = 1;
 		}
-		displayRepeat(this._id, this.options.runs ?? 1, this.options.repeat ?? 1);
+		displayRepeat(this._id, this.options.runs, this.options.repeat);
 		clearHighlights(this._id);
 	}
 
@@ -327,48 +301,11 @@ export default class Group {
 	add(): void {}
 	remove(): void {}
 
-	watchAll(
-		onStartCallback?:
-			| (() => void)
-			| {
-					onStartCallback?: () => void;
-					onCompleteCallback?: () => void;
-					onRejectCallback?: () => void;
-					onAbortCallback?: () => void;
-			  },
-		onCompleteCallback?: () => void,
-		onRejectCallback?: () => void,
-		onAbortCallback?: () => void,
-	) {
-		if (typeof onStartCallback === 'object') {
-			const {onStartCallback: startCb, onCompleteCallback, onRejectCallback, onAbortCallback} = onStartCallback;
-			if (startCb) {
-				this.onStartCallback = startCb;
-			}
-			if (onCompleteCallback) {
-				this.onCompleteCallback = onCompleteCallback;
-			}
-			if (onRejectCallback) {
-				this.onRejectCallback = onRejectCallback;
-			}
-			if (onAbortCallback) {
-				this.onAbortCallback = onAbortCallback;
-			}
-		} else {
-			if (onStartCallback) {
-				this.onStartCallback = onStartCallback;
-			}
-			if (onCompleteCallback) {
-				this.onCompleteCallback = onCompleteCallback;
-			}
-			if (onRejectCallback) {
-				this.onRejectCallback = onRejectCallback;
-			}
-			if (onAbortCallback) {
-				this.onAbortCallback = onAbortCallback;
-			}
+	watchAll() {
+		if (this.isProcessed) {
+			console.warn('This watchAll group has already been processed.');
+			return;
 		}
-
 		if (this.isRunning) {
 			console.warn('This watchAll group is already being monitored.');
 			return;
@@ -376,15 +313,11 @@ export default class Group {
 
 		this._startTime = now();
 		if (typeof this.onStartCallback === 'function') this.onStartCallback();
+		// if (this.options.repeat > 0) {
+		// 	if (typeof this.onStartRunCallback === 'function') this.onStartRunCallback();
+		// }
 
-		// const watchArray = this._functions.map(fn => ({
-		// 	promise: fn.promise ?? undefined,
-		// 	onRejectCallback: fn.onRejectCallback,
-		// 	group: this,
-		// 	_startTime: now(),
-		// }));
-
-		return watchAll(this); //, onStartCallback, onRejectCallback);
+		return watchAll(this);
 	}
 
 	get consoleTree(): string {
@@ -401,17 +334,4 @@ export default class Group {
 			return f.metrics;
 		});
 	}
-
-	// onRejected(cbf: () => void) {
-	// 	this.onRejectCallback = cbf;
-	// 	return this;
-	// }
-	// onStart(cbf: () => void) {
-	// 	this._onStartCallback = cbf;
-	// 	return this;
-	// }
-	// onComplete(cbf: () => void) {
-	// 	this._onCompleteCallback = cbf;
-	// 	return this;
-	// }
 }

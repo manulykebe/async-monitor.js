@@ -44,8 +44,13 @@ declare class WatchFunction {
     get isRunning(): boolean;
     get isProcessed(): boolean;
     private _startTime;
+    get startTime(): number;
+    set startTime(value: number);
     private _stopTime;
+    get stopTime(): number;
+    set stopTime(value: number);
     private _duration;
+    get duration(): number;
     private abortController;
     abort: () => void;
     signal: AbortSignal;
@@ -81,7 +86,7 @@ declare class WatchFunction {
 
 interface GroupOptions {
     repeat: number;
-    runs?: number;
+    runs: number;
 }
 declare class Group {
     options: GroupOptions;
@@ -105,7 +110,6 @@ declare class Group {
     set stopTime(value: number);
     private _duration;
     get duration(): number;
-    set duration(value: number);
     name?: string | undefined;
     private _onStartCallback?;
     get onStartCallback(): () => void;
@@ -143,12 +147,7 @@ declare class Group {
     removeAll(): void;
     add(): void;
     remove(): void;
-    watchAll(onStartCallback?: (() => void) | {
-        onStartCallback?: () => void;
-        onCompleteCallback?: () => void;
-        onRejectCallback?: () => void;
-        onAbortCallback?: () => void;
-    }, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void): Promise<void> | undefined;
+    watchAll(): Promise<void> | undefined;
     get consoleTree(): string;
     get metrics(): Metric[];
 }
