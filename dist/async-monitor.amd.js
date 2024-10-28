@@ -1189,7 +1189,7 @@ define(['exports'], (function (exports) { 'use strict';
             },
             set: function (value) {
                 this._stopTime = value;
-                this._duration = calcDuration(this._startTime, this._stopTime);
+                this._duration = calcDuration(this.startTime, this.stopTime);
             },
             enumerable: false,
             configurable: true
@@ -1211,8 +1211,7 @@ define(['exports'], (function (exports) { 'use strict';
                         _this.options.runs = 1;
                     }
                     if (_this.useConsoleLog) {
-                        console.log("\"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" has started."));
-                        console.log("*** START ".concat(_this._id, " ***"));
+                        console.log("*** START \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
                         console.highlight('completed', { id: _this._id }, 'start');
                         console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                     }
@@ -1231,7 +1230,7 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     if (_this.useConsoleLog) {
-                        console.log("*** RUN ".concat(_this.run, " ***"));
+                        console.log("*** RUN ".concat(_this.run, " STARTED ***"));
                     }
                     _this._onStartRunCallback();
                 };
@@ -1247,10 +1246,11 @@ define(['exports'], (function (exports) { 'use strict';
             get: function () {
                 var _this = this;
                 return function () {
+                    var _a;
                     _this._onCompleteCallback();
                     _this.stopTime = now();
                     if (_this.useConsoleLog) {
-                        console.log("*** COMPLETE ".concat(_this._id, " ***"));
+                        console.log("*** COMPLETED \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
                         console.highlight('completed', { id: _this._id }, 'complete');
                         console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, ['complete']);
                         console.groupEnd();
@@ -1269,7 +1269,7 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     if (_this.useConsoleLog) {
-                        console.log("*** RUN ".concat(_this.run, " *** completed"));
+                        console.log("*** RUN ".concat(_this.run, " COMPLETED ***"));
                     }
                     _this._onCompleteRunCallback();
                 };
@@ -1286,8 +1286,7 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     var _a;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    _this.stopTime = now();
                     if (_this.useConsoleLog) {
                         console.log("*** REJECTED ".concat(_this._id, " ***"));
                         console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
@@ -1309,8 +1308,7 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     var _a;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    _this.stopTime = now();
                     if (_this.useConsoleLog) {
                         console.log("*** REJECTED ".concat(_this._id, " ***"));
                         console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
@@ -1331,8 +1329,7 @@ define(['exports'], (function (exports) { 'use strict';
             get: function () {
                 var _this = this;
                 return function () {
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    _this.stopTime = now();
                     if (_this.isAborted)
                         return;
                     if (_this.useConsoleLog) {
@@ -1357,8 +1354,7 @@ define(['exports'], (function (exports) { 'use strict';
                 var _this = this;
                 return function () {
                     var _a;
-                    _this._stopTime = now();
-                    _this._duration = calcDuration(_this._startTime, _this._stopTime);
+                    _this.stopTime = now();
                     if (_this.useConsoleLog) {
                         console.log("*** ABORTED ".concat(_this._id, " ***"));
                         console.highlight('completed', { id: _this._id }, 'aborted');
@@ -1409,9 +1405,8 @@ define(['exports'], (function (exports) { 'use strict';
         // Reset all watch functions in the group
         Group.prototype.reset = function (resetRuns) {
             if (resetRuns === void 0) { resetRuns = true; }
-            this._duration = 0;
-            this._startTime = 0;
-            this._stopTime = 0;
+            this.startTime = 0;
+            this.stopTime = 0;
             this._functions.forEach(function (fn) { return fn.reset(); });
             if (resetRuns) {
                 this.options.runs = 1;
@@ -1439,7 +1434,7 @@ define(['exports'], (function (exports) { 'use strict';
                 console.warn('This watchAll group is already being monitored.');
                 return;
             }
-            this._startTime = now();
+            this.startTime = now();
             if (typeof this.onStartCallback === 'function')
                 this.onStartCallback();
             // if (this.options.repeat > 0) {

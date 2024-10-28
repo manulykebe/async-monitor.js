@@ -191,13 +191,13 @@ const importModule = async () => {
 		console.clear();
 		console.log(`demo05 : ${demo05.name || demo05._id}`);
 		console.log(demo05.consoleTree, ['tree', `tree-${demo05._id}`]);
-		console.log(`demo01 : ${document['demo01']._id}`);
+		console.log(`demo01 : ${document['demo01'].name}`);
 		console.log(document['demo01'].consoleTree, `tree-${document['demo01']._id}`);
-		console.log(`demo02 : ${document['demo02']._id}`);
+		console.log(`demo02 : ${document['demo02'].name}`);
 		console.log(document['demo02'].consoleTree, `tree-${document['demo02']._id}`);
-		console.log(`demo03 : ${document['demo03']._id}`);
+		console.log(`demo03 : ${document['demo03'].name}`);
 		console.log(document['demo03'].consoleTree, `tree-${document['demo03']._id}`);
-		console.log(`demo04 : ${demo04.name || demo04._id}`);
+		console.log(`demo04 : ${demo04.name || demo04.name}`);
 		console.log(demo04.consoleTree, ['tree', `tree-${demo04._id}`]);
 
 		document['demo01'].reset();

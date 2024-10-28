@@ -70,7 +70,7 @@ export default class Group {
 	}
 	set stopTime(value: number) {
 		this._stopTime = value;
-		this._duration = calcDuration(this._startTime, this._stopTime);
+		this._duration = calcDuration(this.startTime, this.stopTime);
 	}
 	private _duration: number = 0;
 	get duration(): number {
@@ -89,8 +89,7 @@ export default class Group {
 			}
 
 			if (this.useConsoleLog) {
-				console.log(`"${this.name ?? 'Group#' + this.id}" has started.`);
-				console.log(`*** START ${this._id} ***`);
+				console.log(`*** START "${this.name ?? 'Group#' + this.id}" ***`);
 				console.highlight('completed', {id: this._id}, 'start');
 				console.highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
 			}
@@ -106,7 +105,7 @@ export default class Group {
 	get onStartRunCallback(): () => void {
 		return () => {
 			if (this.useConsoleLog) {
-				console.log(`*** RUN ${this.run} ***`);
+				console.log(`*** RUN ${this.run} STARTED ***`);
 			}
 			this._onStartRunCallback!();
 		};
@@ -122,7 +121,7 @@ export default class Group {
 
 			this.stopTime = now();
 			if (this.useConsoleLog) {
-				console.log(`*** COMPLETE ${this._id} ***`);
+				console.log(`*** COMPLETED "${this.name ?? 'Group#' + this.id}" ***`);
 				console.highlight('completed', {id: this._id}, 'complete');
 				console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
 				console.groupEnd();
@@ -137,7 +136,7 @@ export default class Group {
 	get onCompleteRunCallback(): () => void {
 		return () => {
 			if (this.useConsoleLog) {
-				console.log(`*** RUN ${this.run} *** completed`);
+				console.log(`*** RUN ${this.run} COMPLETED ***`);
 			}
 			this._onCompleteRunCallback!();
 		};
@@ -149,8 +148,7 @@ export default class Group {
 	private _onRejectCallback?: () => void = () => {};
 	get onRejectCallback(): () => void {
 		return () => {
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
+			this.stopTime = now();
 
 			if (this.useConsoleLog) {
 				console.log(`*** REJECTED ${this._id} ***`);
@@ -168,8 +166,7 @@ export default class Group {
 	private _onRejectRunCallback?: () => void = () => {};
 	get onRejectRunCallback(): () => void {
 		return () => {
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
+			this.stopTime = now();
 
 			if (this.useConsoleLog) {
 				console.log(`*** REJECTED ${this._id} ***`);
@@ -187,8 +184,7 @@ export default class Group {
 	private _onAbortCallback?: () => void = () => {};
 	get onAbortCallback(): () => void {
 		return () => {
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
+			this.stopTime = now();
 
 			if (this.isAborted) return;
 			if (this.useConsoleLog) {
@@ -208,8 +204,7 @@ export default class Group {
 	private _onAbortRunCallback?: () => void = () => {};
 	get onAbortRunCallback(): () => void {
 		return () => {
-			this._stopTime = now();
-			this._duration = calcDuration(this._startTime, this._stopTime);
+			this.stopTime = now();
 
 			if (this.useConsoleLog) {
 				console.log(`*** ABORTED ${this._id} ***`);
@@ -276,9 +271,8 @@ export default class Group {
 
 	// Reset all watch functions in the group
 	reset(resetRuns: boolean = true): void {
-		this._duration = 0;
-		this._startTime = 0;
-		this._stopTime = 0;
+		this.startTime = 0;
+		this.stopTime = 0;
 		this._functions.forEach(fn => fn.reset());
 		if (resetRuns) {
 			this.options.runs = 1;
@@ -311,7 +305,7 @@ export default class Group {
 			return;
 		}
 
-		this._startTime = now();
+		this.startTime = now();
 		if (typeof this.onStartCallback === 'function') this.onStartCallback();
 		// if (this.options.repeat > 0) {
 		// 	if (typeof this.onStartRunCallback === 'function') this.onStartRunCallback();

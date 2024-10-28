@@ -11,7 +11,7 @@ const importModule = async () => {
 	const {Group, Tree, sleep, version} = module;
 	// const demo02 = new Group({repeat: 7});
 	const demo02 = new Group({repeat: 0});
-
+	demo02.name = '5 tasks in sequence';
 	demo02.addWatch({
 		name: 'preparation step',
 		parent: undefined,
@@ -74,6 +74,7 @@ const importModule = async () => {
 		const button = document.getElementById('demo02');
 		button.disabled = false;
 		button.innerText = 'onComplete';
+		console.log(this.metrics);
 	};
 	demo02.onRejectCallback = function () {
 		const button = document.getElementById('demo02');
