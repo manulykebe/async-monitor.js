@@ -1464,9 +1464,6 @@ define(['exports'], (function (exports) { 'use strict';
             this.startTime = now();
             if (typeof this.onStartCallback === 'function')
                 this.onStartCallback();
-            // if (this.options.repeat > 0) {
-            // 	if (typeof this.onStartRunCallback === 'function') this.onStartRunCallback();
-            // }
             return watchAll(this);
         };
         Object.defineProperty(Group.prototype, "consoleTree", {
