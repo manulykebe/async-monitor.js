@@ -8,7 +8,7 @@
  */
 export async function sleep(seconds: number = Math.random() * 3, fail?: boolean | undefined): Promise<number> {
 	if (fail === undefined) fail = seconds / 3 < 0.5;
-	seconds = seconds * 5000;
+	seconds = seconds * 1000;
 
 	return new Promise<number>((resolve, reject) => {
 		setTimeout(() => {

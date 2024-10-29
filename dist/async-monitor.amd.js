@@ -279,7 +279,7 @@ define(['exports'], (function (exports) { 'use strict';
             return __generator$2(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds / 3 < 0.5;
-                seconds = seconds * 5000;
+                seconds = seconds * 1000;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         setTimeout(function () {
                             if (fail) {
@@ -497,7 +497,6 @@ define(['exports'], (function (exports) { 'use strict';
                     group.onCompleteRunCallback();
                 }
                 if (group.options.repeat > group.options.runs) {
-                    debugger;
                     group.options.runs++;
                     group.reset(false);
                     return _watchAllInternal(group, undefined, resolve, reject);
@@ -1103,7 +1102,6 @@ define(['exports'], (function (exports) { 'use strict';
             this.addWatch = function (addWatchFunction) {
                 var watchFunction;
                 if (typeof addWatchFunction === 'function') {
-                    debugger;
                     // Convert a regular function to a new (async) WatchFunction and add it to the group
                     watchFunction = new WatchFunction({
                         f: addWatchFunction,

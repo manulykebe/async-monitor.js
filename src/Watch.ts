@@ -117,7 +117,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 			}
 
 			if (group.options.repeat > group.options.runs) {
-				debugger;
 				group.options.runs++;
 				group.reset(false);
 				return _watchAllInternal(group, undefined, resolve, reject);

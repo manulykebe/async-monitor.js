@@ -237,7 +237,6 @@ export default class Group {
 	addWatch = (addWatchFunction: WatchFunction | Function) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
-			debugger;
 			// Convert a regular function to a new (async) WatchFunction and add it to the group
 			watchFunction = new WatchFunction({
 				f: addWatchFunction as () => void | Promise<any>,
