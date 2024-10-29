@@ -35,9 +35,6 @@
                         jsonstring = "".concat(key, ": ").concat(error);
                     }
                     td.textContent = typeof item[key] === 'object' ? jsonstring : item[key];
-                    // } catch (error) {
-                    // 	td.textContent = `${key}`;
-                    // }
                     td.classList.add('log-table-cell');
                     row.appendChild(td);
                 });

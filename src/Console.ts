@@ -38,9 +38,6 @@ function createTableFromObject(data: Record<string, any> | Array<Record<string, 
 					jsonstring = `${key}: ${error}`;
 				}
 				td.textContent = typeof item[key] === 'object' ? jsonstring : item[key];
-				// } catch (error) {
-				// 	td.textContent = `${key}`;
-				// }
 				td.classList.add('log-table-cell');
 				row.appendChild(td);
 			});
