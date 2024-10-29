@@ -191,6 +191,7 @@ button:hover {
 span {
 	position: relative;
 	display: inline-block;
+	font-size: 10px;
 }
 /* Styling for table cells */
 .log-table-cell {
@@ -201,20 +202,24 @@ span {
 .highlight-start {
 	background-color: lightyellow;
 	font-style: italic;
+	font-size: 10px;
 }
 .highlight-complete {
 	background-color: lightgreen;
 	font-style: normal;
 	font-weight: bold;
+	font-size: 10px;
 }
 .highlight-aborted,
 .highlight-rejected {
 	background-color: rgba(255, 0, 0, 0.2);
 	font-style: normal;
 	font-weight: bold;
+	font-size: 10px;
 }
 .highlight-repeat {
 	border: 0px solid black;
+	font-size: 10px;
 }
 .tree {
 	padding: 2px 0;
