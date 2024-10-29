@@ -169,7 +169,7 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.useConsoleLog) {
-				console.log(`*** REJECTED ${this._id} ***`);
+				console.log(`*** REJECTED RUN ${this._id} ***`);
 				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
@@ -207,7 +207,7 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.useConsoleLog) {
-				console.log(`*** ABORTED ${this._id} ***`);
+				console.log(`*** ABORTED RUN ${this._id} ***`);
 				console.highlight('completed', {id: this._id}, 'aborted');
 				console.groupEnd();
 			}
