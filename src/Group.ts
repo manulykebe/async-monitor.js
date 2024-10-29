@@ -104,6 +104,7 @@ export default class Group {
 	private _onStartRunCallback?: () => void = () => {};
 	get onStartRunCallback(): () => void {
 		return () => {
+			if (this.isRunning) return;
 			if (this.useConsoleLog) {
 				console.log(`*** RUN "${this.run}" STARTED ***`);
 			}

@@ -193,6 +193,7 @@ span {
 }
 
 .highlight-complete .icon,
+.highlight-repeat .icon,
 .highlight-rejected .icon,
 .highlight-aborted .icon {
 	display: none;

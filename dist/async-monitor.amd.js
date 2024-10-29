@@ -279,7 +279,7 @@ define(['exports'], (function (exports) { 'use strict';
             return __generator$2(this, function (_a) {
                 if (fail === undefined)
                     fail = seconds / 3 < 0.5;
-                seconds = seconds * 1000;
+                seconds = seconds * 5000;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         setTimeout(function () {
                             if (fail) {
@@ -467,12 +467,12 @@ define(['exports'], (function (exports) { 'use strict';
     function watchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, onAbortCallback) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                // if (group.functions.filter(x => x.parent === undefined).length != 1) {
-                // 	console.error('Group must have exactly one root function (aka parent === undefined)!');
-                // 	return new Promise<void>((resolve, reject) => {
-                // 		reject();
-                // 	});
-                // }
+                if (group.functions.filter(function (x) { return x.parent === undefined; }).length < 1) {
+                    console.error('Group must have exactly one root function (aka parent === undefined)!');
+                    return [2 /*return*/, new Promise(function (resolve, reject) {
+                            reject();
+                        })];
+                }
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         _watchAllInternal(group, undefined, resolve, reject);
                     })];
@@ -497,8 +497,10 @@ define(['exports'], (function (exports) { 'use strict';
                     group.onCompleteRunCallback();
                 }
                 if (group.options.repeat > group.options.runs) {
+                    debugger;
                     group.options.runs++;
                     group.reset(false);
+                    return _watchAllInternal(group, undefined, resolve, reject);
                 }
                 else {
                     if (typeof group.onCompleteCallback === 'function') {
@@ -699,17 +701,18 @@ define(['exports'], (function (exports) { 'use strict';
             return terminalNodes;
         };
         // Step 3: Function to calculate the longest line length (dry run without output)
-        Tree.prototype.calculateMaxLength = function (node, prefix, isFirst, isLast, maxLengthObj) {
+        Tree.prototype.calculateMaxLength = function (node, prefix, isFirst, isFirstRoot, isLast, maxLengthObj) {
             var _this = this;
             if (prefix === void 0) { prefix = ''; }
             if (isFirst === void 0) { isFirst = true; }
+            if (isFirstRoot === void 0) { isFirstRoot = true; }
             if (isLast === void 0) { isLast = true; }
             if (maxLengthObj === void 0) { maxLengthObj = { maxLength: 0 }; }
             var repeatIndicator = ' ';
             var repeatIndicatorFirstLine = '─';
             if (this.repeatOptions.repeat != 0) {
                 repeatIndicator = ' │';
-                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+                repeatIndicatorFirstLine = isFirst ? (isFirstRoot ? '┬─' : '┼─') : '─';
             }
             var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             // Calculate the longest line length during this dry run
@@ -719,14 +722,15 @@ define(['exports'], (function (exports) { 'use strict';
             var newPrefix = prefix + (isLast ? '    ' : ' │  ');
             node.children.forEach(function (child, index) {
                 var isLastChild = index === node.children.length - 1;
-                _this.calculateMaxLength(child, newPrefix, false, isLastChild, maxLengthObj);
+                _this.calculateMaxLength(child, newPrefix, false, isFirstRoot, isLastChild, maxLengthObj);
             });
         };
         // Step 4: Function to display the tree and include longest line length at terminal nodes
-        Tree.prototype.displayTreeWithLineLength = function (node, prefix, isFirst, isLast, terminalIndex, maxLength, encounteredTerminalRef) {
+        Tree.prototype.displayTreeWithLineLength = function (node, prefix, isFirst, isFirstRoot, isLast, terminalIndex, maxLength, encounteredTerminalRef) {
             var _this = this;
             if (prefix === void 0) { prefix = ''; }
             if (isFirst === void 0) { isFirst = true; }
+            if (isFirstRoot === void 0) { isFirstRoot = false; }
             if (isLast === void 0) { isLast = true; }
             var isTerminal = node.children.length === 0;
             var repeatIndicator = ' ';
@@ -734,7 +738,7 @@ define(['exports'], (function (exports) { 'use strict';
             var terminalLabel = '';
             if (this.repeatOptions.repeat != 0) {
                 repeatIndicator = ' │';
-                repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+                repeatIndicatorFirstLine = isFirst ? (isFirstRoot ? '┬─' : '┼─') : '─';
             }
             var line = "".concat(isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─'), " ").concat(node.description);
             if (isTerminal) {
@@ -762,7 +766,7 @@ define(['exports'], (function (exports) { 'use strict';
             var newPrefix = prefix + (isLast ? '   ' : '│  ');
             node.children.forEach(function (child, index) {
                 var isLastChild = index === node.children.length - 1;
-                _this.displayTreeWithLineLength(child, newPrefix, false, isLastChild, terminalIndex, maxLength, encounteredTerminalRef);
+                _this.displayTreeWithLineLength(child, newPrefix, false, isFirstRoot, isLastChild, terminalIndex, maxLength, encounteredTerminalRef);
             });
         };
         // Method to initiate the tree processing and display
@@ -772,7 +776,7 @@ define(['exports'], (function (exports) { 'use strict';
             var tree = this.buildTree(data);
             // Step 2: Dry run to calculate the longest line
             var maxLengthObj = { maxLength: 0 };
-            tree.forEach(function (root) { return _this.calculateMaxLength(root, '', true, true, maxLengthObj); });
+            tree.forEach(function (root) { return _this.calculateMaxLength(root, '', true, false, true, maxLengthObj); });
             // Step 3: Track terminal node indices
             var terminalNodes = [];
             tree.forEach(function (root) { return _this.collectTerminalNodes(root, terminalNodes); });
@@ -780,8 +784,8 @@ define(['exports'], (function (exports) { 'use strict';
             // Step 4: Track whether we've encountered a terminal node
             var encounteredTerminalRef = { value: false };
             // Step 5: Display the tree with the longest line length added to terminal nodes and padded
-            tree.forEach(function (root) {
-                return _this.displayTreeWithLineLength(root, '', true, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
+            tree.forEach(function (root, indx) {
+                return _this.displayTreeWithLineLength(root, '', true, indx === 0, true, terminalIndex, maxLengthObj.maxLength, encounteredTerminalRef);
             });
             // Step 6: Add final completion line
             if (this.repeatOptions.repeat != 0) {
@@ -1237,6 +1241,8 @@ define(['exports'], (function (exports) { 'use strict';
             get: function () {
                 var _this = this;
                 return function () {
+                    if (_this.isRunning)
+                        return;
                     if (_this.useConsoleLog) {
                         console.log("*** RUN \"".concat(_this.run, "\" STARTED ***"));
                     }

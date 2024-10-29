@@ -87,12 +87,12 @@ export async function watchAll(
 	if (typeof onCompleteCallback === 'function') group.onCompleteCallback = onCompleteCallback;
 	if (typeof onRejectCallback === 'function') group.onRejectCallback = onRejectCallback;
 	if (typeof onAbortCallback === 'function') group.onAbortCallback = onAbortCallback;
-	// if (group.functions.filter(x => x.parent === undefined).length != 1) {
-	// 	console.error('Group must have exactly one root function (aka parent === undefined)!');
-	// 	return new Promise<void>((resolve, reject) => {
-	// 		reject();
-	// 	});
-	// }
+	if (group.functions.filter(x => x.parent === undefined).length < 1) {
+		console.error('Group must have exactly one root function (aka parent === undefined)!');
+		return new Promise<void>((resolve, reject) => {
+			reject();
+		});
+	}
 	return new Promise<void>((resolve, reject) => {
 		_watchAllInternal(group, undefined, resolve, reject);
 	});
@@ -117,8 +117,10 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 			}
 
 			if (group.options.repeat > group.options.runs) {
+				debugger;
 				group.options.runs++;
 				group.reset(false);
+				return _watchAllInternal(group, undefined, resolve, reject);
 			} else {
 				if (typeof group.onCompleteCallback === 'function') {
 					group.onCompleteCallback();

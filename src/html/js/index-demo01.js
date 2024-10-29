@@ -12,81 +12,101 @@ const importModule = async () => {
 	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
-	demo01.addWatch({
-		name: 'preparation step 01',
-		parent: undefined,
-		child: 'a',
-		f: () => sleep(undefined, false),
-		onStartCallback: function () {
-			// console.log('++++onStartCallback("preparation step")');
-		},
-		onCompleteCallback: function () {
-			// console.log('++++onCompleteCallback("preparation step")');
-		},
-		onRejectCallback: function () {
-			console.warn('++++onRejectCallback("preparation step")');
-		},
-		onAbortCallback: function () {
-			console.warn('++++onAbortCallback("preparation step")');
-		},
-	});
+	const sample = 1;
+	if (sample === 2) {
+		demo01.addWatch(() => {
+			return sleep(undefined, false);
+		});
+		demo01.addWatch(() => {
+			return sleep(undefined, false);
+		});
+		demo01.addWatch(() => {
+			return sleep(undefined, false);
+		});
+		demo01.addWatch(() => {
+			return console.log('yeddllo!');
+		});
+		demo01.addWatch(() => {
+			return sleep(100, false);
+		});
+	}
+	if (sample === 1) {
+		demo01.addWatch({
+			name: 'preparation step 01',
+			parent: undefined,
+			child: 'a',
+			f: () => sleep(undefined, false),
+			onStartCallback: function () {
+				// console.log('++++onStartCallback("preparation step")');
+			},
+			onCompleteCallback: function () {
+				// console.log('++++onCompleteCallback("preparation step")');
+			},
+			onRejectCallback: function () {
+				console.warn('++++onRejectCallback("preparation step")');
+			},
+			onAbortCallback: function () {
+				console.warn('++++onAbortCallback("preparation step")');
+			},
+		});
 
-	demo01.addWatch({
-		name: 'fetch data from ETL store: s1',
-		parent: 'a',
-		child: 'b',
-		f: () => sleep(undefined, false),
-		onStartCallback: function () {
-			// console.log('++++onStartCallback("fetch data from ETL store: s1")');
-		},
-		onCompleteCallback: function () {
-			// console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
-		},
-		onRejectCallback: function () {
-			console.warn('++++onRejectCallback("fetch data from ETL store: s1")');
-		},
-	});
+		demo01.addWatch({
+			name: 'fetch data from ETL store: s1',
+			parent: 'a',
+			child: 'b',
+			f: () => sleep(undefined, false),
+			onStartCallback: function () {
+				// console.log('++++onStartCallback("fetch data from ETL store: s1")');
+			},
+			onCompleteCallback: function () {
+				// console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+			},
+			onRejectCallback: function () {
+				console.warn('++++onRejectCallback("fetch data from ETL store: s1")');
+			},
+		});
 
-	demo01.addWatch({
-		name: 'fetch data from ETL store: s2',
-		parent: 'a',
-		child: 'b',
-		f: () => sleep(undefined, false),
-		onStartCallback: function () {
-			// console.log('++++onStartCallback("fetch data from ETL store: s2")');
-		},
-		onCompleteCallback: function () {
-			// console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
-		},
-		onRejectCallback: function () {
-			console.warn('++++onRejectCallback("fetch data from ETL store: s2")');
-		},
-	});
+		demo01.addWatch({
+			name: 'fetch data from ETL store: s2',
+			parent: undefined,
+			child: 'x',
+			f: () => sleep(undefined, false),
+			onStartCallback: function () {
+				// console.log('++++onStartCallback("fetch data from ETL store: s2")');
+			},
+			onCompleteCallback: function () {
+				// console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+			},
+			onRejectCallback: function () {
+				console.warn('++++onRejectCallback("fetch data from ETL store: s2")');
+			},
+		});
 
-	demo01.addWatch({
-		name: 'fetch data from ETL store: s3',
-		parent: 'a',
-		child: 'b',
-		f: () => sleep(undefined, false),
-		onStartCallback: function () {
-			// console.log('++++onStartCallback("fetch data from ETL store: s3")');
-		},
-		onCompleteCallback: function () {
-			// console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
-		},
-	});
+		demo01.addWatch({
+			name: 'fetch data from ETL store: s3',
+			parent: 'a',
+			child: 'b',
+			f: () => sleep(undefined, false),
+			onStartCallback: function () {
+				// console.log('++++onStartCallback("fetch data from ETL store: s3")');
+			},
+			onCompleteCallback: function () {
+				// console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+			},
+		});
 
-	demo01.addWatch({
-		name: 'build snowflake',
-		parent: 'b',
-		f: () => sleep(undefined, false),
-		onStartCallback: function () {
-			// console.log('++++onStartCallback("build snowflake")');
-		},
-		onCompleteCallback: function () {
-			// console.log('++++onCompleteCallback("build snowflake")');
-		},
-	});
+		demo01.addWatch({
+			name: 'build snowflake',
+			parent: 'b',
+			f: () => sleep(undefined, false),
+			onStartCallback: function () {
+				// console.log('++++onStartCallback("build snowflake")');
+			},
+			onCompleteCallback: function () {
+				// console.log('++++onCompleteCallback("build snowflake")');
+			},
+		});
+	}
 
 	demo01.onStartCallback = function () {
 		const button = document.getElementById('demo01');

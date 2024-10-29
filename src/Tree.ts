@@ -101,6 +101,7 @@ export default class Tree {
 		node: TreeNode,
 		prefix: string = '',
 		isFirst: boolean = true,
+		isFirstRoot: boolean = true,
 		isLast: boolean = true,
 		maxLengthObj = {maxLength: 0},
 	): void {
@@ -110,7 +111,7 @@ export default class Tree {
 
 		if (this.repeatOptions.repeat != 0) {
 			repeatIndicator = ' │';
-			repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+			repeatIndicatorFirstLine = isFirst ? (isFirstRoot ? '┬─' : '┼─') : '─';
 		}
 
 		const line = `${isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
@@ -124,7 +125,7 @@ export default class Tree {
 
 		node.children.forEach((child, index) => {
 			const isLastChild = index === node.children.length - 1;
-			this.calculateMaxLength(child, newPrefix, false, isLastChild, maxLengthObj);
+			this.calculateMaxLength(child, newPrefix, false, isFirstRoot, isLastChild, maxLengthObj);
 		});
 	}
 
@@ -133,6 +134,7 @@ export default class Tree {
 		node: TreeNode,
 		prefix: string = '',
 		isFirst: boolean = true,
+		isFirstRoot: boolean = false,
 		isLast: boolean = true,
 		terminalIndex: {current: number; total: number},
 		maxLength: number,
@@ -145,7 +147,7 @@ export default class Tree {
 
 		if (this.repeatOptions.repeat != 0) {
 			repeatIndicator = ' │';
-			repeatIndicatorFirstLine = isFirst ? '┬─' : '─';
+			repeatIndicatorFirstLine = isFirst ? (isFirstRoot ? '┬─' : '┼─') : '─';
 		}
 
 		let line = `${isFirst ? '─' + repeatIndicatorFirstLine + '─' : repeatIndicator + prefix + (isLast && !isFirst ? '└─' : '├─')} ${node.description}`;
@@ -183,6 +185,7 @@ export default class Tree {
 				child,
 				newPrefix,
 				false,
+				isFirstRoot,
 				isLastChild,
 				terminalIndex,
 				maxLength,
@@ -198,7 +201,7 @@ export default class Tree {
 
 		// Step 2: Dry run to calculate the longest line
 		const maxLengthObj = {maxLength: 0};
-		tree.forEach(root => this.calculateMaxLength(root, '', true, true, maxLengthObj));
+		tree.forEach(root => this.calculateMaxLength(root, '', true, false, true, maxLengthObj));
 
 		// Step 3: Track terminal node indices
 		const terminalNodes: TreeNode[] = [];
@@ -209,11 +212,12 @@ export default class Tree {
 		const encounteredTerminalRef = {value: false};
 
 		// Step 5: Display the tree with the longest line length added to terminal nodes and padded
-		tree.forEach(root =>
+		tree.forEach((root, indx) =>
 			this.displayTreeWithLineLength(
 				root,
 				'',
 				true,
+				indx === 0,
 				true,
 				terminalIndex,
 				maxLengthObj.maxLength,
