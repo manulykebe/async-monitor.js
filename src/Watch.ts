@@ -144,7 +144,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 		if (children.length === 0) {
 			return;
 		}
-		debugger;
 		if (group.options.repeat > 0) {
 			if (typeof group.onStartRunCallback === 'function') group.onStartRunCallback();
 		}

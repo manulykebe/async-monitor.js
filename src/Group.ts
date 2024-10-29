@@ -1,4 +1,4 @@
-import {Watch, watchAll} from './Watch';
+import {watchAll} from './Watch';
 import Tree from './Tree';
 import now, {calcDuration} from './Now';
 import WatchFunction, {Metric} from './WatchFunction';
@@ -11,8 +11,8 @@ declare let document: CustomDocument;
 document['async-monitor-groups'] = [];
 
 const regexRepeat = (repeat: number): RegExp => {
-	const l = repeat.toString().length;
-	return new RegExp(`\\s{${l}}1\\/${repeat}\\s`);
+	const length = repeat.toString().length;
+	return new RegExp(`\\s{${length}}1\\/${repeat}\\s`);
 };
 
 interface GroupOptions {
@@ -40,19 +40,19 @@ export default class Group {
 		return this._functions;
 	}
 	get isRunning(): boolean {
-		return !!this._functions.map(x => x.isRunning).reduce((a, b) => a || b, false);
+		return this._functions.some(fn => fn.isRunning);
 	}
 
 	get isFinished(): boolean {
-		return !!this._functions.map(x => x.isFinished).reduce((a, b) => a && b, true);
+		return this._functions.every(fn => fn.isFinished);
 	}
 
 	get isRejected(): boolean {
-		return !!this._functions.map(x => x.isRejected).reduce((a, b) => a || b, false);
+		return this._functions.some(fn => fn.isRejected);
 	}
 
 	get isAborted(): boolean {
-		return !!this._functions.map(x => x.isAborted).reduce((a, b) => a || b, false);
+		return this._functions.some(fn => fn.isAborted);
 	}
 	get isProcessed(): boolean {
 		return this.isFinished || this.isRejected || this.isAborted;
@@ -70,7 +70,7 @@ export default class Group {
 	}
 	set stopTime(value: number) {
 		this._stopTime = value;
-		this._duration = calcDuration(this.startTime, this.stopTime);
+		this._duration = calcDuration(this._startTime, this._stopTime);
 	}
 	private _duration: number = 0;
 	get duration(): number {
@@ -105,7 +105,7 @@ export default class Group {
 	get onStartRunCallback(): () => void {
 		return () => {
 			if (this.useConsoleLog) {
-				console.log(`*** RUN ${this.run} STARTED ***`);
+				console.log(`*** RUN "${this.run}" STARTED ***`);
 			}
 			this._onStartRunCallback!();
 		};
@@ -136,7 +136,7 @@ export default class Group {
 	get onCompleteRunCallback(): () => void {
 		return () => {
 			if (this.useConsoleLog) {
-				console.log(`*** RUN ${this.run} COMPLETED ***`);
+				console.log(`*** RUN "${this.run}" COMPLETED ***`);
 			}
 			this._onCompleteRunCallback!();
 		};
@@ -151,7 +151,7 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.useConsoleLog) {
-				console.log(`*** REJECTED ${this._id} ***`);
+				console.log(`*** REJECTED "${this.name ?? 'Group#' + this.id}" ***`);
 				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
@@ -169,7 +169,7 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.useConsoleLog) {
-				console.log(`*** REJECTED RUN ${this._id} ***`);
+				console.log(`*** REJECTED RUN "${this.run}" ***`);
 				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 				console.groupEnd();
 				console.log(this.metrics);
@@ -188,7 +188,7 @@ export default class Group {
 
 			if (this.isAborted) return;
 			if (this.useConsoleLog) {
-				console.log(`*** ABORTED GROUP ${this._id} ***`);
+				console.log(`*** ABORTED GROUP "${this.name ?? 'Group#' + this.id}" ***`);
 				console.highlight('completed', {id: this._id}, 'aborted');
 				console.groupEnd();
 			}
@@ -207,7 +207,7 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.useConsoleLog) {
-				console.log(`*** ABORTED RUN ${this._id} ***`);
+				console.log(`*** ABORTED RUN "${this.run}" ***`);
 				console.highlight('completed', {id: this._id}, 'aborted');
 				console.groupEnd();
 			}
@@ -236,15 +236,14 @@ export default class Group {
 	addWatch = (addWatchFunction: WatchFunction) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
+			debugger;
 			watchFunction = new WatchFunction(addWatchFunction);
 			if (this.sequence === 0) {
-				watchFunction.parent = watchFunction.parent || '';
-				watchFunction.child = '_monitor_1';
-				this.sequence = 1;
+				watchFunction.parent = undefined;
 			} else {
-				watchFunction.parent = '_monitor_' + this.sequence++;
-				watchFunction.child = '_monitor_' + this.sequence;
+				watchFunction.parent = '_monitor_' + this.sequence;
 			}
+			watchFunction.child = '_monitor_' + this.sequence++;
 		} else {
 			// Create a new WatchFunction and add it to the group
 			watchFunction = new WatchFunction(addWatchFunction);
@@ -295,7 +294,7 @@ export default class Group {
 	add(): void {}
 	remove(): void {}
 
-	watchAll() {
+	watchAll(): Promise<void> | void {
 		if (this.isProcessed) {
 			console.warn('This watchAll group has already been processed.');
 			return;

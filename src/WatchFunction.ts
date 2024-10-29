@@ -68,7 +68,7 @@ export default class WatchFunction {
 	signal: AbortSignal = this.abortController.signal;
 
 	name: string;
-	parent: string;
+	parent: string | undefined; // undefined means it's a root function
 	child: string;
 	group?: Group | undefined;
 	f: () => Promise<any> | void;
@@ -93,7 +93,8 @@ export default class WatchFunction {
 	};
 
 	'promise': Promise<any>;
-	promiseStatus: {status: string; reason: any; value: any} = {
+
+	'promiseStatus': {status: string; reason: any; value: any} = {
 		status: 'not started',
 		reason: undefined,
 		value: undefined,
@@ -120,14 +121,15 @@ export default class WatchFunction {
 			| {
 					f: () => Promise<any> | void;
 					name: string;
-					parent: string;
+					parent: string | undefined;
 					child: string;
 					onStartCallback?: () => void;
 					onCompleteCallback?: () => void;
 					onRejectCallback?: () => void;
 					onAbortCallback?: () => void;
 			  }
-			| (() => Promise<any> | void),
+			| (() => Promise<any> | void)
+			| (() => {}),
 		name?: string,
 		parent?: string,
 		child?: string,
@@ -135,6 +137,7 @@ export default class WatchFunction {
 		onCompleteCallback?: () => void,
 		onRejectCallback?: () => void,
 		onAbortCallback?: () => void,
+		onErrorCallback?: () => void,
 	) {
 		if (typeof arg === 'object') {
 			this.f = arg.f;
