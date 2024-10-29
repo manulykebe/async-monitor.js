@@ -4,11 +4,6 @@ import now, {calcDuration} from './Now';
 import WatchFunction, {Metric} from './WatchFunction';
 import Sequence from './Sequence';
 import {clearHighlights, displayRepeat} from './Console';
-interface CustomDocument extends Document {
-	['async-monitor-groups']: Group[];
-}
-declare let document: CustomDocument;
-document['async-monitor-groups'] = [];
 
 const regexRepeat = (repeat: number): RegExp => {
 	const length = repeat.toString().length;
@@ -27,7 +22,6 @@ export default class Group {
 	}
 	constructor(options: GroupOptions = {repeat: 0, runs: 0}) {
 		this.options = options;
-		document['async-monitor-groups'].push(this);
 	}
 	useConsoleLog: boolean = true;
 

@@ -1,5 +1,7 @@
 import version from './Version';
 
+const useConsoleLog = false;
+
 declare global {
 	interface Console {
 		highlight(text: RegExp | string, ids: {id: number; index?: number}, className?: string | string[]): void;
@@ -96,6 +98,7 @@ function appendLogToConsole(
 	classnames: string | string[],
 	_id?: number,
 ) {
+	if (!useConsoleLog) return;
 	if (message === null) message = '<null>';
 	if (message === undefined) message = '<undefined>';
 	if (typeof message === 'string' && message.trim() === '') return;

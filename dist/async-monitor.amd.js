@@ -1073,7 +1073,6 @@ define(['exports'], (function (exports) { 'use strict';
         return WatchFunction;
     }());
 
-    document['async-monitor-groups'] = [];
     var regexRepeat = function (repeat) {
         var length = repeat.toString().length;
         return new RegExp("\\s{".concat(length, "}1\\/").concat(repeat, "\\s"));
@@ -1125,7 +1124,6 @@ define(['exports'], (function (exports) { 'use strict';
                 _this._functions.push(watchFunction);
             };
             this.options = options;
-            document['async-monitor-groups'].push(this);
         }
         Object.defineProperty(Group.prototype, "run", {
             get: function () {

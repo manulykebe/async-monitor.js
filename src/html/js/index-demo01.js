@@ -12,7 +12,7 @@ const importModule = async () => {
 	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
-	const sample = 1;
+	const sample = 2;
 	if (sample === 2) {
 		demo01.addWatch(() => {
 			return sleep(undefined, false);
