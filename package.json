@@ -53,6 +53,7 @@
 		"test": "npm run test-lint",
 		"tsc-watch": "tsc --watch",
 		"tsc": "tsc",
+		"update-package-lock": "rm -f package-lock.json && npm install",
 		"version": "npm test && git add ."
 	},
 	"author": "monitor.js contributors (https://github.com/manulykebe/async-monitor.js/graphs/contributors)",
