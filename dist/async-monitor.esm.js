@@ -1,5 +1,74 @@
 var version = '1.1.7';
 
+function getCurrentTime() {
+    var now = new Date();
+    return now.toTimeString().split(' ')[0];
+}
+function createTableFromObject(data) {
+    var table = document.createElement('table');
+    table.classList.add('log-table');
+    if (Array.isArray(data) && data.length > 0) {
+        var headerRow_1 = document.createElement('tr');
+        var keys_1 = Object.keys(data[0]);
+        keys_1.forEach(function (key) {
+            var th = document.createElement('th');
+            th.textContent = key;
+            th.classList.add('log-table-header');
+            headerRow_1.appendChild(th);
+        });
+        table.appendChild(headerRow_1);
+        data.forEach(function (item) {
+            var row = document.createElement('tr');
+            keys_1.forEach(function (key) {
+                var td = document.createElement('td');
+                var jsonstring = '';
+                try {
+                    jsonstring = JSON.stringify(item[key]);
+                }
+                catch (error) {
+                    jsonstring = "".concat(key, ": ").concat(error);
+                }
+                td.textContent = typeof item[key] === 'object' ? jsonstring : item[key];
+                td.classList.add('log-table-cell');
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
+    }
+    else if (typeof data === 'object') {
+        var headerRow = document.createElement('tr');
+        var thKey = document.createElement('th');
+        thKey.textContent = 'Property';
+        thKey.classList.add('log-table-header');
+        var thValue = document.createElement('th');
+        thValue.textContent = 'Value';
+        thValue.classList.add('log-table-header');
+        headerRow.appendChild(thKey);
+        headerRow.appendChild(thValue);
+        table.appendChild(headerRow);
+        Object.keys(data).forEach(function (key) {
+            var row = document.createElement('tr');
+            var keyCell = document.createElement('td');
+            keyCell.textContent = key;
+            keyCell.classList.add('log-table-cell');
+            var valueCell = document.createElement('td');
+            var jsonstring = '';
+            try {
+                jsonstring = JSON.stringify(data[key], undefined, 4);
+            }
+            catch (error) {
+                jsonstring = "".concat(key, ": ").concat(error);
+            }
+            valueCell.textContent =
+                typeof data[key] === 'object' ? jsonstring : data[key];
+            valueCell.classList.add('log-table-cell');
+            row.appendChild(keyCell);
+            row.appendChild(valueCell);
+            table.appendChild(row);
+        });
+    }
+    return table;
+}
 var originalConsoleClear = console.clear;
 var originalConsoleError = console.error;
 var originalConsoleGroup = console.group;
@@ -7,6 +76,46 @@ var originalConsoleGroupEnd = console.groupEnd;
 var originalConsoleLog = console.log;
 var originalConsoleTable = console.table;
 var originalConsoleWarn = console.warn;
+function appendLogToConsole(message, classnames, _id) {
+    if (message === null)
+        message = '<null>';
+    if (message === undefined)
+        message = '<undefined>';
+    if (typeof message === 'string' && message.trim() === '')
+        return;
+    var consoleDiv = document.getElementById('console');
+    if (consoleDiv) {
+        var logEntry = document.createElement('div');
+        logEntry.classList.add('log-entry');
+        var timeCol = document.createElement('div');
+        timeCol.classList.add('log-time');
+        timeCol.textContent = getCurrentTime();
+        var messageCol = document.createElement('div');
+        messageCol.classList.add('log-message');
+        if (typeof message === 'object') {
+            var table = createTableFromObject(message);
+            messageCol.appendChild(table);
+        }
+        else {
+            var pre_1 = document.createElement('pre');
+            if (!Array.isArray(classnames))
+                classnames = [classnames];
+            if (!_id && typeof _id === 'number') {
+                classnames.push("log-group-".concat(_id));
+            }
+            classnames.forEach(function (c) {
+                if (typeof c === 'string' && c.trim() !== '') {
+                    pre_1.classList.add(c.trim());
+                }
+            });
+            pre_1.textContent = message;
+            messageCol.appendChild(pre_1);
+        }
+        logEntry.appendChild(timeCol);
+        logEntry.appendChild(messageCol);
+        consoleDiv.appendChild(logEntry);
+    }
+}
 console.clear = function () {
     originalConsoleClear();
     var consoleDiv = document.getElementById('console');
@@ -16,22 +125,32 @@ console.clear = function () {
     console.log("async-monitor.js$".concat(version));
 };
 console.log = function (message, classnames) {
+    var _id;
+    if (typeof classnames === 'number') {
+        _id = classnames;
+        classnames = undefined;
+    }
     originalConsoleLog(message);
+    appendLogToConsole(message, classnames, _id);
 };
 console.error = function (message, _id) {
     originalConsoleError(message);
+    appendLogToConsole(message, 'log-error', _id);
 };
 console.group = function (label, _id) {
     originalConsoleGroup(label);
+    appendLogToConsole("".concat(label), 'log-group', _id);
 };
 console.groupEnd = function () {
     originalConsoleGroupEnd();
 };
 console.table = function (data) {
     originalConsoleTable(data);
+    appendLogToConsole(data, 'log-table');
 };
 console.warn = function (message, _id) {
     originalConsoleWarn(message);
+    appendLogToConsole(message, 'log-warn', _id);
 };
 function escapeRegExp(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

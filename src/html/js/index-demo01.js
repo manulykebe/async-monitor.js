@@ -27,7 +27,7 @@ const importModule = async () => {
 			return console.log('yeddllo!');
 		});
 		demo01.addWatch(() => {
-			return sleep(100, false);
+			return sleep(undefined, false);
 		});
 	}
 	if (sample === 1) {

@@ -1,6 +1,6 @@
 import version from './Version';
 
-const useConsoleLog = false;
+const useConsoleLog = true;
 
 declare global {
 	interface Console {
