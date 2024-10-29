@@ -1,6 +1,6 @@
 define(['exports'], (function (exports) { 'use strict';
 
-    var version = '1.1.6';
+    var version = '1.1.7';
 
     function getCurrentTime() {
         var now = new Date();

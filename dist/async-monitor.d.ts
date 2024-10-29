@@ -195,7 +195,7 @@ declare class Monitor {
     }>;
 }
 
-declare const version = "1.1.6";
+declare const version = "1.1.7";
 
 declare class Watch {
     constructor(fs: Array<WatchFunction>, f: (() => void) | Array<() => void>);
