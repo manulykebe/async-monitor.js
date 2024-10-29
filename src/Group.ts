@@ -300,20 +300,27 @@ export default class Group {
 	remove(): void {}
 
 	watchAll(): Promise<void> | void {
+		if (this.functions.length === 0) {
+			console.warn('No watch functions found in this group.');
+			return new Promise<void>((resolve, reject) => {
+				reject('No watch functions found in this group.');
+			});
+		}
 		if (this.isProcessed) {
 			console.warn('This watchAll group has already been processed.');
-			return;
+			return new Promise<void>((resolve, reject) => {
+				reject('This watchAll group has already been processed.');
+			});
 		}
 		if (this.isRunning) {
 			console.warn('This watchAll group is already being monitored.');
-			return;
+			return new Promise<void>((resolve, reject) => {
+				reject('This watchAll group is already being monitored.');
+			});
 		}
 
 		this.startTime = now();
 		if (typeof this.onStartCallback === 'function') this.onStartCallback();
-		// if (this.options.repeat > 0) {
-		// 	if (typeof this.onStartRunCallback === 'function') this.onStartRunCallback();
-		// }
 
 		return watchAll(this);
 	}

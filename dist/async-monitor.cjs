@@ -773,6 +773,10 @@ var Tree = /** @class */ (function () {
     // Method to initiate the tree processing and display
     Tree.prototype.processTree = function (data) {
         var _this = this;
+        if (data.length === 0) {
+            debugger;
+            return '<empty tree>';
+        }
         // Step 1: Build tree
         var tree = this.buildTree(data);
         // Step 2: Dry run to calculate the longest line
@@ -1441,13 +1445,23 @@ var Group = /** @class */ (function () {
     Group.prototype.add = function () { };
     Group.prototype.remove = function () { };
     Group.prototype.watchAll = function () {
+        if (this.functions.length === 0) {
+            console.warn('No watch functions found in this group.');
+            return new Promise(function (resolve, reject) {
+                reject('No watch functions found in this group.');
+            });
+        }
         if (this.isProcessed) {
             console.warn('This watchAll group has already been processed.');
-            return;
+            return new Promise(function (resolve, reject) {
+                reject('This watchAll group has already been processed.');
+            });
         }
         if (this.isRunning) {
             console.warn('This watchAll group is already being monitored.');
-            return;
+            return new Promise(function (resolve, reject) {
+                reject('This watchAll group is already being monitored.');
+            });
         }
         this.startTime = now();
         if (typeof this.onStartCallback === 'function')
