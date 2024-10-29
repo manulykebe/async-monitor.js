@@ -6,4 +6,5 @@ export default {
 	},
 	collectCoverage: true,
 	coverageReporters: ['lcov', 'text'],
+	coverageDirectory: './coverage',
 };

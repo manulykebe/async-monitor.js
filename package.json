@@ -51,6 +51,7 @@
 		"rollup-build": "rollup -c ./rollup.config.js",
 		"test-lint": "npm run prettier -- --check",
 		"test": "npm run test-lint",
+		"test-cover": "jest --coverage",
 		"tsc-watch": "tsc --watch",
 		"tsc": "tsc",
 		"update-package-lock": "rm -f package-lock.json && npm install",
