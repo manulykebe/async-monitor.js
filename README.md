@@ -3,7 +3,8 @@
 ![Build and Deployment](https://github.com/manulykebe/async-monitor.js/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)
 ![Code Scanning](https://github.com/manulykebe/async-monitor.js/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
 
-[![NPM Version][npm-image]][npm-url]
+[![NPM Version][npm-image]][npm-url][![Known Vulnerabilities](https://snyk.io/test/npm/async-monitor.js/badge.svg)](https://snyk.io/test/npm/async-monitor.js)
+
 
 ```html
 (pseudo code)
