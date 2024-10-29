@@ -12,8 +12,6 @@ const importModule = async () => {
 	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
 
-	demo01.addWatch(() => sleep(undefined, false));
-
 	demo01.addWatch({
 		name: 'preparation step 01',
 		parent: undefined,

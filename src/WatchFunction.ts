@@ -71,7 +71,7 @@ export default class WatchFunction {
 	parent: string | undefined; // undefined means it's a root function
 	child: string;
 	group?: Group | undefined;
-	f: () => Promise<any> | void;
+	f: () => Promise<any>;
 	onStartCallback?: () => void;
 	onCompleteCallback?: () => void;
 	onRejectCallback?: () => void;
@@ -140,7 +140,10 @@ export default class WatchFunction {
 		onErrorCallback?: () => void,
 	) {
 		if (typeof arg === 'object') {
-			this.f = arg.f;
+			this.f = () => {
+				const result = arg.f();
+				return result instanceof Promise ? result : Promise.resolve(result);
+			};
 			this.name = arg.name;
 			this.parent = arg.parent;
 			this.child = arg.child;
@@ -186,8 +189,10 @@ export default class WatchFunction {
 				console.warn(`──"${this.name}" was aborted.`);
 			};
 		} else {
-			alert('arg is not an object');
-			this.f = arg;
+			this.f = () => {
+				const result = arg();
+				return result instanceof Promise ? result : Promise.resolve(result);
+			};
 			this.name = name!;
 			this.parent = parent!;
 			this.child = child!;

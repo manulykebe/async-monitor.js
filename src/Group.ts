@@ -233,17 +233,22 @@ export default class Group {
 	}
 
 	// Add a watch function
-	addWatch = (addWatchFunction: WatchFunction) => {
+	addWatch = (addWatchFunction: WatchFunction | Function) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
 			debugger;
-			watchFunction = new WatchFunction(addWatchFunction);
-			if (this.sequence === 0) {
-				watchFunction.parent = undefined;
-			} else {
-				watchFunction.parent = '_monitor_' + this.sequence;
-			}
-			watchFunction.child = '_monitor_' + this.sequence++;
+			// Convert a regular function to a new (async) WatchFunction and add it to the group
+			watchFunction = new WatchFunction({
+				f: addWatchFunction as () => void | Promise<any>,
+				name: `watch-function-${this.sequence + 1}`,
+				parent: this.sequence === 0 ? undefined : `_monitor_${this.sequence}`,
+				child: `_monitor_${this.sequence + 1}`,
+				onStartCallback: () => {},
+				onCompleteCallback: () => {},
+				onRejectCallback: () => {},
+				onAbortCallback: () => {},
+			});
+			this.sequence++;
 		} else {
 			// Create a new WatchFunction and add it to the group
 			watchFunction = new WatchFunction(addWatchFunction);

@@ -227,7 +227,8 @@ export default class Tree {
 				this.repeatOptions.repeat == -1
 					? ' ∞ '
 					: ' '.repeat(String(this.repeatOptions.repeat).length) + '1/' + this.repeatOptions.repeat + ' ';
-			this.consoleLogText += ' └' + repeatText + '─'.repeat(maxLengthObj.maxLength - repeatText.length - 1) + '┤\r\n';
+			this.consoleLogText +=
+				' └' + repeatText + '─'.repeat(Math.max(1, maxLengthObj.maxLength - repeatText.length - 1)) + '┤\r\n';
 		}
 		this.consoleLogText += ' '.repeat(maxLengthObj.maxLength + 1) + '└─ completed';
 

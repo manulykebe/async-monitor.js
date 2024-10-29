@@ -87,6 +87,12 @@ export async function watchAll(
 	if (typeof onCompleteCallback === 'function') group.onCompleteCallback = onCompleteCallback;
 	if (typeof onRejectCallback === 'function') group.onRejectCallback = onRejectCallback;
 	if (typeof onAbortCallback === 'function') group.onAbortCallback = onAbortCallback;
+	// if (group.functions.filter(x => x.parent === undefined).length != 1) {
+	// 	console.error('Group must have exactly one root function (aka parent === undefined)!');
+	// 	return new Promise<void>((resolve, reject) => {
+	// 		reject();
+	// 	});
+	// }
 	return new Promise<void>((resolve, reject) => {
 		_watchAllInternal(group, undefined, resolve, reject);
 	});
@@ -180,8 +186,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 							child.promise.then(() => {
 								if (typeof child.onCompleteCallback === 'function') {
 									child.onCompleteCallback();
-								} else {
-									console.warn('onCompleteCallback is not defined or not a function');
 								}
 								useConsoleLog && console.highlight(child.name, {id: group.id}, 'complete');
 							});
@@ -189,8 +193,6 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 							child.promise.catch(() => {
 								if (typeof child.onRejectCallback === 'function') {
 									child.onRejectCallback();
-								} else {
-									console.warn('onRejectCallback is not defined or not a function');
 								}
 								if (useConsoleLog) {
 									console.highlight(child.name, {id: group.id}, 'rejected');
