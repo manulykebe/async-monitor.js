@@ -8,7 +8,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/npm/async-monitor.js/badge.svg)](https://snyk.io/test/npm/async-monitor.js)
 [![Coverage Status](https://coveralls.io/repos/github/manulykebe/async-monitor.js/badge.svg?branch=main)](https://coveralls.io/github/manulykebe/async-monitor.js?branch=main)
 
-
 ```html
 (pseudo code)
 <script>
