@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var version = '1.1.7';
+var version = '1.1.8';
 
 console.useConsoleLog = false;
 function getCurrentTime() {

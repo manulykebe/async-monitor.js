@@ -4,7 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
-    var version = '1.1.7';
+    var version = '1.1.8';
 
     console.useConsoleLog = false;
     function getCurrentTime() {

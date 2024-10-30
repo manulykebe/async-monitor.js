@@ -1,6 +1,6 @@
 define(['exports'], (function (exports) { 'use strict';
 
-    var version = '1.1.7';
+    var version = '1.1.8';
 
     console.useConsoleLog = false;
     function getCurrentTime() {
