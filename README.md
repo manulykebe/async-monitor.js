@@ -35,7 +35,7 @@
 </pre>
 ```
 
-[Examples](https://manulykebe.github.io/async-monitor.js/src/html/index.html)
+[Examples](https://manulykebe.github.io/async-monitor.js/examples)
 
 # Features
 
