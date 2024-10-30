@@ -4,7 +4,7 @@ export default {
 	transform: {
 		'^.+.tsx?$': ['ts-jest', {}],
 	},
-	collectCoverage: true,
-	coverageReporters: ['lcov', 'text'],
-	coverageDirectory: './coverage',
+	collectCoverage: false,
+	// coverageReporters: ['lcov', 'text'],
+	// coverageDirectory: './coverage',
 };
