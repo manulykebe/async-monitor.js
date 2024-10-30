@@ -32,6 +32,16 @@ type Metric = {
     reason: any;
     value: any;
 };
+interface WatchFunctionOptions {
+    f: () => Promise<any> | void;
+    name?: string | undefined;
+    parent?: string | undefined;
+    child?: string | undefined;
+    onStartCallback?: () => void;
+    onCompleteCallback?: () => void;
+    onRejectCallback?: () => void;
+    onAbortCallback?: () => void;
+}
 declare class WatchFunction {
     private _id;
     get id(): number;
@@ -55,9 +65,9 @@ declare class WatchFunction {
     private abortController;
     abort: () => void;
     signal: AbortSignal;
-    name: string;
-    parent: string | undefined;
-    child: string;
+    name?: string | undefined;
+    parent?: string | undefined;
+    child?: string | undefined;
     group?: Group | undefined;
     f: () => Promise<any>;
     onStartCallback?: () => void;
@@ -73,16 +83,7 @@ declare class WatchFunction {
         value: any;
     };
     get metrics(): Metric;
-    constructor(arg: {
-        f: () => Promise<any> | void;
-        name: string;
-        parent: string | undefined;
-        child: string;
-        onStartCallback?: () => void;
-        onCompleteCallback?: () => void;
-        onRejectCallback?: () => void;
-        onAbortCallback?: () => void;
-    } | (() => Promise<any> | void) | (() => {}), name?: string, parent?: string, child?: string, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void, onErrorCallback?: () => void);
+    constructor(arg: WatchFunctionOptions | (() => Promise<any> | void) | (() => {}), name?: string | undefined, parent?: string | undefined, child?: string | undefined, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void, onErrorCallback?: () => void);
 }
 
 interface GroupOptions {
@@ -141,7 +142,7 @@ declare class Group {
     private _onErrorCallback;
     get onErrorCallback(): () => void;
     set onErrorCallback(value: () => void);
-    addWatch: (addWatchFunction: WatchFunction | Function) => void;
+    addWatch: (addWatchFunction: WatchFunctionOptions | Function) => void;
     abortWatch(name: string): void;
     abort(): void;
     reset(resetRuns?: boolean): void;

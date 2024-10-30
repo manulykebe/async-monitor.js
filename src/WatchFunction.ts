@@ -17,6 +17,17 @@ export type Metric = {
 	value: any;
 };
 
+export interface WatchFunctionOptions {
+	f: () => Promise<any> | void;
+	name?: string | undefined;
+	parent?: string | undefined;
+	child?: string | undefined;
+	onStartCallback?: () => void;
+	onCompleteCallback?: () => void;
+	onRejectCallback?: () => void;
+	onAbortCallback?: () => void;
+}
+
 export default class WatchFunction {
 	private _id: number = Sequence.nextId();
 	get id(): number {
@@ -67,9 +78,9 @@ export default class WatchFunction {
 	abort = () => this.abortController.abort();
 	signal: AbortSignal = this.abortController.signal;
 
-	name: string;
-	parent: string | undefined; // undefined means it's a root function
-	child: string;
+	name?: string | undefined;
+	parent?: string | undefined; // undefined means it's a root function
+	child?: string | undefined;
 	group?: Group | undefined;
 	f: () => Promise<any>;
 	onStartCallback?: () => void;
@@ -102,7 +113,7 @@ export default class WatchFunction {
 	get metrics(): Metric {
 		return {
 			id: this._id!,
-			name: this.name,
+			name: this.name || '',
 			start: Math.max(0, this.group ? this._startTime - this.group.startTime : 0),
 			duration: this._duration,
 			status: this.promiseStatus.status,
@@ -117,22 +128,10 @@ export default class WatchFunction {
 	}
 
 	constructor(
-		arg:
-			| {
-					f: () => Promise<any> | void;
-					name: string;
-					parent: string | undefined;
-					child: string;
-					onStartCallback?: () => void;
-					onCompleteCallback?: () => void;
-					onRejectCallback?: () => void;
-					onAbortCallback?: () => void;
-			  }
-			| (() => Promise<any> | void)
-			| (() => {}),
-		name?: string,
-		parent?: string,
-		child?: string,
+		arg: WatchFunctionOptions | (() => Promise<any> | void) | (() => {}),
+		name?: string | undefined,
+		parent?: string | undefined,
+		child?: string | undefined,
 		onStartCallback?: () => void,
 		onCompleteCallback?: () => void,
 		onRejectCallback?: () => void,
@@ -151,7 +150,9 @@ export default class WatchFunction {
 			this.onStartCallback = function () {
 				this._isRunning = true;
 				this._startTime = now();
-				console.log(`──"${this.name}" has started.`);
+				if (console.useConsoleLog) {
+					console.log(`──"${this.name}" has started.`);
+				}
 				if (arg.onStartCallback) arg.onStartCallback!();
 			};
 
@@ -160,7 +161,9 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.log(`──"${this.name}" has completed.`);
+				if (console.useConsoleLog) {
+					console.log(`──"${this.name}" has completed.`);
+				}
 				if (arg.onCompleteCallback) arg.onCompleteCallback!();
 			};
 
@@ -172,7 +175,9 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.warn(`──"${this.name}" was rejected.`);
+				if (console.useConsoleLog) {
+					console.warn(`──"${this.name}" was rejected.`);
+				}
 				if (arg.onRejectCallback) arg.onRejectCallback!();
 			};
 			this.onAbortCallback = function () {
@@ -186,7 +191,9 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				console.warn(`──"${this.name}" was aborted.`);
+				if (console.useConsoleLog) {
+					console.warn(`──"${this.name}" was aborted.`);
+				}
 			};
 		} else {
 			this.f = () => {
@@ -200,7 +207,9 @@ export default class WatchFunction {
 				this.onStartCallback = function () {
 					this._isRunning = true;
 					this._startTime = now();
-					console.log(`"${this.name}" has started.`);
+					if (console.useConsoleLog) {
+						console.log(`"${this.name}" has started.`);
+					}
 					onStartCallback();
 				};
 			if (onCompleteCallback)
@@ -209,7 +218,9 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.log(`"${this.name}" has completed.`);
+					if (console.useConsoleLog) {
+						console.log(`"${this.name}" has completed.`);
+					}
 					onCompleteCallback();
 				};
 			if (onRejectCallback)
@@ -218,7 +229,9 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.warn(`"${this.name}" was rejected.`);
+					if (console.useConsoleLog) {
+						console.warn(`"${this.name}" was rejected.`);
+					}
 					onRejectCallback();
 				};
 			if (onAbortCallback)
@@ -228,7 +241,9 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					console.warn(`"${this.name}" was aborted d.`);
+					if (console.useConsoleLog) {
+						console.warn(`"${this.name}" was aborted d.`);
+					}
 					self.onAbortCallback && self.onAbortCallback();
 				};
 		}
@@ -252,3 +267,4 @@ export default class WatchFunction {
 		};
 	}
 }
+

@@ -1,7 +1,7 @@
 import {watchAll} from './Watch';
 import Tree from './Tree';
 import now, {calcDuration} from './Now';
-import WatchFunction, {Metric} from './WatchFunction';
+import WatchFunction, {WatchFunctionOptions, Metric} from './WatchFunction';
 import Sequence from './Sequence';
 import {clearHighlights, displayRepeat} from './Console';
 
@@ -223,8 +223,9 @@ export default class Group {
 	private _onErrorCallback: () => void = () => {};
 	get onErrorCallback(): () => void {
 		return () => {
-			if (this.useConsoleLog) console.log(`*** ERROR in group "${this.name || this._id}" ***`);
-
+			if (this.useConsoleLog) {
+				console.log(`*** ERROR in group "${this.name || this._id}" ***`);
+			}
 			this._onErrorCallback();
 		};
 	}
@@ -233,10 +234,10 @@ export default class Group {
 	}
 
 	// Add a watch function
-	addWatch = (addWatchFunction: WatchFunction | Function) => {
+	addWatch = (addWatchFunction: WatchFunctionOptions | Function) => {
 		let watchFunction: WatchFunction;
 		if (typeof addWatchFunction === 'function') {
-			// Convert a regular function to a new (async) WatchFunction and add it to the group
+			// Handle function
 			watchFunction = new WatchFunction({
 				f: addWatchFunction as () => void | Promise<any>,
 				name: `watch-function-${this.sequence + 1}`,
@@ -249,7 +250,7 @@ export default class Group {
 			});
 			this.sequence++;
 		} else {
-			// Create a new WatchFunction and add it to the group
+			// Handle object
 			watchFunction = new WatchFunction(addWatchFunction);
 		}
 		// Assign an AbortController to the watch function
@@ -262,7 +263,9 @@ export default class Group {
 		if (watchFunction) {
 			watchFunction.abort();
 		} else {
-			console.warn(`+++ No watch function found with name "${name}"`);
+			if (console.useConsoleLog) {
+				console.warn(`+++ No watch function found with name "${name}"`);
+			}
 		}
 	}
 	// Abort the entire group
@@ -300,19 +303,25 @@ export default class Group {
 
 	watchAll(): Promise<void> | void {
 		if (this.functions.length === 0) {
-			console.warn('No watch functions found in this group.');
+			if (console.useConsoleLog) {
+				console.warn('No watch functions found in this group.');
+			}
 			return new Promise<void>((resolve, reject) => {
 				reject('No watch functions found in this group.');
 			});
 		}
 		if (this.isProcessed) {
-			console.warn('This watchAll group has already been processed.');
+			if (console.useConsoleLog) {
+				console.warn('This watchAll group has already been processed.');
+			}
 			return new Promise<void>((resolve, reject) => {
 				reject('This watchAll group has already been processed.');
 			});
 		}
 		if (this.isRunning) {
-			console.warn('This watchAll group is already being monitored.');
+			if (console.useConsoleLog) {
+				console.warn('This watchAll group is already being monitored.');
+			}
 			return new Promise<void>((resolve, reject) => {
 				reject('This watchAll group is already being monitored.');
 			});

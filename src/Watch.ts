@@ -32,7 +32,9 @@ export class Watch {
 				// 	.filter(v => v.reason !== undefined);
 			})
 			.catch(err => {
-				console.warn('error:', err);
+				if (console.useConsoleLog) {
+					console.warn('error:', err);
+				}
 			})
 			.finally(() => {
 				if (breakOnReject) {
@@ -130,7 +132,9 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 		}
 	}
 	if (watches.some(f => f.isRejected)) {
-		console.warn('Some watch was rejected');
+		if (console.useConsoleLog) {
+			console.warn('Some watches are rejected.');
+		}
 		if (typeof group.onRejectCallback === 'function') {
 			group.onRejectCallback();
 		}
@@ -139,7 +143,9 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 	}
 	if (watches.some(f => f.isAborted)) {
 		// Some watch was aborted
-		console.warn('Some watch was aborted');
+		if (console.useConsoleLog) {
+			console.warn('Some watches are aborted.');
+		}
 		if (typeof group.onAbortCallback === 'function') {
 			group.onAbortCallback();
 		}
@@ -168,7 +174,8 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 				.filter(c => c.child === gc)
 				.forEach(child => {
 					child.sequence = _sequence;
-					useConsoleLog && console.highlight(child.name, {id: group.id, index: child.id}, 'start');
+					useConsoleLog &&
+						console.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id, index: child.id}, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						child.onStartCallback();
@@ -179,7 +186,9 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 						const result = child.f();
 						// If result is void (undefined), log a warning or handle it accordingly
 						if (result === undefined || result === null) {
-							console.warn('Function returned void');
+							if (console.useConsoleLog) {
+								console.warn('Function returned void');
+							}
 						}
 						// Check if result is a promise by checking the presence of the then method
 						else if (typeof result.then === 'function') {
@@ -188,7 +197,8 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 								if (typeof child.onCompleteCallback === 'function') {
 									child.onCompleteCallback();
 								}
-								useConsoleLog && console.highlight(child.name, {id: group.id}, 'complete');
+								useConsoleLog &&
+									console.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'complete');
 							});
 
 							child.promise.catch(() => {
@@ -196,7 +206,7 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 									child.onRejectCallback();
 								}
 								if (useConsoleLog) {
-									console.highlight(child.name, {id: group.id}, 'rejected');
+									console.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'rejected');
 									console.highlight('completed', {id: group.id}, 'rejected');
 								}
 								reject && reject();
@@ -204,11 +214,15 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 						}
 						// Handle any other unexpected return values
 						else {
-							console.warn('Function did not return a promise');
+							if (console.useConsoleLog) {
+								console.warn('Function did not return a promise');
+							}
 						}
 					}
 					// } catch (error) {
+					// if (console.useConsoleLog) {
 					// 	console.warn('Watch: critical! error in call to (async) function:\n', error);
+					// }
 					// 	if (typeof group.onErrorCallback === 'function') group.onErrorCallback();
 					// 	return;
 					// }
