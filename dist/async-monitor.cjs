@@ -4,6 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var version = '1.1.7';
 
+console.useConsoleLog = false;
 function getCurrentTime() {
     var now = new Date();
     return now.toTimeString().split(' ')[0];
@@ -81,6 +82,8 @@ var originalConsoleLog = console.log;
 var originalConsoleTable = console.table;
 var originalConsoleWarn = console.warn;
 function appendLogToConsole(message, classnames, _id) {
+    if (!console.useConsoleLog)
+        return;
     if (message === null)
         message = '<null>';
     if (message === undefined)
@@ -122,6 +125,8 @@ function appendLogToConsole(message, classnames, _id) {
 }
 console.clear = function () {
     originalConsoleClear();
+    if (!console.useConsoleLog)
+        return;
     var consoleDiv = document.getElementById('console');
     if (consoleDiv) {
         consoleDiv.innerHTML = '';
@@ -1084,7 +1089,6 @@ var Group = /** @class */ (function () {
         if (options === void 0) { options = { repeat: 0, runs: 0 }; }
         var _this = this;
         this.options = { repeat: 0, runs: 0 };
-        this.useConsoleLog = true;
         this._id = Sequence.nextId();
         this._functions = [];
         this._startTime = 0;
@@ -1131,6 +1135,16 @@ var Group = /** @class */ (function () {
         get: function () {
             var _a;
             return this.options.repeat >= 0 ? ((_a = this.options.runs) !== null && _a !== void 0 ? _a : 0) : 0;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "useConsoleLog", {
+        get: function () {
+            return console.useConsoleLog;
+        },
+        set: function (value) {
+            console.useConsoleLog = value;
         },
         enumerable: false,
         configurable: true

@@ -1,5 +1,6 @@
 declare global {
     interface Console {
+        useConsoleLog: boolean;
         highlight(text: RegExp | string, ids: {
             id: number;
             index?: number;
@@ -92,7 +93,8 @@ declare class Group {
     options: GroupOptions;
     get run(): number;
     constructor(options?: GroupOptions);
-    useConsoleLog: boolean;
+    set useConsoleLog(value: boolean);
+    get useConsoleLog(): boolean;
     private _id;
     get id(): number;
     private _functions;
