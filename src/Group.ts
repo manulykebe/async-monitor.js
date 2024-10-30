@@ -23,7 +23,12 @@ export default class Group {
 	constructor(options: GroupOptions = {repeat: 0, runs: 0}) {
 		this.options = options;
 	}
-	useConsoleLog: boolean = true;
+	set useConsoleLog(value: boolean) {
+		console.useConsoleLog = value;
+	}
+	get useConsoleLog(): boolean {
+		return console.useConsoleLog;
+	}
 
 	private _id: number = Sequence.nextId();
 	get id(): number {

@@ -1,12 +1,13 @@
 import version from './Version';
 
-const useConsoleLog = true;
-
 declare global {
 	interface Console {
+		useConsoleLog: boolean;
 		highlight(text: RegExp | string, ids: {id: number; index?: number}, className?: string | string[]): void;
 	}
 }
+
+console.useConsoleLog = false;
 
 function getCurrentTime() {
 	const now = new Date();
@@ -98,7 +99,7 @@ function appendLogToConsole(
 	classnames: string | string[],
 	_id?: number,
 ) {
-	if (!useConsoleLog) return;
+	if (!console.useConsoleLog) return;
 	if (message === null) message = '<null>';
 	if (message === undefined) message = '<undefined>';
 	if (typeof message === 'string' && message.trim() === '') return;
@@ -141,12 +142,11 @@ function appendLogToConsole(
 
 console.clear = function () {
 	originalConsoleClear();
-
+	if (!console.useConsoleLog) return;
 	const consoleDiv = document.getElementById('console');
 	if (consoleDiv) {
 		consoleDiv.innerHTML = '';
 	}
-
 	console.log(`async-monitor.js$${version}`);
 };
 
