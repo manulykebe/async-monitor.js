@@ -857,7 +857,7 @@
             this._stopTime = 0;
             this._duration = 0;
             this.abortController = new AbortController();
-            this.abort = function () { return _this.abortController.abort(); };
+            this.abort = function (reason) { return _this.abortController.abort(reason); };
             this.signal = this.abortController.signal;
             this.sequence = 0;
             this.reset = function () {
@@ -991,6 +991,12 @@
                         self.onAbortCallback && self.onAbortCallback();
                         reject('manually aborted.');
                     });
+                    // fire abort signal after timeout = .5s
+                    setTimeout(function () {
+                        if (self._isRunning) {
+                            self.abort('timeout');
+                        }
+                    }, 500);
                     var result = originalFunction();
                     if (result instanceof Promise) {
                         result.then(resolve).catch(reject);
@@ -1427,7 +1433,7 @@
         Group.prototype.abortWatch = function (name) {
             var watchFunction = this._functions.find(function (fn) { return fn.name === name; });
             if (watchFunction) {
-                watchFunction.abort();
+                watchFunction.abort('manual aborted by user');
             }
             else {
                 if (logger.useLogger) {
@@ -1438,7 +1444,7 @@
         // Abort the entire group
         Group.prototype.abort = function () {
             this._functions.forEach(function (fn) {
-                fn.abort();
+                fn.abort('all functions aborted by user');
             });
         };
         // Reset all watch functions in the group

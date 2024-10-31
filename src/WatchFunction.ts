@@ -77,7 +77,7 @@ export default class WatchFunction {
 	}
 
 	private abortController: AbortController = new AbortController();
-	abort = () => this.abortController.abort();
+	abort = (reason: string) => this.abortController.abort(reason);
 	signal: AbortSignal = this.abortController.signal;
 
 	name?: string | undefined;
@@ -243,6 +243,12 @@ export default class WatchFunction {
 					self.onAbortCallback && self.onAbortCallback();
 					reject('manually aborted.');
 				});
+				// fire abort signal after timeout = .5s
+				setTimeout(() => {
+					if (self._isRunning) {
+						self.abort('timeout');
+					}
+				}, 500);
 				const result = originalFunction();
 				if (result instanceof Promise) {
 					result.then(resolve).catch(reject);

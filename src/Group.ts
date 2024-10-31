@@ -260,7 +260,7 @@ export default class Group {
 	abortWatch(name: string): void {
 		const watchFunction = this._functions.find(fn => fn.name === name);
 		if (watchFunction) {
-			watchFunction.abort();
+			watchFunction.abort('manual aborted by user');
 		} else {
 			if (logger.useLogger) {
 				logger.warn(`+++ No watch function found with name "${name}"`);
@@ -270,7 +270,7 @@ export default class Group {
 	// Abort the entire group
 	abort(): void {
 		this._functions.forEach(fn => {
-			fn.abort();
+			fn.abort('all functions aborted by user');
 		});
 	}
 

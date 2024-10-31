@@ -71,7 +71,7 @@ declare class WatchFunction {
     private _duration;
     get duration(): number;
     private abortController;
-    abort: () => void;
+    abort: (reason: string) => void;
     signal: AbortSignal;
     name?: string | undefined;
     parent?: string | undefined;
