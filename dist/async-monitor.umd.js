@@ -4,7 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
-    var version = '1.1.8';
+    var version = '1.1.9';
 
     function appendLogTologger(message, classnames, _id) {
         if (message === null)

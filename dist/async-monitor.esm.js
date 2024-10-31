@@ -1,4 +1,4 @@
-var version = '1.1.8';
+var version = '1.1.9';
 
 function appendLogTologger(message, classnames, _id) {
     if (message === null)
