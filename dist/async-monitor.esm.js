@@ -1132,6 +1132,7 @@ var Group = /** @class */ (function () {
         this._startTime = 0;
         this._stopTime = 0;
         this._duration = 0;
+        this._timeout = 0;
         this._onStartCallback = function () { };
         this._onStartRunCallback = function () { };
         this._onCompleteCallback = function () { };
@@ -1260,6 +1261,16 @@ var Group = /** @class */ (function () {
     Object.defineProperty(Group.prototype, "duration", {
         get: function () {
             return Math.min(0, this._duration);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Group.prototype, "timeout", {
+        get: function () {
+            return this._timeout;
+        },
+        set: function (value) {
+            this._timeout = value;
         },
         enumerable: false,
         configurable: true
@@ -1461,9 +1472,10 @@ var Group = /** @class */ (function () {
         }
     };
     // Abort the entire group
-    Group.prototype.abort = function () {
+    Group.prototype.abort = function (reason) {
+        if (reason === void 0) { reason = 'all functions aborted by user'; }
         this._functions.forEach(function (fn) {
-            fn.abort('all functions aborted by user');
+            fn.abort(reason);
         });
     };
     // Reset all watch functions in the group
@@ -1478,18 +1490,19 @@ var Group = /** @class */ (function () {
         logger.displayRepeat(this._id, this.options.runs || 0, this.options.repeat);
         logger.clearHighlights(this._id);
     };
-    // Get all functions in the group
-    Group.prototype.getAll = function () {
-        return this._functions;
-    };
-    // Remove all functions from the group
     Group.prototype.removeAll = function () {
         this._functions = [];
     };
-    // Add and remove placeholders
     Group.prototype.add = function () { };
     Group.prototype.remove = function () { };
     Group.prototype.watchAll = function () {
+        var _this = this;
+        if (this.timeout > 0) {
+            setTimeout(function () {
+                logger.warn('timeout on group');
+                _this.abort('timeout on group');
+            }, this.timeout);
+        }
         if (this.functions.length === 0) {
             if (logger.useLogger) {
                 logger.warn('No watch functions found in this group.');

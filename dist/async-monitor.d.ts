@@ -127,6 +127,9 @@ declare class Group {
     set stopTime(value: number);
     private _duration;
     get duration(): number;
+    private _timeout;
+    get timeout(): number;
+    set timeout(value: number);
     name?: string | undefined;
     private _onStartCallback?;
     get onStartCallback(): () => void;
@@ -158,9 +161,8 @@ declare class Group {
     set onErrorCallback(value: () => void);
     addWatch: (addWatchFunction: WatchFunctionOptions | Function) => void;
     abortWatch(name: string): void;
-    abort(): void;
+    abort(reason?: string): void;
     reset(resetRuns?: boolean): void;
-    getAll(): Array<WatchFunction>;
     removeAll(): void;
     add(): void;
     remove(): void;

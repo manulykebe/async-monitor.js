@@ -197,7 +197,6 @@ export default class Tree {
 	// Method to initiate the tree processing and display
 	processTree(data: TreeData[]): string {
 		if (data.length === 0) {
-			debugger;
 			return '<empty tree>';
 		}
 		// Step 1: Build tree

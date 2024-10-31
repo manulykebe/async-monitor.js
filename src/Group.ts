@@ -25,6 +25,7 @@ export default class Group {
 	}
 	constructor(options: GroupOptionsRepeat = {repeat: 0}) {
 		this.options = {...options, runs: 0};
+
 		asyncMonitor.push(this);
 	}
 	set useLogger(value: boolean) {
@@ -78,6 +79,14 @@ export default class Group {
 	private _duration: number = 0;
 	get duration(): number {
 		return Math.min(0, this._duration);
+	}
+
+	private _timeout: number = 0;
+	get timeout(): number {
+		return this._timeout;
+	}
+	set timeout(value: number) {
+		this._timeout = value;
 	}
 
 	name?: string | undefined;
@@ -268,9 +277,9 @@ export default class Group {
 		}
 	}
 	// Abort the entire group
-	abort(): void {
+	abort(reason: string = 'all functions aborted by user'): void {
 		this._functions.forEach(fn => {
-			fn.abort('all functions aborted by user');
+			fn.abort(reason);
 		});
 	}
 
@@ -286,21 +295,21 @@ export default class Group {
 		logger.clearHighlights(this._id);
 	}
 
-	// Get all functions in the group
-	getAll(): Array<WatchFunction> {
-		return this._functions;
-	}
-
-	// Remove all functions from the group
 	removeAll(): void {
 		this._functions = [];
 	}
 
-	// Add and remove placeholders
 	add(): void {}
 	remove(): void {}
 
 	watchAll(): Promise<void> | void {
+		if (this.timeout > 0) {
+			setTimeout(() => {
+				logger.warn('timeout on group');
+				this.abort('timeout on group');
+			}, this.timeout);
+		}
+
 		if (this.functions.length === 0) {
 			if (logger.useLogger) {
 				logger.warn('No watch functions found in this group.');
