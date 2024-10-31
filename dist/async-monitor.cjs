@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var version = '1.1.8';
 
-console.useConsoleLog = false;
+console.useConsoleLog = true;
 function getCurrentTime() {
     var now = new Date();
     return now.toTimeString().split(' ')[0];

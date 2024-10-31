@@ -7,7 +7,7 @@ declare global {
 	}
 }
 
-console.useConsoleLog = false;
+console.useConsoleLog = true;
 
 function getCurrentTime() {
 	const now = new Date();

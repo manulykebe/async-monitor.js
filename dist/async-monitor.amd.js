@@ -2,7 +2,7 @@ define(['exports'], (function (exports) { 'use strict';
 
     var version = '1.1.8';
 
-    console.useConsoleLog = false;
+    console.useConsoleLog = true;
     function getCurrentTime() {
         var now = new Date();
         return now.toTimeString().split(' ')[0];
