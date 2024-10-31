@@ -10,7 +10,9 @@ const regexRepeat = (repeat: number): RegExp => {
 	const length = repeat.toString().length;
 	return new RegExp(`\\s{${length}}1\\/${repeat}\\s`);
 };
-
+interface GroupOptionsRepeat {
+	repeat: number;
+}
 interface GroupOptions {
 	repeat: number;
 	runs: number;
@@ -19,10 +21,10 @@ interface GroupOptions {
 export default class Group {
 	options: GroupOptions = {repeat: 0, runs: 0};
 	get run(): number {
-		return this.options.repeat >= 0 ? (this.options.runs ?? 0) : 0;
+		return this.options.repeat >= 0 ? this.options.runs! : 0;
 	}
-	constructor(options: GroupOptions = {repeat: 0, runs: 0}) {
-		this.options = options;
+	constructor(options: GroupOptionsRepeat = {repeat: 0}) {
+		// this.options = {...options, runs: options.runs ?? 0};
 		asyncMonitor.push(this);
 	}
 	set useLogger(value: boolean) {
@@ -280,7 +282,7 @@ export default class Group {
 		if (resetRuns) {
 			this.options.runs = 1;
 		}
-		logger.displayRepeat(this._id, this.options.runs, this.options.repeat);
+		logger.displayRepeat(this._id, this.options.runs || 0, this.options.repeat);
 		logger.clearHighlights(this._id);
 	}
 

@@ -94,6 +94,9 @@ declare class WatchFunction {
     constructor(arg: WatchFunctionOptions | (() => Promise<any> | void) | (() => {}), name?: string | undefined, parent?: string | undefined, child?: string | undefined, onStartCallback?: () => void, onCompleteCallback?: () => void, onRejectCallback?: () => void, onAbortCallback?: () => void, onErrorCallback?: () => void);
 }
 
+interface GroupOptionsRepeat {
+    repeat: number;
+}
 interface GroupOptions {
     repeat: number;
     runs: number;
@@ -101,7 +104,7 @@ interface GroupOptions {
 declare class Group {
     options: GroupOptions;
     get run(): number;
-    constructor(options?: GroupOptions);
+    constructor(options?: GroupOptionsRepeat);
     set useLogger(value: boolean);
     get useLogger(): boolean;
     private _id;

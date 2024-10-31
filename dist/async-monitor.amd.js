@@ -1096,7 +1096,6 @@ define(['exports'], (function (exports) { 'use strict';
     };
     var Group = /** @class */ (function () {
         function Group(options) {
-            if (options === void 0) { options = { repeat: 0, runs: 0 }; }
             var _this = this;
             this.options = { repeat: 0, runs: 0 };
             this._id = Sequence.nextId();
@@ -1139,13 +1138,12 @@ define(['exports'], (function (exports) { 'use strict';
                 watchFunction.group = _this;
                 _this._functions.push(watchFunction);
             };
-            this.options = options;
+            // this.options = {...options, runs: options.runs ?? 0};
             asyncMonitor.push(this);
         }
         Object.defineProperty(Group.prototype, "run", {
             get: function () {
-                var _a;
-                return this.options.repeat >= 0 ? ((_a = this.options.runs) !== null && _a !== void 0 ? _a : 0) : 0;
+                return this.options.repeat >= 0 ? this.options.runs : 0;
             },
             enumerable: false,
             configurable: true
@@ -1448,7 +1446,7 @@ define(['exports'], (function (exports) { 'use strict';
             if (resetRuns) {
                 this.options.runs = 1;
             }
-            logger.displayRepeat(this._id, this.options.runs, this.options.repeat);
+            logger.displayRepeat(this._id, this.options.runs || 0, this.options.repeat);
             logger.clearHighlights(this._id);
         };
         // Get all functions in the group
