@@ -23,9 +23,7 @@
 				const currentTarget = event.currentTarget;
 				if (currentTarget) {
 					const span = currentTarget.parentElement;
-					const group = document['async-monitor-groups'].find(
-						g => g._id === parseInt(span.getAttribute('data-monitor-tree')),
-					);
+					const group = asyncMonitor.find(g => g._id === parseInt(span.getAttribute('data-monitor-tree')));
 					if (group) {
 						const index = parseInt(span.getAttribute('data-monitor-index'));
 						if (isNaN(index) || index === 0) {
@@ -65,6 +63,6 @@
 				<button id="demo00" onclick="document['demo_demo00']()">demo00</button>
 			</div>
 		</div>
-		<div id="console"></div>
+		<div id="logger"></div>
 	</body>
 </html>

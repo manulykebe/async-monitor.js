@@ -1,12 +1,20 @@
-declare global {
-    interface Console {
-        useConsoleLog: boolean;
-        highlight(text: RegExp | string, ids: {
-            id: number;
-            index?: number;
-        }, className?: string | string[]): void;
-    }
+declare class Logger {
+    useLogger: boolean;
+    constructor(useLogger?: boolean);
+    clear(): void;
+    log(message: any, classnames?: string | string[]): void;
+    warn(message: any, _id?: number): void;
+    error(message: any, _id?: number): void;
+    group(label: string, _id?: number): void;
+    table(data: Record<string, any> | Array<Record<string, any>>): void;
+    highlight(text: RegExp | string, ids: {
+        id: number;
+        index?: number;
+    }, className?: string | string[]): void;
+    clearHighlights(_id: number): void;
+    displayRepeat(_id: number, runsNo: number, repeatNo: number): void;
 }
+declare const logger: Logger;
 
 /**
  * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
@@ -94,8 +102,8 @@ declare class Group {
     options: GroupOptions;
     get run(): number;
     constructor(options?: GroupOptions);
-    set useConsoleLog(value: boolean);
-    get useConsoleLog(): boolean;
+    set useLogger(value: boolean);
+    get useLogger(): boolean;
     private _id;
     get id(): number;
     private _functions;
@@ -151,11 +159,9 @@ declare class Group {
     add(): void;
     remove(): void;
     watchAll(): Promise<void> | void;
-    get consoleTree(): string;
+    get loggerTree(): string;
     get metrics(): Metric[];
 }
-
-declare const now: () => number;
 
 /**
  * Sequence
@@ -205,18 +211,33 @@ declare class Watch {
 }
 
 declare const nextId: typeof Sequence.nextId;
+declare const asyncMonitor: Group[];
 
 declare const _default: {
     Group: typeof Group;
-    now: () => number;
-    Sequence: typeof Sequence;
-    nextId: typeof Sequence.nextId;
+    logger: {
+        useLogger: boolean;
+        clear(): void;
+        log(message: any, classnames?: string | string[]): void;
+        warn(message: any, _id?: number): void;
+        error(message: any, _id?: number): void;
+        group(label: string, _id?: number): void;
+        table(data: Record<string, any> | Array<Record<string, any>>): void;
+        highlight(text: RegExp | string, ids: {
+            id: number;
+            index?: number;
+        }, className?: string | string[]): void;
+        clearHighlights(_id: number): void;
+        displayRepeat(_id: number, runsNo: number, repeatNo: number): void;
+    };
     Monitor: typeof Monitor;
-    version: string;
-    Watch: typeof Watch;
+    nextId: typeof Sequence.nextId;
+    Sequence: typeof Sequence;
     sleep: typeof sleep;
     Tree: typeof Tree;
+    version: string;
+    Watch: typeof Watch;
     WatchFunction: typeof WatchFunction;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, WatchFunction, _default as default, nextId, now, sleep, version };
+export { Group, Monitor, Sequence, Tree, Watch, WatchFunction, asyncMonitor, _default as default, logger, nextId, sleep, version };

@@ -3,7 +3,8 @@ import Tree from './Tree';
 import now, {calcDuration} from './Now';
 import WatchFunction, {WatchFunctionOptions, Metric} from './WatchFunction';
 import Sequence from './Sequence';
-import {clearHighlights, displayRepeat} from './Console';
+import {logger} from './Logger';
+import {asyncMonitor} from './Index';
 
 const regexRepeat = (repeat: number): RegExp => {
 	const length = repeat.toString().length;
@@ -22,12 +23,13 @@ export default class Group {
 	}
 	constructor(options: GroupOptions = {repeat: 0, runs: 0}) {
 		this.options = options;
+		asyncMonitor.push(this);
 	}
-	set useConsoleLog(value: boolean) {
-		console.useConsoleLog = value;
+	set useLogger(value: boolean) {
+		logger.useLogger = value;
 	}
-	get useConsoleLog(): boolean {
-		return console.useConsoleLog;
+	get useLogger(): boolean {
+		return logger.useLogger;
 	}
 
 	private _id: number = Sequence.nextId();
@@ -87,11 +89,11 @@ export default class Group {
 				this.options.runs = 1;
 			}
 
-			if (this.useConsoleLog) {
-				console.log(`*** START "${this.name ?? 'Group#' + this.id}" ***`);
-				console.highlight('completed', {id: this._id}, 'start');
-				console.highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
+			if (this.useLogger) {
+				logger.log(`*** START "${this.name ?? 'Group#' + this.id}" ***`);
 			}
+			logger.highlight('completed', {id: this._id}, 'start');
+			logger.highlight(regexRepeat(this.options.repeat), {id: this._id}, ['start', 'repeat']);
 
 			this._onStartCallback!();
 		};
@@ -104,8 +106,8 @@ export default class Group {
 	get onStartRunCallback(): () => void {
 		return () => {
 			if (this.isRunning) return;
-			if (this.useConsoleLog) {
-				console.log(`*** RUN "${this.run}" STARTED ***`);
+			if (this.useLogger) {
+				logger.log(`*** RUN "${this.run}" STARTED ***`);
 			}
 			this._onStartRunCallback!();
 		};
@@ -120,12 +122,11 @@ export default class Group {
 			this._onCompleteCallback!();
 
 			this.stopTime = now();
-			if (this.useConsoleLog) {
-				console.log(`*** COMPLETED "${this.name ?? 'Group#' + this.id}" ***`);
-				console.highlight('completed', {id: this._id}, 'complete');
-				console.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
-				console.groupEnd();
+			if (this.useLogger) {
+				logger.log(`*** COMPLETED "${this.name ?? 'Group#' + this.id}" ***`);
 			}
+			logger.highlight('completed', {id: this._id}, 'complete');
+			logger.highlight(' ' + this.options.repeat + '/' + this.options.repeat + ' ', {id: this._id}, ['complete']);
 		};
 	}
 	set onCompleteCallback(value: () => void) {
@@ -135,8 +136,8 @@ export default class Group {
 	private _onCompleteRunCallback?: () => void = () => {};
 	get onCompleteRunCallback(): () => void {
 		return () => {
-			if (this.useConsoleLog) {
-				console.log(`*** RUN "${this.run}" COMPLETED ***`);
+			if (this.useLogger) {
+				logger.log(`*** RUN "${this.run}" COMPLETED ***`);
 			}
 			this._onCompleteRunCallback!();
 		};
@@ -150,12 +151,11 @@ export default class Group {
 		return () => {
 			this.stopTime = now();
 
-			if (this.useConsoleLog) {
-				console.log(`*** REJECTED "${this.name ?? 'Group#' + this.id}" ***`);
-				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
-				console.groupEnd();
-				console.log(this.metrics);
+			if (this.useLogger) {
+				logger.log(`*** REJECTED "${this.name ?? 'Group#' + this.id}" ***`);
+				logger.log(this.metrics);
 			}
+			logger.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 			this._onRejectCallback?.();
 		};
 	}
@@ -168,12 +168,11 @@ export default class Group {
 		return () => {
 			this.stopTime = now();
 
-			if (this.useConsoleLog) {
-				console.log(`*** REJECTED RUN "${this.run}" ***`);
-				console.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
-				console.groupEnd();
-				console.log(this.metrics);
+			if (this.useLogger) {
+				logger.log(`*** REJECTED RUN "${this.run}" ***`);
+				logger.log(this.metrics);
 			}
+			logger.highlight('completed', {id: this._id, index: this.sequence}, 'complete');
 			this._onRejectRunCallback?.();
 		};
 	}
@@ -187,11 +186,10 @@ export default class Group {
 			this.stopTime = now();
 
 			if (this.isAborted) return;
-			if (this.useConsoleLog) {
-				console.log(`*** ABORTED GROUP "${this.name ?? 'Group#' + this.id}" ***`);
-				console.highlight('completed', {id: this._id}, 'aborted');
-				console.groupEnd();
+			if (this.useLogger) {
+				logger.log(`*** ABORTED GROUP "${this.name ?? 'Group#' + this.id}" ***`);
 			}
+			logger.highlight('completed', {id: this._id}, 'aborted');
 			if (typeof this._onAbortCallback === 'function') {
 				this._onAbortCallback();
 			}
@@ -206,11 +204,10 @@ export default class Group {
 		return () => {
 			this.stopTime = now();
 
-			if (this.useConsoleLog) {
-				console.log(`*** ABORTED RUN "${this.run}" ***`);
-				console.highlight('completed', {id: this._id}, 'aborted');
-				console.groupEnd();
+			if (this.useLogger) {
+				logger.log(`*** ABORTED RUN "${this.run}" ***`);
 			}
+			logger.highlight('completed', {id: this._id}, 'aborted');
 			this._onAbortRunCallback?.();
 		};
 	}
@@ -223,8 +220,8 @@ export default class Group {
 	private _onErrorCallback: () => void = () => {};
 	get onErrorCallback(): () => void {
 		return () => {
-			if (this.useConsoleLog) {
-				console.log(`*** ERROR in group "${this.name || this._id}" ***`);
+			if (this.useLogger) {
+				logger.log(`*** ERROR in group "${this.name || this._id}" ***`);
 			}
 			this._onErrorCallback();
 		};
@@ -263,8 +260,8 @@ export default class Group {
 		if (watchFunction) {
 			watchFunction.abort();
 		} else {
-			if (console.useConsoleLog) {
-				console.warn(`+++ No watch function found with name "${name}"`);
+			if (logger.useLogger) {
+				logger.warn(`+++ No watch function found with name "${name}"`);
 			}
 		}
 	}
@@ -283,8 +280,8 @@ export default class Group {
 		if (resetRuns) {
 			this.options.runs = 1;
 		}
-		displayRepeat(this._id, this.options.runs, this.options.repeat);
-		clearHighlights(this._id);
+		logger.displayRepeat(this._id, this.options.runs, this.options.repeat);
+		logger.clearHighlights(this._id);
 	}
 
 	// Get all functions in the group
@@ -303,24 +300,24 @@ export default class Group {
 
 	watchAll(): Promise<void> | void {
 		if (this.functions.length === 0) {
-			if (console.useConsoleLog) {
-				console.warn('No watch functions found in this group.');
+			if (logger.useLogger) {
+				logger.warn('No watch functions found in this group.');
 			}
 			return new Promise<void>((resolve, reject) => {
 				reject('No watch functions found in this group.');
 			});
 		}
 		if (this.isProcessed) {
-			if (console.useConsoleLog) {
-				console.warn('This watchAll group has already been processed.');
+			if (logger.useLogger) {
+				logger.warn('This watchAll group has already been processed.');
 			}
 			return new Promise<void>((resolve, reject) => {
 				reject('This watchAll group has already been processed.');
 			});
 		}
 		if (this.isRunning) {
-			if (console.useConsoleLog) {
-				console.warn('This watchAll group is already being monitored.');
+			if (logger.useLogger) {
+				logger.warn('This watchAll group is already being monitored.');
 			}
 			return new Promise<void>((resolve, reject) => {
 				reject('This watchAll group is already being monitored.');
@@ -333,7 +330,7 @@ export default class Group {
 		return watchAll(this);
 	}
 
-	get consoleTree(): string {
+	get loggerTree(): string {
 		const treeData = this._functions.map(f => {
 			return {name: f.name, parent: f.parent, child: f.child};
 		});

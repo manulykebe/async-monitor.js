@@ -8,7 +8,7 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version} = module;
+	const {Group, Tree, sleep, version, logger} = module;
 	const demo03 = new Group();
 
 	demo03.addWatch({
@@ -17,10 +17,10 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("preparation step")');
+			logger.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("preparation step")');
+			logger.log('++++onCompleteCallback("preparation step")');
 		},
 	});
 
@@ -30,10 +30,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s1")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 		},
 	});
 
@@ -43,10 +43,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s2")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 		},
 	});
 
@@ -56,10 +56,10 @@ const importModule = async () => {
 		child: 'c',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("build snowflake from s1 and s2")');
+			logger.log('++++onStartCallback("build snowflake from s1 and s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake from s1 and s2")');
+			logger.log('++++onCompleteCallback("build snowflake from s1 and s2")');
 		},
 	});
 
@@ -69,10 +69,10 @@ const importModule = async () => {
 		child: 'x',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("publish snowflake s1 and s2")');
+			logger.log('++++onStartCallback("publish snowflake s1 and s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("publish snowflake s1 and s2")');
+			logger.log('++++onCompleteCallback("publish snowflake s1 and s2")');
 		},
 	});
 
@@ -82,10 +82,10 @@ const importModule = async () => {
 		child: 'd',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s3")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 		},
 	});
 
@@ -95,10 +95,10 @@ const importModule = async () => {
 		child: 'e',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("build snowflake from s3")');
+			logger.log('++++onStartCallback("build snowflake from s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake from s3")');
+			logger.log('++++onCompleteCallback("build snowflake from s3")');
 		},
 	});
 
@@ -108,10 +108,10 @@ const importModule = async () => {
 		child: 'f',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("publish snowflake s3")');
+			logger.log('++++onStartCallback("publish snowflake s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("publish snowflake s3")');
+			logger.log('++++onCompleteCallback("publish snowflake s3")');
 		},
 	});
 
@@ -137,8 +137,8 @@ const importModule = async () => {
 	};
 
 	function demo_demo03() {
-		console.clear();
-		console.log(demo03.consoleTree, ['tree', `tree-${demo03._id}`]);
+		logger.clear();
+		logger.log(demo03.loggerTree, ['tree', `tree-${demo03._id}`]);
 
 		demo03.reset();
 		// demo03._onCompleteCallback = () => {

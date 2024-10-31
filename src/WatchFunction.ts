@@ -2,6 +2,8 @@ import Group from './Group';
 import now, {calcDuration} from './Now';
 import Sequence from './Sequence';
 
+import {logger} from './Logger';
+
 export type Metric = {
 	id: number;
 	name: string;
@@ -150,9 +152,7 @@ export default class WatchFunction {
 			this.onStartCallback = function () {
 				this._isRunning = true;
 				this._startTime = now();
-				if (console.useConsoleLog) {
-					console.log(`──"${this.name}" has started.`);
-				}
+				if (logger.useLogger) logger.log(`──"${this.name}" has started.`);
 				if (arg.onStartCallback) arg.onStartCallback!();
 			};
 
@@ -161,9 +161,7 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				if (console.useConsoleLog) {
-					console.log(`──"${this.name}" has completed.`);
-				}
+				if (logger.useLogger) logger.log(`──"${this.name}" has completed.`);
 				if (arg.onCompleteCallback) arg.onCompleteCallback!();
 			};
 
@@ -175,9 +173,7 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				if (console.useConsoleLog) {
-					console.warn(`──"${this.name}" was rejected.`);
-				}
+				if (logger.useLogger) logger.warn(`──"${this.name}" was rejected.`);
 				if (arg.onRejectCallback) arg.onRejectCallback!();
 			};
 			this.onAbortCallback = function () {
@@ -191,9 +187,7 @@ export default class WatchFunction {
 				this._isRunning = false;
 				this._stopTime = now();
 				this._duration = calcDuration(this._startTime, this._stopTime);
-				if (console.useConsoleLog) {
-					console.warn(`──"${this.name}" was aborted.`);
-				}
+				if (logger.useLogger) logger.warn(`──"${this.name}" was aborted.`);
 			};
 		} else {
 			this.f = () => {
@@ -207,9 +201,7 @@ export default class WatchFunction {
 				this.onStartCallback = function () {
 					this._isRunning = true;
 					this._startTime = now();
-					if (console.useConsoleLog) {
-						console.log(`"${this.name}" has started.`);
-					}
+					if (logger.useLogger) logger.log(`"${this.name}" has started.`);
 					onStartCallback();
 				};
 			if (onCompleteCallback)
@@ -218,9 +210,7 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					if (console.useConsoleLog) {
-						console.log(`"${this.name}" has completed.`);
-					}
+					if (logger.useLogger) logger.log(`"${this.name}" has completed.`);
 					onCompleteCallback();
 				};
 			if (onRejectCallback)
@@ -229,9 +219,7 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					if (console.useConsoleLog) {
-						console.warn(`"${this.name}" was rejected.`);
-					}
+					if (logger.useLogger) logger.warn(`"${this.name}" was rejected.`);
 					onRejectCallback();
 				};
 			if (onAbortCallback)
@@ -241,9 +229,7 @@ export default class WatchFunction {
 					this._isRunning = false;
 					this._stopTime = now();
 					this._duration = calcDuration(this._startTime, this._stopTime);
-					if (console.useConsoleLog) {
-						console.warn(`"${this.name}" was aborted d.`);
-					}
+					if (logger.useLogger) logger.warn(`"${this.name}" was aborted d.`);
 					self.onAbortCallback && self.onAbortCallback();
 				};
 		}

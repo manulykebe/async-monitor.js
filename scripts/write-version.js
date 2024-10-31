@@ -5,7 +5,7 @@ const {version} = pkg;
 
 function handleError(error) {
 	if (error) {
-		console.error(error);
+		logger.error(error);
 		process.exit(1);
 	}
 }

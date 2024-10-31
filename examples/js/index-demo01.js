@@ -7,11 +7,10 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version} = module;
+	const {Group, Tree, sleep, version, logger} = module;
 
 	const demo01 = new Group({repeat: 3});
 	demo01.name = '3 paralle tasks, followed by a single task';
-
 	const sample = 1;
 	if (sample === 2) {
 		demo01.addWatch(() => {
@@ -24,7 +23,7 @@ const importModule = async () => {
 			return sleep(undefined, false);
 		});
 		demo01.addWatch(() => {
-			return console.log('yeddllo!');
+			return logger.log('yeddllo!');
 		});
 		demo01.addWatch(() => {
 			return sleep(undefined, false);
@@ -37,16 +36,16 @@ const importModule = async () => {
 			child: 'a',
 			f: () => sleep(undefined, false),
 			onStartCallback: function () {
-				// console.log('++++onStartCallback("preparation step")');
+				// logger.log('++++onStartCallback("preparation step")');
 			},
 			onCompleteCallback: function () {
-				// console.log('++++onCompleteCallback("preparation step")');
+				// logger.log('++++onCompleteCallback("preparation step")');
 			},
 			onRejectCallback: function () {
-				console.warn('++++onRejectCallback("preparation step")');
+				logger.warn('++++onRejectCallback("preparation step")');
 			},
 			onAbortCallback: function () {
-				console.warn('++++onAbortCallback("preparation step")');
+				logger.warn('++++onAbortCallback("preparation step")');
 			},
 		});
 
@@ -56,13 +55,13 @@ const importModule = async () => {
 			child: 'b',
 			f: () => sleep(undefined, false),
 			onStartCallback: function () {
-				// console.log('++++onStartCallback("fetch data from ETL store: s1")');
+				// logger.log('++++onStartCallback("fetch data from ETL store: s1")');
 			},
 			onCompleteCallback: function () {
-				// console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+				// logger.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 			},
 			onRejectCallback: function () {
-				console.warn('++++onRejectCallback("fetch data from ETL store: s1")');
+				logger.warn('++++onRejectCallback("fetch data from ETL store: s1")');
 			},
 		});
 
@@ -72,13 +71,13 @@ const importModule = async () => {
 			child: 'x',
 			f: () => sleep(undefined, false),
 			onStartCallback: function () {
-				// console.log('++++onStartCallback("fetch data from ETL store: s2")');
+				// logger.log('++++onStartCallback("fetch data from ETL store: s2")');
 			},
 			onCompleteCallback: function () {
-				// console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+				// logger.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 			},
 			onRejectCallback: function () {
-				console.warn('++++onRejectCallback("fetch data from ETL store: s2")');
+				logger.warn('++++onRejectCallback("fetch data from ETL store: s2")');
 			},
 		});
 
@@ -88,10 +87,10 @@ const importModule = async () => {
 			child: 'b',
 			f: () => sleep(undefined, false),
 			onStartCallback: function () {
-				// console.log('++++onStartCallback("fetch data from ETL store: s3")');
+				// logger.log('++++onStartCallback("fetch data from ETL store: s3")');
 			},
 			onCompleteCallback: function () {
-				// console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+				// logger.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 			},
 		});
 
@@ -100,10 +99,10 @@ const importModule = async () => {
 			parent: 'b',
 			f: () => sleep(undefined, false),
 			onStartCallback: function () {
-				// console.log('++++onStartCallback("build snowflake")');
+				// logger.log('++++onStartCallback("build snowflake")');
 			},
 			onCompleteCallback: function () {
-				// console.log('++++onCompleteCallback("build snowflake")');
+				// logger.log('++++onCompleteCallback("build snowflake")');
 			},
 		});
 	}
@@ -114,7 +113,7 @@ const importModule = async () => {
 		button.innerText = 'onStart';
 	};
 	demo01.onStartRunCallback = function () {
-		console.log(`this.run: ${this.run}`);
+		logger.log(`this.run: ${this.run}`);
 	};
 	demo01.onCompleteCallback = function () {
 		const button = document.getElementById('demo01');
@@ -122,37 +121,37 @@ const importModule = async () => {
 		button.innerText = 'onComplete';
 	};
 	demo01.onCompleteRunCallback = function () {
-		console.log(`this.run: ${this.run} - finished`);
-		console.log(this.metrics);
+		logger.log(`this.run: ${this.run} - finished`);
+		logger.log(this.metrics);
 	};
 	demo01.onRejectCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onReject';
-		console.log('GROUP ++++onRejectCallback("demo01")');
+		logger.log('GROUP ++++onRejectCallback("demo01")');
 	};
 	demo01.onAbortCallback = function () {
 		const button = document.getElementById('demo01');
 		button.disabled = false;
 		button.innerText = 'onAbort';
-		console.warn('GROUP ++++onAbortCallback("demo01")');
+		logger.warn('GROUP ++++onAbortCallback("demo01")');
 	};
 
 	function demo_demo01() {
-		console.clear();
-		console.log(demo01.consoleTree, ['tree', `tree-${demo01._id}`]);
+		logger.clear();
+		logger.log(demo01.loggerTree, ['tree', `tree-${demo01._id}`]);
 
 		demo01.reset();
 		demo01
 			.watchAll()
 			.then(() => {
-				console.log('++++onCompleteCallback("demo01")-> THEN');
+				logger.log('++++onCompleteCallback("demo01")-> THEN');
 			})
 			.catch(() => {
-				console.log('++++onCompleteCallback("demo01")-> CATCH');
+				logger.log('++++onCompleteCallback("demo01")-> CATCH');
 			})
 			.finally(() => {
-				console.log('++++onCompleteCallback("demo01")-> FINALLY');
+				logger.log('++++onCompleteCallback("demo01")-> FINALLY');
 			});
 	}
 

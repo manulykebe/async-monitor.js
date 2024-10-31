@@ -31,8 +31,8 @@ export async function sleep(seconds: number = Math.random() * 3, fail?: boolean 
  * @example
  * const sleepPromiseWithAbort = sleepWithAbort(2, false);
  * sleepPromiseWithAbort
- *   .then((result) => console.log(`Resolved after ${result / 1000} seconds`))
- *   .catch((error) => console.error(error.message));
+ *   .then((result) => logger.log(`Resolved after ${result / 1000} seconds`))
+ *   .catch((error) => logger.error(error.message));
  *
  * // Abort the sleep after 1 second
  * setTimeout(() => {

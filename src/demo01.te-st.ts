@@ -1,17 +1,17 @@
-import {Group, Tree, sleep} from './Index';
+import {Group, sleep} from './Index';
 
 describe('addWatch: add a function', () => {
 	let mixedWatches: Group;
 
 	beforeEach(() => {
 		mixedWatches = new Group();
-		mixedWatches.useConsoleLog = false;
+		mixedWatches.useLogger = false;
 	});
 
 	test('should produce correct tree: 2 sequential functions', async () => {
 		mixedWatches.addWatch(() => sleep(undefined, false));
 		mixedWatches.addWatch(() => sleep(undefined, false));
-		const treeOutput = mixedWatches.consoleTree;
+		const treeOutput = mixedWatches.loggerTree;
 
 		const expectedOutput = [
 			'─── watch-function-1',
@@ -29,7 +29,7 @@ describe('addWatch: add a function', () => {
 		mixedWatches.addWatch(() => sleep(undefined, false));
 		mixedWatches.addWatch(() => sleep(undefined, false));
 		mixedWatches.addWatch(() => sleep(undefined, false));
-		const treeOutput = mixedWatches.consoleTree;
+		const treeOutput = mixedWatches.loggerTree;
 
 		const expectedOutput = [
 			'─── watch-function-1',

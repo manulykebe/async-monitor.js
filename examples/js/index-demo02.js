@@ -8,7 +8,7 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version} = module;
+	const {Group, Tree, sleep, version, logger} = module;
 	// const demo02 = new Group({repeat: 7});
 	const demo02 = new Group({repeat: 0});
 	demo02.name = '5 tasks in sequence';
@@ -18,10 +18,10 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("preparation step")');
+			logger.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("preparation step")');
+			logger.log('++++onCompleteCallback("preparation step")');
 		},
 	});
 
@@ -29,10 +29,10 @@ const importModule = async () => {
 		name: 'fetch data from ETL store: s1',
 		parent: 'a',
 		child: 'b',
-		// f: () => console.log('not a promise'),
+		// f: () => logger.log('not a promise'),
 		f: () => sleep(undefined, false),
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 		},
 	});
 
@@ -42,7 +42,7 @@ const importModule = async () => {
 		child: 'c',
 		f: () => sleep(undefined, false),
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 		},
 	});
 
@@ -52,7 +52,7 @@ const importModule = async () => {
 		child: 'd',
 		f: () => sleep(undefined, false),
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 		},
 	});
 
@@ -61,7 +61,7 @@ const importModule = async () => {
 		parent: 'd',
 		f: () => sleep(undefined, false),
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake")');
+			logger.log('++++onCompleteCallback("build snowflake")');
 		},
 	});
 
@@ -74,7 +74,7 @@ const importModule = async () => {
 		const button = document.getElementById('demo02');
 		button.disabled = false;
 		button.innerText = 'onComplete';
-		console.log(this.metrics);
+		logger.log(this.metrics);
 	};
 	demo02.onRejectCallback = function () {
 		const button = document.getElementById('demo02');
@@ -88,8 +88,8 @@ const importModule = async () => {
 	};
 
 	function demo_demo02() {
-		console.clear();
-		console.log(demo02.consoleTree, ['tree', `tree-${demo02._id}`]);
+		logger.clear();
+		logger.log(demo02.loggerTree, ['tree', `tree-${demo02._id}`]);
 
 		demo02.reset();
 		demo02.watchAll();

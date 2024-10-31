@@ -69,7 +69,7 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version} = module;
+	const {Group, Tree, sleep, version, logger} = module;
 
 	function generateLetterSequence(startLetter, offset) {
 		const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -95,7 +95,7 @@ const importModule = async () => {
 
 	function buildTree(numberOfNodes, demo) {
 		if (numberOfNodes < 1) {
-			console.error('Number of nodes should be at least 1');
+			logger.error('Number of nodes should be at least 1');
 			return;
 		}
 
@@ -126,10 +126,10 @@ const importModule = async () => {
 				child: i === numberOfNodes - 1 ? undefined : childLetter, // Last node has no child
 				f: () => sleep(undefined, false),
 				onStartCallback: function () {
-					// console.log(`++++onStartCallback("${this.name}")`);
+					// logger.log(`++++onStartCallback("${this.name}")`);
 				},
 				onCompleteCallback: function () {
-					// console.log(`++++onCompleteCallback("${this.name}")`);
+					// logger.log(`++++onCompleteCallback("${this.name}")`);
 				},
 			};
 			demo.addWatch(node);
@@ -197,18 +197,18 @@ const importModule = async () => {
 	});
 
 	function demo_demo00() {
-		console.clear();
+		logger.clear();
 		demo00.reset();
 		demo97.reset();
 		demo98.reset();
 		demo99.reset();
-		console.log(demo00.consoleTree, ['tree', `tree-${demo00._id}`]);
-		console.log(demo97.consoleTree, ['tree', `tree-${demo97._id}`]);
-		console.log(demo98.consoleTree, ['tree', `tree-${demo98._id}`]);
-		console.log(demo99.consoleTree, ['tree', `tree-${demo99._id}`]);
+		logger.log(demo00.loggerTree, ['tree', `tree-${demo00._id}`]);
+		logger.log(demo97.loggerTree, ['tree', `tree-${demo97._id}`]);
+		logger.log(demo98.loggerTree, ['tree', `tree-${demo98._id}`]);
+		logger.log(demo99.loggerTree, ['tree', `tree-${demo99._id}`]);
 		demo00.watchAll(
-			() => console.log('All done!'),
-			() => console.log('Error!'),
+			() => logger.log('All done!'),
+			() => logger.log('Error!'),
 		);
 	}
 

@@ -1,30 +1,34 @@
-import './Console';
+import './Logger';
 
 import {sleep} from './Sleep';
 import Group from './Group';
-import now from './Now';
 import Sequence from './Sequence';
 import Tree from './Tree';
 import Monitor from './Monitor';
 import version from './Version';
 import {Watch} from './Watch';
 import WatchFunction from './WatchFunction';
+import {logger} from './Logger';
 
 const nextId = Sequence.nextId;
+// Create the asyncMonitor array
+export const asyncMonitor: Group[] = [];
+// Attach asyncMonitor to the global window object
+(window as any).asyncMonitor = asyncMonitor;
 // Directly export the items as named exports
-export {Group, now, Sequence, nextId, Monitor, version, Watch, sleep, Tree, WatchFunction};
+export {Group, logger, Sequence, nextId, Monitor, version, Watch, sleep, Tree, WatchFunction};
 // Export types and interfaces.
 
 // Use default export if necessary
 export default {
 	Group,
-	now,
-	Sequence,
-	nextId,
+	logger,
 	Monitor,
-	version,
-	Watch,
+	nextId,
+	Sequence,
 	sleep,
 	Tree,
+	version,
+	Watch,
 	WatchFunction,
 };

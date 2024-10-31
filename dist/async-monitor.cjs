@@ -4,10 +4,45 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var version = '1.1.8';
 
-console.useConsoleLog = true;
-function getCurrentTime() {
-    var now = new Date();
-    return now.toTimeString().split(' ')[0];
+function appendLogTologger(message, classnames, _id) {
+    if (message === null)
+        message = '<null>';
+    if (message === undefined)
+        message = '<undefined>';
+    if (typeof message === 'string' && message.trim() === '')
+        return;
+    var loggerDiv = document.getElementById('logger');
+    if (loggerDiv) {
+        var logEntry = document.createElement('div');
+        logEntry.classList.add('log-entry');
+        var timeCol = document.createElement('div');
+        timeCol.classList.add('log-time');
+        timeCol.textContent = getCurrentTime();
+        var messageCol = document.createElement('div');
+        messageCol.classList.add('log-message');
+        if (typeof message === 'object') {
+            var table = createTableFromObject(message);
+            messageCol.appendChild(table);
+        }
+        else {
+            var pre_1 = document.createElement('pre');
+            if (!Array.isArray(classnames))
+                classnames = [classnames];
+            if (!_id && typeof _id === 'number') {
+                classnames.push("log-group-".concat(_id));
+            }
+            classnames.forEach(function (c) {
+                if (typeof c === 'string' && c.trim() !== '') {
+                    pre_1.classList.add(c.trim());
+                }
+            });
+            pre_1.textContent = message;
+            messageCol.appendChild(pre_1);
+        }
+        logEntry.appendChild(timeCol);
+        logEntry.appendChild(messageCol);
+        loggerDiv.appendChild(logEntry);
+    }
 }
 function createTableFromObject(data) {
     var table = document.createElement('table');
@@ -74,99 +109,68 @@ function createTableFromObject(data) {
     }
     return table;
 }
-var originalConsoleClear = console.clear;
-var originalConsoleError = console.error;
-var originalConsoleGroup = console.group;
-var originalConsoleGroupEnd = console.groupEnd;
-var originalConsoleLog = console.log;
-var originalConsoleTable = console.table;
-var originalConsoleWarn = console.warn;
-function appendLogToConsole(message, classnames, _id) {
-    if (!console.useConsoleLog)
-        return;
-    if (message === null)
-        message = '<null>';
-    if (message === undefined)
-        message = '<undefined>';
-    if (typeof message === 'string' && message.trim() === '')
-        return;
-    var consoleDiv = document.getElementById('console');
-    if (consoleDiv) {
-        var logEntry = document.createElement('div');
-        logEntry.classList.add('log-entry');
-        var timeCol = document.createElement('div');
-        timeCol.classList.add('log-time');
-        timeCol.textContent = getCurrentTime();
-        var messageCol = document.createElement('div');
-        messageCol.classList.add('log-message');
-        if (typeof message === 'object') {
-            var table = createTableFromObject(message);
-            messageCol.appendChild(table);
-        }
-        else {
-            var pre_1 = document.createElement('pre');
-            if (!Array.isArray(classnames))
-                classnames = [classnames];
-            if (!_id && typeof _id === 'number') {
-                classnames.push("log-group-".concat(_id));
-            }
-            classnames.forEach(function (c) {
-                if (typeof c === 'string' && c.trim() !== '') {
-                    pre_1.classList.add(c.trim());
-                }
-            });
-            pre_1.textContent = message;
-            messageCol.appendChild(pre_1);
-        }
-        logEntry.appendChild(timeCol);
-        logEntry.appendChild(messageCol);
-        consoleDiv.appendChild(logEntry);
-    }
+function escapeRegExp(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-if (console.useConsoleLog) {
-    console.clear = function () {
-        originalConsoleClear();
-        if (!console.useConsoleLog)
-            return;
-        var consoleDiv = document.getElementById('console');
-        if (consoleDiv) {
-            consoleDiv.innerHTML = '';
+function findSpanElementWithClassAndText(text, _id, className) {
+    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+    if (!treeElement)
+        return null;
+    var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
+    for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
+        var span = _a[_i];
+        if (typeof text === 'string' && span.textContent === text) {
+            return span;
         }
-        console.log("async-monitor.js$".concat(version));
+        else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
+            return span;
+        }
+    }
+    return null;
+}
+function getCurrentTime() {
+    var now = new Date();
+    return now.toTimeString().split(' ')[0];
+}
+var Logger = /** @class */ (function () {
+    function Logger(useLogger) {
+        if (useLogger === void 0) { useLogger = false; }
+        this.useLogger = useLogger;
+    }
+    Logger.prototype.clear = function () {
+        if (!this.useLogger)
+            return;
+        var loggerDiv = document.getElementById('logger');
+        if (loggerDiv) {
+            loggerDiv.innerHTML = '';
+        }
+        this.log("async-monitor.js$".concat(version));
     };
-    console.log = function (message, classnames) {
+    Logger.prototype.log = function (message, classnames) {
         var _id;
         if (typeof classnames === 'number') {
             _id = classnames;
             classnames = undefined;
         }
-        originalConsoleLog(message);
-        appendLogToConsole(message, classnames, _id);
+        appendLogTologger(message, classnames || [], _id);
     };
-    console.error = function (message, _id) {
-        originalConsoleError(message);
-        appendLogToConsole(message, 'log-error', _id);
+    Logger.prototype.warn = function (message, _id) {
+        appendLogTologger(message, 'log-warn', _id);
     };
-    console.group = function (label, _id) {
-        originalConsoleGroup(label);
-        appendLogToConsole("".concat(label), 'log-group', _id);
+    Logger.prototype.error = function (message, _id) {
+        appendLogTologger(message, 'log-error', _id);
     };
-    console.groupEnd = function () {
-        originalConsoleGroupEnd();
+    Logger.prototype.group = function (label, _id) {
+        appendLogTologger("".concat(label), 'log-group', _id);
     };
-    console.table = function (data) {
-        originalConsoleTable(data);
-        appendLogToConsole(data, 'log-table');
+    Logger.prototype.table = function (data) {
+        appendLogTologger(data, 'log-table');
     };
-    console.warn = function (message, _id) {
-        originalConsoleWarn(message);
-        appendLogToConsole(message, 'log-warn', _id);
-    };
-    console.highlight = function (text, ids, className) {
+    Logger.prototype.highlight = function (text, ids, className) {
         if (className === void 0) { className = 'start'; }
         var treeElement = document.querySelector("pre[class*=\"tree-".concat(ids.id, "\"]"));
         if (!treeElement) {
-            console.warn("could not highlight tree-".concat(ids.id, "."));
+            this.warn("could not highlight tree-".concat(ids.id, "."));
             return;
         }
         if (!Array.isArray(className))
@@ -192,47 +196,36 @@ if (console.useConsoleLog) {
             }
         }
     };
-}
-function escapeRegExp(text) {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-// text is string or regex
-function findSpanElementWithClassAndText(text, _id, className) {
-    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
-    if (!treeElement)
-        return null;
-    var spanElements = treeElement.querySelectorAll("span.highlight-".concat(className));
-    for (var _i = 0, _a = Array.from(spanElements); _i < _a.length; _i++) {
-        var span = _a[_i];
-        if (typeof text === 'string' && span.textContent === text) {
-            return span;
+    Logger.prototype.clearHighlights = function (_id) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (treeElement) {
+            treeElement.querySelectorAll("span").forEach(function (span) {
+                if (!(span.innerText === 'completed' || span.classList.contains('highlight-repeat')))
+                    span.outerHTML = span.innerHTML;
+            });
         }
-        else if (text instanceof RegExp && span.textContent !== null && text.test(span.textContent)) {
-            return span;
+    };
+    Logger.prototype.displayRepeat = function (_id, runsNo, repeatNo) {
+        var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
+        if (treeElement) {
+            var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
+            if (repeatElement) {
+                repeatElement.innerText =
+                    ' '.repeat(1 - runsNo.toString().length + repeatNo.toString().length) +
+                        runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
+            }
         }
+    };
+    return Logger;
+}());
+var logger = new Logger();
+logger.clear = function () {
+    var loggerDiv = document.getElementById('logger');
+    if (loggerDiv) {
+        loggerDiv.innerHTML = '';
     }
-    return null;
-}
-function clearHighlights(_id) {
-    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
-    if (treeElement) {
-        treeElement.querySelectorAll("span").forEach(function (span) {
-            if (!(span.innerText === 'completed' || span.classList.contains('highlight-repeat')))
-                span.outerHTML = span.innerHTML;
-        });
-    }
-}
-function displayRepeat(_id, runsNo, repeatNo) {
-    var treeElement = document.querySelector("pre[class*=\"tree-".concat(_id, "\"]"));
-    if (treeElement) {
-        var repeatElement = treeElement.querySelector("span[class*=\"highlight-repeat\"]");
-        if (repeatElement) {
-            repeatElement.innerText =
-                ' '.repeat(1 - runsNo.toString().length + repeatNo.toString().length) +
-                    runsNo.toString().concat('/').concat(repeatNo.toString()).concat(' ');
-        }
-    }
-}
+    logger.log("async-monitor.js$".concat(version));
+};
 
 var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -424,8 +417,8 @@ var Watch = /** @class */ (function () {
             // 	.filter(v => v.reason !== undefined);
         })
             .catch(function (err) {
-            if (console.useConsoleLog) {
-                console.warn('error:', err);
+            if (logger.useLogger) {
+                logger.warn('error:', err);
             }
         })
             .finally(function () {
@@ -439,10 +432,10 @@ var Watch = /** @class */ (function () {
                 // 		try {
                 // 			x.onRejectCallback(x.reason);
                 // 		} catch (error) {
-                // 			console.warn('Watch.onRejectCallback is not critical:\n', error);
+                // 			logger.warn('Watch.onRejectCallback is not critical:\n', error);
                 // 		}
                 // 	}
-                // 	// console.warn('onRejectCallback not provided.');
+                // 	// logger.warn('onRejectCallback not provided.');
                 // });
                 // // f_rejected for global watch
                 // if (typeof fr === 'function') fr();
@@ -459,8 +452,8 @@ var Watch = /** @class */ (function () {
                             // try {
                             cbf();
                             // } catch (error) {
-                            // 	console.warn('Error while executing cbf.', error);
-                            // 	console.log(cbf);
+                            // 	logger.warn('Error while executing cbf.', error);
+                            // 	logger.log(cbf);
                             // }
                         }
                     });
@@ -475,7 +468,7 @@ function watchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, 
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (group.functions.filter(function (x) { return x.parent === undefined; }).length < 1) {
-                console.error('Group must have exactly one root function (aka parent === undefined)!');
+                logger.error('Group must have exactly one root function (aka parent === undefined)!');
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         reject();
                     })];
@@ -488,7 +481,7 @@ function watchAll(group, onStartCallback, onCompleteCallback, onRejectCallback, 
 }
 function _watchAllInternal(group, parent, resolve, reject) {
     var watches = group.functions;
-    var useConsoleLog = group.useConsoleLog;
+    group.useLogger;
     var children = watches.filter(function (x) { return x.parent === parent; });
     if (watches.every(function (f) { return f.isFinished; })) {
         group.stopTime = now();
@@ -518,8 +511,8 @@ function _watchAllInternal(group, parent, resolve, reject) {
         }
     }
     if (watches.some(function (f) { return f.isRejected; })) {
-        if (console.useConsoleLog) {
-            console.warn('Some watches are rejected.');
+        if (logger.useLogger) {
+            logger.warn('Some watches are rejected.');
         }
         if (typeof group.onRejectCallback === 'function') {
             group.onRejectCallback();
@@ -529,8 +522,8 @@ function _watchAllInternal(group, parent, resolve, reject) {
     }
     if (watches.some(function (f) { return f.isAborted; })) {
         // Some watch was aborted
-        if (console.useConsoleLog) {
-            console.warn('Some watches are aborted.');
+        if (logger.useLogger) {
+            logger.warn('Some watches are aborted.');
         }
         if (typeof group.onAbortCallback === 'function') {
             group.onAbortCallback();
@@ -558,8 +551,7 @@ function _watchAllInternal(group, parent, resolve, reject) {
                 .filter(function (c) { return c.child === gc; })
                 .forEach(function (child) {
                 child.sequence = _sequence;
-                useConsoleLog &&
-                    console.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id, index: child.id }, 'start');
+                logger.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id, index: child.id }, 'start');
                 if (typeof child.onStartCallback === 'function') {
                     child.onStartCallback();
                 }
@@ -568,8 +560,8 @@ function _watchAllInternal(group, parent, resolve, reject) {
                     var result = child.f();
                     // If result is void (undefined), log a warning or handle it accordingly
                     if (result === undefined || result === null) {
-                        if (console.useConsoleLog) {
-                            console.warn('Function returned void');
+                        if (logger.useLogger) {
+                            logger.warn('Function returned void');
                         }
                     }
                     // Check if result is a promise by checking the presence of the then method
@@ -579,30 +571,27 @@ function _watchAllInternal(group, parent, resolve, reject) {
                             if (typeof child.onCompleteCallback === 'function') {
                                 child.onCompleteCallback();
                             }
-                            useConsoleLog &&
-                                console.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id }, 'complete');
+                            logger.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id }, 'complete');
                         });
                         child.promise.catch(function () {
                             if (typeof child.onRejectCallback === 'function') {
                                 child.onRejectCallback();
                             }
-                            if (useConsoleLog) {
-                                console.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id }, 'rejected');
-                                console.highlight('completed', { id: group.id }, 'rejected');
-                            }
+                            logger.highlight(child.name || "g:".concat(group.id, ",c:").concat(child.id), { id: group.id }, 'rejected');
+                            logger.highlight('completed', { id: group.id }, 'rejected');
                             reject && reject();
                         });
                     }
                     // Handle any other unexpected return values
                     else {
-                        if (console.useConsoleLog) {
-                            console.warn('Function did not return a promise');
+                        if (logger.useLogger) {
+                            logger.warn('Function did not return a promise');
                         }
                     }
                 }
                 // } catch (error) {
-                // if (console.useConsoleLog) {
-                // 	console.warn('Watch: critical! error in call to (async) function:\n', error);
+                // if (logger.useLogger) {
+                // 	logger.warn('Watch: critical! error in call to (async) function:\n', error);
                 // }
                 // 	if (typeof group.onErrorCallback === 'function') group.onErrorCallback();
                 // 	return;
@@ -898,9 +887,8 @@ var WatchFunction = /** @class */ (function () {
             this.onStartCallback = function () {
                 this._isRunning = true;
                 this._startTime = now();
-                if (console.useConsoleLog) {
-                    console.log("\u2500\u2500\"".concat(this.name, "\" has started."));
-                }
+                if (logger.useLogger)
+                    logger.log("\u2500\u2500\"".concat(this.name, "\" has started."));
                 if (arg.onStartCallback)
                     arg.onStartCallback();
             };
@@ -909,9 +897,8 @@ var WatchFunction = /** @class */ (function () {
                 this._isRunning = false;
                 this._stopTime = now();
                 this._duration = calcDuration(this._startTime, this._stopTime);
-                if (console.useConsoleLog) {
-                    console.log("\u2500\u2500\"".concat(this.name, "\" has completed."));
-                }
+                if (logger.useLogger)
+                    logger.log("\u2500\u2500\"".concat(this.name, "\" has completed."));
                 if (arg.onCompleteCallback)
                     arg.onCompleteCallback();
             };
@@ -923,9 +910,8 @@ var WatchFunction = /** @class */ (function () {
                 this._isRunning = false;
                 this._stopTime = now();
                 this._duration = calcDuration(this._startTime, this._stopTime);
-                if (console.useConsoleLog) {
-                    console.warn("\u2500\u2500\"".concat(this.name, "\" was rejected."));
-                }
+                if (logger.useLogger)
+                    logger.warn("\u2500\u2500\"".concat(this.name, "\" was rejected."));
                 if (arg.onRejectCallback)
                     arg.onRejectCallback();
             };
@@ -940,9 +926,8 @@ var WatchFunction = /** @class */ (function () {
                 this._isRunning = false;
                 this._stopTime = now();
                 this._duration = calcDuration(this._startTime, this._stopTime);
-                if (console.useConsoleLog) {
-                    console.warn("\u2500\u2500\"".concat(this.name, "\" was aborted."));
-                }
+                if (logger.useLogger)
+                    logger.warn("\u2500\u2500\"".concat(this.name, "\" was aborted."));
             };
         }
         else {
@@ -957,9 +942,8 @@ var WatchFunction = /** @class */ (function () {
                 this.onStartCallback = function () {
                     this._isRunning = true;
                     this._startTime = now();
-                    if (console.useConsoleLog) {
-                        console.log("\"".concat(this.name, "\" has started."));
-                    }
+                    if (logger.useLogger)
+                        logger.log("\"".concat(this.name, "\" has started."));
                     onStartCallback();
                 };
             if (onCompleteCallback)
@@ -968,9 +952,8 @@ var WatchFunction = /** @class */ (function () {
                     this._isRunning = false;
                     this._stopTime = now();
                     this._duration = calcDuration(this._startTime, this._stopTime);
-                    if (console.useConsoleLog) {
-                        console.log("\"".concat(this.name, "\" has completed."));
-                    }
+                    if (logger.useLogger)
+                        logger.log("\"".concat(this.name, "\" has completed."));
                     onCompleteCallback();
                 };
             if (onRejectCallback)
@@ -979,9 +962,8 @@ var WatchFunction = /** @class */ (function () {
                     this._isRunning = false;
                     this._stopTime = now();
                     this._duration = calcDuration(this._startTime, this._stopTime);
-                    if (console.useConsoleLog) {
-                        console.warn("\"".concat(this.name, "\" was rejected."));
-                    }
+                    if (logger.useLogger)
+                        logger.warn("\"".concat(this.name, "\" was rejected."));
                     onRejectCallback();
                 };
             if (onAbortCallback)
@@ -992,9 +974,8 @@ var WatchFunction = /** @class */ (function () {
                     this._isRunning = false;
                     this._stopTime = now();
                     this._duration = calcDuration(this._startTime, this._stopTime);
-                    if (console.useConsoleLog) {
-                        console.warn("\"".concat(this.name, "\" was aborted d."));
-                    }
+                    if (logger.useLogger)
+                        logger.warn("\"".concat(this.name, "\" was aborted d."));
                     self.onAbortCallback && self.onAbortCallback();
                 };
         }
@@ -1161,6 +1142,7 @@ var Group = /** @class */ (function () {
             _this._functions.push(watchFunction);
         };
         this.options = options;
+        asyncMonitor.push(this);
     }
     Object.defineProperty(Group.prototype, "run", {
         get: function () {
@@ -1170,12 +1152,12 @@ var Group = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(Group.prototype, "useConsoleLog", {
+    Object.defineProperty(Group.prototype, "useLogger", {
         get: function () {
-            return console.useConsoleLog;
+            return logger.useLogger;
         },
         set: function (value) {
-            console.useConsoleLog = value;
+            logger.useLogger = value;
         },
         enumerable: false,
         configurable: true
@@ -1266,11 +1248,11 @@ var Group = /** @class */ (function () {
                 if (_this.options.repeat > 0) {
                     _this.options.runs = 1;
                 }
-                if (_this.useConsoleLog) {
-                    console.log("*** START \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
-                    console.highlight('completed', { id: _this._id }, 'start');
-                    console.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
+                if (_this.useLogger) {
+                    logger.log("*** START \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
                 }
+                logger.highlight('completed', { id: _this._id }, 'start');
+                logger.highlight(regexRepeat(_this.options.repeat), { id: _this._id }, ['start', 'repeat']);
                 _this._onStartCallback();
             };
         },
@@ -1287,8 +1269,8 @@ var Group = /** @class */ (function () {
             return function () {
                 if (_this.isRunning)
                     return;
-                if (_this.useConsoleLog) {
-                    console.log("*** RUN \"".concat(_this.run, "\" STARTED ***"));
+                if (_this.useLogger) {
+                    logger.log("*** RUN \"".concat(_this.run, "\" STARTED ***"));
                 }
                 _this._onStartRunCallback();
             };
@@ -1307,12 +1289,11 @@ var Group = /** @class */ (function () {
                 var _a;
                 _this._onCompleteCallback();
                 _this.stopTime = now();
-                if (_this.useConsoleLog) {
-                    console.log("*** COMPLETED \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
-                    console.highlight('completed', { id: _this._id }, 'complete');
-                    console.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, ['complete']);
-                    console.groupEnd();
+                if (_this.useLogger) {
+                    logger.log("*** COMPLETED \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
                 }
+                logger.highlight('completed', { id: _this._id }, 'complete');
+                logger.highlight(' ' + _this.options.repeat + '/' + _this.options.repeat + ' ', { id: _this._id }, ['complete']);
             };
         },
         set: function (value) {
@@ -1326,8 +1307,8 @@ var Group = /** @class */ (function () {
         get: function () {
             var _this = this;
             return function () {
-                if (_this.useConsoleLog) {
-                    console.log("*** RUN \"".concat(_this.run, "\" COMPLETED ***"));
+                if (_this.useLogger) {
+                    logger.log("*** RUN \"".concat(_this.run, "\" COMPLETED ***"));
                 }
                 _this._onCompleteRunCallback();
             };
@@ -1345,12 +1326,11 @@ var Group = /** @class */ (function () {
             return function () {
                 var _a, _b;
                 _this.stopTime = now();
-                if (_this.useConsoleLog) {
-                    console.log("*** REJECTED \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
-                    console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
-                    console.groupEnd();
-                    console.log(_this.metrics);
+                if (_this.useLogger) {
+                    logger.log("*** REJECTED \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
+                    logger.log(_this.metrics);
                 }
+                logger.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
                 (_b = _this._onRejectCallback) === null || _b === void 0 ? void 0 : _b.call(_this);
             };
         },
@@ -1367,12 +1347,11 @@ var Group = /** @class */ (function () {
             return function () {
                 var _a;
                 _this.stopTime = now();
-                if (_this.useConsoleLog) {
-                    console.log("*** REJECTED RUN \"".concat(_this.run, "\" ***"));
-                    console.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
-                    console.groupEnd();
-                    console.log(_this.metrics);
+                if (_this.useLogger) {
+                    logger.log("*** REJECTED RUN \"".concat(_this.run, "\" ***"));
+                    logger.log(_this.metrics);
                 }
+                logger.highlight('completed', { id: _this._id, index: _this.sequence }, 'complete');
                 (_a = _this._onRejectRunCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
             };
         },
@@ -1391,11 +1370,10 @@ var Group = /** @class */ (function () {
                 _this.stopTime = now();
                 if (_this.isAborted)
                     return;
-                if (_this.useConsoleLog) {
-                    console.log("*** ABORTED GROUP \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
-                    console.highlight('completed', { id: _this._id }, 'aborted');
-                    console.groupEnd();
+                if (_this.useLogger) {
+                    logger.log("*** ABORTED GROUP \"".concat((_a = _this.name) !== null && _a !== void 0 ? _a : 'Group#' + _this.id, "\" ***"));
                 }
+                logger.highlight('completed', { id: _this._id }, 'aborted');
                 if (typeof _this._onAbortCallback === 'function') {
                     _this._onAbortCallback();
                 }
@@ -1414,11 +1392,10 @@ var Group = /** @class */ (function () {
             return function () {
                 var _a;
                 _this.stopTime = now();
-                if (_this.useConsoleLog) {
-                    console.log("*** ABORTED RUN \"".concat(_this.run, "\" ***"));
-                    console.highlight('completed', { id: _this._id }, 'aborted');
-                    console.groupEnd();
+                if (_this.useLogger) {
+                    logger.log("*** ABORTED RUN \"".concat(_this.run, "\" ***"));
                 }
+                logger.highlight('completed', { id: _this._id }, 'aborted');
                 (_a = _this._onAbortRunCallback) === null || _a === void 0 ? void 0 : _a.call(_this);
             };
         },
@@ -1433,8 +1410,8 @@ var Group = /** @class */ (function () {
         get: function () {
             var _this = this;
             return function () {
-                if (_this.useConsoleLog) {
-                    console.log("*** ERROR in group \"".concat(_this.name || _this._id, "\" ***"));
+                if (_this.useLogger) {
+                    logger.log("*** ERROR in group \"".concat(_this.name || _this._id, "\" ***"));
                 }
                 _this._onErrorCallback();
             };
@@ -1453,8 +1430,8 @@ var Group = /** @class */ (function () {
             watchFunction.abort();
         }
         else {
-            if (console.useConsoleLog) {
-                console.warn("+++ No watch function found with name \"".concat(name, "\""));
+            if (logger.useLogger) {
+                logger.warn("+++ No watch function found with name \"".concat(name, "\""));
             }
         }
     };
@@ -1473,8 +1450,8 @@ var Group = /** @class */ (function () {
         if (resetRuns) {
             this.options.runs = 1;
         }
-        displayRepeat(this._id, this.options.runs, this.options.repeat);
-        clearHighlights(this._id);
+        logger.displayRepeat(this._id, this.options.runs, this.options.repeat);
+        logger.clearHighlights(this._id);
     };
     // Get all functions in the group
     Group.prototype.getAll = function () {
@@ -1489,24 +1466,24 @@ var Group = /** @class */ (function () {
     Group.prototype.remove = function () { };
     Group.prototype.watchAll = function () {
         if (this.functions.length === 0) {
-            if (console.useConsoleLog) {
-                console.warn('No watch functions found in this group.');
+            if (logger.useLogger) {
+                logger.warn('No watch functions found in this group.');
             }
             return new Promise(function (resolve, reject) {
                 reject('No watch functions found in this group.');
             });
         }
         if (this.isProcessed) {
-            if (console.useConsoleLog) {
-                console.warn('This watchAll group has already been processed.');
+            if (logger.useLogger) {
+                logger.warn('This watchAll group has already been processed.');
             }
             return new Promise(function (resolve, reject) {
                 reject('This watchAll group has already been processed.');
             });
         }
         if (this.isRunning) {
-            if (console.useConsoleLog) {
-                console.warn('This watchAll group is already being monitored.');
+            if (logger.useLogger) {
+                logger.warn('This watchAll group is already being monitored.');
             }
             return new Promise(function (resolve, reject) {
                 reject('This watchAll group is already being monitored.');
@@ -1517,7 +1494,7 @@ var Group = /** @class */ (function () {
             this.onStartCallback();
         return watchAll(this);
     };
-    Object.defineProperty(Group.prototype, "consoleTree", {
+    Object.defineProperty(Group.prototype, "loggerTree", {
         get: function () {
             var treeData = this._functions.map(function (f) {
                 return { name: f.name, parent: f.parent, child: f.child };
@@ -1541,18 +1518,22 @@ var Group = /** @class */ (function () {
 }());
 
 var nextId = Sequence.nextId;
+// Create the asyncMonitor array
+var asyncMonitor = [];
+// Attach asyncMonitor to the global window object
+window.asyncMonitor = asyncMonitor;
 // Export types and interfaces.
 // Use default export if necessary
 var Index = {
     Group: Group,
-    now: now,
-    Sequence: Sequence,
-    nextId: nextId,
+    logger: logger,
     Monitor: Monitor,
-    version: version,
-    Watch: Watch,
+    nextId: nextId,
+    Sequence: Sequence,
     sleep: sleep,
     Tree: Tree,
+    version: version,
+    Watch: Watch,
     WatchFunction: WatchFunction,
 };
 
@@ -1562,8 +1543,9 @@ exports.Sequence = Sequence;
 exports.Tree = Tree;
 exports.Watch = Watch;
 exports.WatchFunction = WatchFunction;
+exports.asyncMonitor = asyncMonitor;
 exports.default = Index;
+exports.logger = logger;
 exports.nextId = nextId;
-exports.now = now;
 exports.sleep = sleep;
 exports.version = version;

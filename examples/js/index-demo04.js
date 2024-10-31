@@ -8,7 +8,7 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {makeAsync, Group, Tree, sleep, version} = module;
+	const {makeAsync, Group, Tree, sleep, version, logger} = module;
 	const demo04 = new Group();
 	const demo05 = new Group();
 	demo05.name =
@@ -23,10 +23,10 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("preparation step")');
+			logger.log('++++onStartCallback("preparation step")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("preparation step")');
+			logger.log('++++onCompleteCallback("preparation step")');
 		},
 	});
 
@@ -36,10 +36,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s1")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s1")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s1")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s1")');
 		},
 	});
 
@@ -49,10 +49,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => sleep(undefined, undefined),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s2")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s2")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s2")');
 		},
 	});
 
@@ -62,10 +62,10 @@ const importModule = async () => {
 		child: 'c',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("build snowflake from s1 and s2")');
+			logger.log('++++onStartCallback("build snowflake from s1 and s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake from s1 and s2")');
+			logger.log('++++onCompleteCallback("build snowflake from s1 and s2")');
 		},
 	});
 
@@ -75,10 +75,10 @@ const importModule = async () => {
 		child: 'x',
 		f: () => sleep(undefined, undefined),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("publish snowflake s1 and s2")');
+			logger.log('++++onStartCallback("publish snowflake s1 and s2")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("publish snowflake s1 and s2")');
+			logger.log('++++onCompleteCallback("publish snowflake s1 and s2")');
 		},
 	});
 
@@ -88,10 +88,10 @@ const importModule = async () => {
 		child: 'd',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("fetch data from ETL store: s3")');
+			logger.log('++++onStartCallback("fetch data from ETL store: s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("fetch data from ETL store: s3")');
+			logger.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 		},
 	});
 
@@ -101,10 +101,10 @@ const importModule = async () => {
 		child: 'e',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("build snowflake from s3")');
+			logger.log('++++onStartCallback("build snowflake from s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("build snowflake from s3")');
+			logger.log('++++onCompleteCallback("build snowflake from s3")');
 		},
 	});
 
@@ -114,10 +114,10 @@ const importModule = async () => {
 		child: 'f',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("publish snowflake s3")');
+			logger.log('++++onStartCallback("publish snowflake s3")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("publish snowflake s3")');
+			logger.log('++++onCompleteCallback("publish snowflake s3")');
 		},
 	});
 
@@ -132,10 +132,10 @@ const importModule = async () => {
 		child: 'a',
 		f: () => sleep(undefined, false),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("demo05 initiator")');
+			logger.log('++++onStartCallback("demo05 initiator")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("demo05 initiator")');
+			logger.log('++++onCompleteCallback("demo05 initiator")');
 		},
 	});
 	demo05.addWatch({
@@ -144,10 +144,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => wrapped01(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo01].watchAll")');
+			logger.log('++++onStartCallback("wrapped document[demo01].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo01].watchAll")');
+			logger.log('++++onCompleteCallback("wrapped document[demo01].watchAll")');
 		},
 	});
 	demo05.addWatch({
@@ -156,10 +156,10 @@ const importModule = async () => {
 		child: 'c',
 		f: () => wrapped02(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo02].watchAll")');
+			logger.log('++++onStartCallback("wrapped document[demo02].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo02].watchAll")');
+			logger.log('++++onCompleteCallback("wrapped document[demo02].watchAll")');
 		},
 	});
 	demo05.addWatch({
@@ -168,10 +168,10 @@ const importModule = async () => {
 		child: 'b',
 		f: () => wrapped03(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped document[demo03].watchAll")');
+			logger.log('++++onStartCallback("wrapped document[demo03].watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped document[demo03].watchAll")');
+			logger.log('++++onCompleteCallback("wrapped document[demo03].watchAll")');
 		},
 	});
 	demo05.addWatch({
@@ -180,25 +180,25 @@ const importModule = async () => {
 		child: 'd',
 		f: () => wrapped04(),
 		onStartCallback: function () {
-			console.log('++++onStartCallback("wrapped demo04.watchAll")');
+			logger.log('++++onStartCallback("wrapped demo04.watchAll")');
 		},
 		onCompleteCallback: function () {
-			console.log('++++onCompleteCallback("wrapped demo04.watchAll")');
+			logger.log('++++onCompleteCallback("wrapped demo04.watchAll")');
 		},
 	});
 
 	function demo_demo04() {
-		console.clear();
-		console.log(`demo05 : ${demo05.name || demo05._id}`);
-		console.log(demo05.consoleTree, ['tree', `tree-${demo05._id}`]);
-		console.log(`demo01 : ${document['demo01'].name}`);
-		console.log(document['demo01'].consoleTree, `tree-${document['demo01']._id}`);
-		console.log(`demo02 : ${document['demo02'].name}`);
-		console.log(document['demo02'].consoleTree, `tree-${document['demo02']._id}`);
-		console.log(`demo03 : ${document['demo03'].name}`);
-		console.log(document['demo03'].consoleTree, `tree-${document['demo03']._id}`);
-		console.log(`demo04 : ${demo04.name || demo04.name}`);
-		console.log(demo04.consoleTree, ['tree', `tree-${demo04._id}`]);
+		logger.clear();
+		logger.log(`demo05 : ${demo05.name || demo05._id}`);
+		logger.log(demo05.loggerTree, ['tree', `tree-${demo05._id}`]);
+		logger.log(`demo01 : ${document['demo01'].name}`);
+		logger.log(document['demo01'].loggerTree, ['tree', `tree-${document['demo01']._id}`]);
+		logger.log(`demo02 : ${document['demo02'].name}`);
+		logger.log(document['demo02'].loggerTree, ['tree', `tree-${document['demo02']._id}`]);
+		logger.log(`demo03 : ${document['demo03'].name}`);
+		logger.log(document['demo03'].loggerTree, ['tree', `tree-${document['demo03']._id}`]);
+		logger.log(`demo04 : ${demo04.name || demo04.name}`);
+		logger.log(demo04.loggerTree, ['tree', `tree-${demo04._id}`]);
 
 		document['demo01'].reset();
 		document['demo02'].reset();
@@ -237,13 +237,13 @@ const importModule = async () => {
 				},
 			)
 			.then(() => {
-				console.log('success on watchAll: resolved all promises!');
+				logger.log('success on watchAll: resolved all promises!');
 			})
 			.catch(() => {
-				console.warn('catch on watchAll: rejected promise!');
+				logger.warn('catch on watchAll: rejected promise!');
 			})
 			.finally(() => {
-				console.log(`async-monitor.js@${version}`);
+				logger.log(`async-monitor.js@${version}`);
 			});
 	}
 

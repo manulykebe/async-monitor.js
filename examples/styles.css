@@ -2,17 +2,21 @@ html {
 	background-color: #f4f4f4;
 }
 
-pre,
-code {
+html,
+table {
 	font-size: 10px;
 	font-family: monospace;
+}
+
+pre,
+code {
 	margin: 0px;
 }
 
 #console {
 	background-color: #f0f0f0;
 	padding: 10px;
-	border: 1px solid #ccc;
+	border: 1px solid #999;
 	height: -webkit-calc(100% - 22px);
 	height: -moz-calc(100% - 22px);
 	height: calc(100% - 22px);
@@ -104,21 +108,19 @@ button:hover {
 .log-time {
 	color: lightgray;
 	width: 45px;
-	font-size: 10px;
 }
 
 /* Styling for the message column */
 .log-message {
-	-webkit-box-flex: 1;
+	/* -webkit-box-flex: 1;
 	-ms-flex: 1;
-	flex: 1;
+	flex: 1; */
 	margin-left: 10px;
 }
 
 /* Styling for the <pre> tag within the message column */
 .log-pre {
 	white-space: pre-wrap;
-	font-size: 16px; /* Allows multiline handling */
 }
 
 .log-group {
@@ -172,63 +174,59 @@ button:hover {
 .log-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 10px;
 }
 
-.log-table td,
 .log-table th {
-	padding: 0px;
+	padding: 0px 10px 0px 0px;
+}
+.log-table td:first-child {
+	color: #ccc;
+}
+.log-table td {
+	padding: 0px 5px;
 }
 
 /* Styling for table headers */
 .log-table-header {
-	border: 1px solid black;
-	padding: 4px;
+	font-weight: normal;
+	color: #999;
+	border: 0px solid black;
 	text-align: left;
-	background-color: #f4f4f4; /* Optional, for visibility */
+}
+
+.log-table-cell {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
 }
 
 span {
 	position: relative;
 	display: inline-block;
-	font-size: 10px;
-}
-/* Styling for table cells */
-.log-table-cell {
-	border: 1px solid black;
-	padding: 4px;
 }
 
 .highlight-start {
 	background-color: lightyellow;
 	font-style: italic;
-	font-size: 10px;
 }
 .highlight-complete {
 	background-color: lightgreen;
 	font-style: normal;
 	font-weight: bold;
-	font-size: 10px;
 }
 .highlight-aborted,
 .highlight-rejected {
 	background-color: rgba(255, 0, 0, 0.2);
 	font-style: normal;
 	font-weight: bold;
-	font-size: 10px;
 }
 .highlight-repeat {
 	border: 0px solid black;
-	font-size: 10px;
 }
 .tree {
-	padding: 2px 0;
+	padding: 10px;
 	border: 1px solid #ccc;
+	background-color: #f4f4f4;
 	margin: 0 0 2px 0;
-}
-
-.log-table {
-	border-collapse: collapse;
 }
 
 .icon {
