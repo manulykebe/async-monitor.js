@@ -24,7 +24,7 @@ export default class Group {
 		return this.options.repeat >= 0 ? this.options.runs! : 0;
 	}
 	constructor(options: GroupOptionsRepeat = {repeat: 0}) {
-		// this.options = {...options, runs: options.runs ?? 0};
+		this.options = {...options, runs: 0};
 		asyncMonitor.push(this);
 	}
 	set useLogger(value: boolean) {

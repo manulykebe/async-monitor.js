@@ -856,8 +856,9 @@
             this._startTime = 0;
             this._stopTime = 0;
             this._duration = 0;
+            this._timeout = 0; //ms
             this.abortController = new AbortController();
-            this.abort = function (reason) { return _this.abortController.abort(reason); };
+            this.abort = function (reason) { return _this.abortController.abort(reason || 'manually aborted'); };
             this.signal = this.abortController.signal;
             this.sequence = 0;
             this.reset = function () {
@@ -871,7 +872,7 @@
                 _this.sequence = 0;
                 _this.abortController = new AbortController();
                 _this.signal = _this.abortController.signal;
-                _this.abort = function () { return _this.abortController.abort(); };
+                _this.abort = function (reason) { return _this.abortController.abort(reason || 'manually aborted'); };
             };
             this['promiseStatus'] = {
                 status: 'not started',
@@ -985,18 +986,20 @@
             var originalFunction = this.f;
             this.f = function () {
                 return new Promise(function (resolve, reject) {
-                    self.signal.addEventListener('abort', function () {
+                    self.signal.addEventListener('abort', function (signal) {
                         if (!self._isRunning)
                             return;
                         self.onAbortCallback && self.onAbortCallback();
-                        reject('manually aborted.');
+                        reject((signal.currentTarget && signal.currentTarget.reason) || 'manually aborted.');
                     });
-                    // fire abort signal after timeout = .5s
-                    setTimeout(function () {
-                        if (self._isRunning) {
-                            self.abort('timeout');
-                        }
-                    }, 500);
+                    if (_this.timeout > 0) {
+                        setTimeout(function () {
+                            if (self._isRunning) {
+                                logger.error("\"".concat(self.name, "\" has timed out."));
+                                self.abort('function timeout');
+                            }
+                        }, _this.timeout);
+                    }
                     var result = originalFunction();
                     if (result instanceof Promise) {
                         result.then(resolve).catch(reject);
@@ -1077,6 +1080,16 @@
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(WatchFunction.prototype, "timeout", {
+            get: function () {
+                return this._timeout;
+            },
+            set: function (value) {
+                this._timeout = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(WatchFunction.prototype, "metrics", {
             get: function () {
                 return {
@@ -1100,12 +1113,24 @@
         return WatchFunction;
     }());
 
+    var __assign = (this && this.__assign) || function () {
+        __assign = Object.assign || function(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                    t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
     var regexRepeat = function (repeat) {
         var length = repeat.toString().length;
         return new RegExp("\\s{".concat(length, "}1\\/").concat(repeat, "\\s"));
     };
     var Group = /** @class */ (function () {
         function Group(options) {
+            if (options === void 0) { options = { repeat: 0 }; }
             var _this = this;
             this.options = { repeat: 0, runs: 0 };
             this._id = Sequence.nextId();
@@ -1148,7 +1173,7 @@
                 watchFunction.group = _this;
                 _this._functions.push(watchFunction);
             };
-            // this.options = {...options, runs: options.runs ?? 0};
+            this.options = __assign(__assign({}, options), { runs: 0 });
             asyncMonitor.push(this);
         }
         Object.defineProperty(Group.prototype, "run", {

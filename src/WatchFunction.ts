@@ -76,8 +76,16 @@ export default class WatchFunction {
 		return Math.min(0, this._duration);
 	}
 
+	private _timeout: number = 0; //ms
+	get timeout(): number {
+		return this._timeout;
+	}
+	set timeout(value: number) {
+		this._timeout = value;
+	}
+
 	private abortController: AbortController = new AbortController();
-	abort = (reason: string) => this.abortController.abort(reason);
+	abort = (reason?: string) => this.abortController.abort(reason || 'manually aborted');
 	signal: AbortSignal = this.abortController.signal;
 
 	name?: string | undefined;
@@ -102,7 +110,7 @@ export default class WatchFunction {
 		this.sequence = 0;
 		this.abortController = new AbortController();
 		this.signal = this.abortController.signal;
-		this.abort = () => this.abortController.abort();
+		this.abort = (reason?: string) => this.abortController.abort(reason || 'manually aborted');
 	};
 
 	'promise': Promise<any>;
@@ -238,17 +246,19 @@ export default class WatchFunction {
 		const originalFunction = this.f;
 		this.f = () => {
 			return new Promise((resolve, reject) => {
-				self.signal.addEventListener('abort', () => {
+				self.signal.addEventListener('abort', signal => {
 					if (!self._isRunning) return;
 					self.onAbortCallback && self.onAbortCallback();
-					reject('manually aborted.');
+					reject((signal.currentTarget && (signal.currentTarget as AbortSignal).reason) || 'manually aborted.');
 				});
-				// fire abort signal after timeout = .5s
-				setTimeout(() => {
-					if (self._isRunning) {
-						self.abort('timeout');
-					}
-				}, 500);
+				if (this.timeout > 0) {
+					setTimeout(() => {
+						if (self._isRunning) {
+							logger.error(`"${self.name}" has timed out.`);
+							self.abort('function timeout');
+						}
+					}, this.timeout);
+				}
 				const result = originalFunction();
 				if (result instanceof Promise) {
 					result.then(resolve).catch(reject);

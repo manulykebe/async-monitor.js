@@ -70,8 +70,11 @@ declare class WatchFunction {
     set stopTime(value: number);
     private _duration;
     get duration(): number;
+    private _timeout;
+    get timeout(): number;
+    set timeout(value: number);
     private abortController;
-    abort: (reason: string) => void;
+    abort: (reason?: string) => void;
     signal: AbortSignal;
     name?: string | undefined;
     parent?: string | undefined;
