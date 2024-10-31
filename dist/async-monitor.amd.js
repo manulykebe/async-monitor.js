@@ -1,6 +1,6 @@
 define(['exports'], (function (exports) { 'use strict';
 
-    var version = '1.1.9';
+    var version = '1.1.10';
 
     function appendLogTologger(message, classnames, _id) {
         if (message === null)
@@ -778,7 +778,6 @@ define(['exports'], (function (exports) { 'use strict';
         Tree.prototype.processTree = function (data) {
             var _this = this;
             if (data.length === 0) {
-                debugger;
                 return '<empty tree>';
             }
             // Step 1: Build tree

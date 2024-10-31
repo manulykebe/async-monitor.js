@@ -4,7 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MONITOR = {}));
 })(this, (function (exports) { 'use strict';
 
-    var version = '1.1.9';
+    var version = '1.1.10';
 
     function appendLogTologger(message, classnames, _id) {
         if (message === null)
@@ -782,7 +782,6 @@
         Tree.prototype.processTree = function (data) {
             var _this = this;
             if (data.length === 0) {
-                debugger;
                 return '<empty tree>';
             }
             // Step 1: Build tree
