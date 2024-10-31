@@ -161,7 +161,7 @@ declare class Group {
     removeAll(): void;
     add(): void;
     remove(): void;
-    watchAll(): Promise<void> | void;
+    watchAll(): Promise<void>;
     get loggerTree(): string;
     get metrics(): Metric[];
 }
