@@ -1,6 +1,9 @@
 declare class Logger {
     useLogger: boolean;
+    id: string;
     constructor(useLogger?: boolean);
+    addToDocument(location?: HTMLElement, divId?: string): boolean;
+    appendLogTologger(message: string | Record<string, any> | Array<Record<string, any>>, classnames: string | string[], _id?: number): void;
     clear(): void;
     log(message: any, classnames?: string | string[]): void;
     warn(message: any, _id?: number): void;
@@ -14,7 +17,6 @@ declare class Logger {
     clearHighlights(_id: number): void;
     displayRepeat(_id: number, runsNo: number, repeatNo: number): void;
 }
-declare const logger: Logger;
 
 /**
  * The sleep function pauses execution for a specified amount of time. Useful for testing purposes as it
@@ -105,6 +107,7 @@ interface GroupOptions {
     runs: number;
 }
 declare class Group {
+    logger: Logger;
     options: GroupOptions;
     get run(): number;
     constructor(options?: GroupOptionsRepeat);
@@ -223,21 +226,7 @@ declare const asyncMonitor: Group[];
 
 declare const _default: {
     Group: typeof Group;
-    logger: {
-        useLogger: boolean;
-        clear(): void;
-        log(message: any, classnames?: string | string[]): void;
-        warn(message: any, _id?: number): void;
-        error(message: any, _id?: number): void;
-        group(label: string, _id?: number): void;
-        table(data: Record<string, any> | Array<Record<string, any>>): void;
-        highlight(text: RegExp | string, ids: {
-            id: number;
-            index?: number;
-        }, className?: string | string[]): void;
-        clearHighlights(_id: number): void;
-        displayRepeat(_id: number, runsNo: number, repeatNo: number): void;
-    };
+    Logger: typeof Logger;
     Monitor: typeof Monitor;
     nextId: typeof Sequence.nextId;
     Sequence: typeof Sequence;
@@ -248,4 +237,4 @@ declare const _default: {
     WatchFunction: typeof WatchFunction;
 };
 
-export { Group, Monitor, Sequence, Tree, Watch, WatchFunction, asyncMonitor, _default as default, logger, nextId, sleep, version };
+export { Group, Logger, Monitor, Sequence, Tree, Watch, WatchFunction, asyncMonitor, _default as default, nextId, sleep, version };

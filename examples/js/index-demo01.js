@@ -7,9 +7,10 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version, logger} = module;
+	const {Group, sleep} = module;
 
 	const demo01 = new Group({repeat: 3});
+	const logger = demo01.logger;
 	demo01.name = '3 paralle tasks, followed by a single task';
 	const sample = 1;
 	if (sample === 2) {
@@ -92,6 +93,9 @@ const importModule = async () => {
 			onCompleteCallback: function () {
 				// logger.log('++++onCompleteCallback("fetch data from ETL store: s3")');
 			},
+			onRejectCallback: function () {
+				logger.warn('++++onRejectCallback("fetch data from ETL store: s3")');
+			},
 		});
 
 		demo01.addWatch({
@@ -103,6 +107,9 @@ const importModule = async () => {
 			},
 			onCompleteCallback: function () {
 				// logger.log('++++onCompleteCallback("build snowflake")');
+			},
+			onRejectCallback: function () {
+				logger.warn('++++onRejectCallback("build snowflake")');
 			},
 		});
 	}

@@ -8,9 +8,10 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {makeAsync, Group, Tree, sleep, version, logger} = module;
+	const {Group, sleep, version} = module;
 	const demo04 = new Group();
 	const demo05 = new Group();
+	const logger = demo05.logger;
 	demo05.name =
 		'Complex example where all previous demos are executed, demo01 & demo03 sequential, when done demo02 and demo04 in parallel.';
 	demo04.name = 'Actual copy of demo03, but some functions marked with !! can randomly fail.';

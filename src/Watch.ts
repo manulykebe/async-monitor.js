@@ -2,7 +2,6 @@ import Group from './Group';
 import Monitor from './Monitor';
 import now from './Now';
 import WatchFunction from './WatchFunction';
-import {logger} from './Logger';
 
 export class Watch {
 	constructor(fs: Array<WatchFunction>, f: (() => void) | Array<() => void>) {
@@ -33,9 +32,7 @@ export class Watch {
 				// 	.filter(v => v.reason !== undefined);
 			})
 			.catch(err => {
-				if (logger.useLogger) {
-					logger.warn('error:', err);
-				}
+				console.warn('error:', err);
 			})
 			.finally(() => {
 				if (breakOnReject) {
@@ -48,10 +45,10 @@ export class Watch {
 					// 		try {
 					// 			x.onRejectCallback(x.reason);
 					// 		} catch (error) {
-					// 			logger.warn('Watch.onRejectCallback is not critical:\n', error);
+					// 			group.logger.warn('Watch.onRejectCallback is not critical:\n', error);
 					// 		}
 					// 	}
-					// 	// logger.warn('onRejectCallback not provided.');
+					// 	// group.logger.warn('onRejectCallback not provided.');
 					// });
 					// // f_rejected for global watch
 					// if (typeof fr === 'function') fr();
@@ -67,8 +64,8 @@ export class Watch {
 								// try {
 								cbf();
 								// } catch (error) {
-								// 	logger.warn('Error while executing cbf.', error);
-								// 	logger.log(cbf);
+								// 	group.logger.warn('Error while executing cbf.', error);
+								// 	group.logger.log(cbf);
 								// }
 							}
 						});
@@ -79,19 +76,9 @@ export class Watch {
 }
 
 let _sequence = 0;
-export async function watchAll(
-	group: Group,
-	onStartCallback?: () => void,
-	onCompleteCallback?: () => void,
-	onRejectCallback?: () => void,
-	onAbortCallback?: () => void,
-): Promise<void> {
-	if (typeof onStartCallback === 'function') group.onStartCallback = onStartCallback;
-	if (typeof onCompleteCallback === 'function') group.onCompleteCallback = onCompleteCallback;
-	if (typeof onRejectCallback === 'function') group.onRejectCallback = onRejectCallback;
-	if (typeof onAbortCallback === 'function') group.onAbortCallback = onAbortCallback;
+export async function watchAll(group: Group): Promise<void> {
 	if (group.functions.filter(x => x.parent === undefined).length < 1) {
-		logger.error('Group must have exactly one root function (aka parent === undefined)!');
+		group.logger.error('Group must have exactly one root function (aka parent === undefined)!');
 		return new Promise<void>((resolve, reject) => {
 			reject();
 		});
@@ -133,8 +120,8 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 		}
 	}
 	if (watches.some(f => f.isRejected)) {
-		if (logger.useLogger) {
-			logger.warn('Some watches are rejected.');
+		if (group.logger.useLogger) {
+			group.logger.warn('Some watches are rejected.');
 		}
 		if (typeof group.onRejectCallback === 'function') {
 			group.onRejectCallback();
@@ -144,8 +131,8 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 	}
 	if (watches.some(f => f.isAborted)) {
 		// Some watch was aborted
-		if (logger.useLogger) {
-			logger.warn('Some watches are aborted.');
+		if (group.logger.useLogger) {
+			group.logger.warn('Some watches are aborted.');
 		}
 		if (typeof group.onAbortCallback === 'function') {
 			group.onAbortCallback();
@@ -175,7 +162,7 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 				.filter(c => c.child === gc)
 				.forEach(child => {
 					child.sequence = _sequence;
-					logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id, index: child.id}, 'start');
+					group.logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id, index: child.id}, 'start');
 
 					if (typeof child.onStartCallback === 'function') {
 						child.onStartCallback();
@@ -186,8 +173,8 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 						const result = child.f();
 						// If result is void (undefined), log a warning or handle it accordingly
 						if (result === undefined || result === null) {
-							if (logger.useLogger) {
-								logger.warn('Function returned void');
+							if (group.logger.useLogger) {
+								group.logger.warn('Function returned void');
 							}
 						}
 						// Check if result is a promise by checking the presence of the then method
@@ -197,28 +184,28 @@ function _watchAllInternal(group: Group, parent: string | undefined, resolve?: (
 								if (typeof child.onCompleteCallback === 'function') {
 									child.onCompleteCallback();
 								}
-								logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'complete');
+								group.logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'complete');
 							});
 
 							child.promise.catch(() => {
 								if (typeof child.onRejectCallback === 'function') {
 									child.onRejectCallback();
 								}
-								logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'rejected');
-								logger.highlight('completed', {id: group.id}, 'rejected');
+								group.logger.highlight(child.name || `g:${group.id},c:${child.id}`, {id: group.id}, 'rejected');
+								group.logger.highlight('completed', {id: group.id}, 'rejected');
 								reject && reject();
 							});
 						}
 						// Handle any other unexpected return values
 						else {
-							if (logger.useLogger) {
-								logger.warn('Function did not return a promise');
+							if (group.logger.useLogger) {
+								group.logger.warn('Function did not return a promise');
 							}
 						}
 					}
 					// } catch (error) {
-					// if (logger.useLogger) {
-					// 	logger.warn('Watch: critical! error in call to (async) function:\n', error);
+					// if (group.logger.useLogger) {
+					// 	group.logger.warn('Watch: critical! error in call to (async) function:\n', error);
 					// }
 					// 	if (typeof group.onErrorCallback === 'function') group.onErrorCallback();
 					// 	return;

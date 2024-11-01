@@ -8,9 +8,10 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version, logger} = module;
+	const {Group, Tree, sleep, version} = module;
 	// const demo02 = new Group({repeat: 7});
 	const demo02 = new Group({repeat: 0});
+	const logger = demo02.logger;
 	demo02.name = '5 tasks in sequence';
 	demo02.addWatch({
 		name: 'preparation step',

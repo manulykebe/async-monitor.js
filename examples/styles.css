@@ -13,15 +13,13 @@ code {
 	margin: 0px;
 }
 
-#console {
-	background-color: #f0f0f0;
-	padding: 10px;
-	border: 1px solid #999;
-	height: -webkit-calc(100% - 22px);
-	height: -moz-calc(100% - 22px);
-	height: calc(100% - 22px);
-	overflow-y: auto;
-	font-family: monospace;
+.logger:first-child {
+	border-top: 1px solid #d3d3d3;
+}
+
+.logger {
+	padding: 10px 0px;
+	border-bottom: 1px solid #d3d3d3;
 }
 
 .button-container {
@@ -97,20 +95,21 @@ button:hover {
 	background-color: #0056b3;
 }
 
-/* Styling for the log entries */
+.log-info {
+	color: #d3d3d3;
+}
+
 .log-entry {
 	display: -webkit-box;
 	display: -ms-flexbox;
 	display: flex;
 }
 
-/* Styling for the time column */
 .log-time {
 	color: lightgray;
 	width: 45px;
 }
 
-/* Styling for the message column */
 .log-message {
 	/* -webkit-box-flex: 1;
 	-ms-flex: 1;
@@ -118,7 +117,6 @@ button:hover {
 	margin-left: 10px;
 }
 
-/* Styling for the <pre> tag within the message column */
 .log-pre {
 	white-space: pre-wrap;
 }
@@ -150,8 +148,6 @@ button:hover {
 	align-items: center;
 }
 
-/* Styling for the warning icon */
-
 .log-error::before {
 	content: '⛔';
 	margin-right: 8px;
@@ -180,7 +176,7 @@ button:hover {
 	padding: 0px 10px 0px 0px;
 }
 .log-table td:first-child {
-	color: #ccc;
+	color: #d3d3d3;
 }
 .log-table td {
 	padding: 0px 5px;
@@ -195,8 +191,8 @@ button:hover {
 }
 
 .log-table-cell {
-	border-top: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
+	border-top: 1px solid #d3d3d3;
+	border-bottom: 1px solid #d3d3d3;
 }
 
 span {
@@ -224,7 +220,7 @@ span {
 }
 .tree {
 	padding: 10px;
-	border: 1px solid #ccc;
+	border: 1px solid #d3d3d3;
 	background-color: #f4f4f4;
 	margin: 0 0 2px 0;
 }

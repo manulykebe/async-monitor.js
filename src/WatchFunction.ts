@@ -1,8 +1,7 @@
 import Group from './Group';
 import now, {calcDuration} from './Now';
 import Sequence from './Sequence';
-
-import {logger} from './Logger';
+import Logger from './Logger';
 
 export type Metric = {
 	id: number;
@@ -148,6 +147,8 @@ export default class WatchFunction {
 		onAbortCallback?: () => void,
 		onErrorCallback?: () => void,
 	) {
+		const logger = this.group?.logger || new Logger();
+
 		if (typeof arg === 'object') {
 			this.f = () => {
 				const result = arg.f();
@@ -156,7 +157,6 @@ export default class WatchFunction {
 			this.name = arg.name;
 			this.parent = arg.parent;
 			this.child = arg.child;
-
 			this.onStartCallback = function () {
 				this._isRunning = true;
 				this._startTime = now();

@@ -8,7 +8,7 @@ import Monitor from './Monitor';
 import version from './Version';
 import {Watch} from './Watch';
 import WatchFunction from './WatchFunction';
-import {logger} from './Logger';
+import Logger from './Logger';
 
 const nextId = Sequence.nextId;
 // Create the asyncMonitor array
@@ -16,13 +16,13 @@ export const asyncMonitor: Group[] = [];
 // Attach asyncMonitor to the global window object
 (window as any).asyncMonitor = asyncMonitor;
 // Directly export the items as named exports
-export {Group, logger, Sequence, nextId, Monitor, version, Watch, sleep, Tree, WatchFunction};
+export {Group, Logger, Sequence, nextId, Monitor, version, Watch, sleep, Tree, WatchFunction};
 // Export types and interfaces.
 
 // Use default export if necessary
 export default {
 	Group,
-	logger,
+	Logger,
 	Monitor,
 	nextId,
 	Sequence,

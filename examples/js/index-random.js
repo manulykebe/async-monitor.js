@@ -69,7 +69,7 @@ const importModule = async () => {
 		module = await import('https://manulykebe.github.io/async-monitor.js/dist/async-monitor.min.esm.js');
 	}
 
-	const {Group, Tree, sleep, version, logger} = module;
+	const {Group, sleep} = module;
 
 	function generateLetterSequence(startLetter, offset) {
 		const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -195,6 +195,7 @@ const importModule = async () => {
 		onStartCallback: function () {},
 		onCompleteCallback: function () {},
 	});
+	const logger = demo00.logger;
 
 	function demo_demo00() {
 		logger.clear();

@@ -1,49 +1,5 @@
+import Sequence from './Sequence';
 import version from './Version';
-
-function appendLogTologger(
-	message: string | Record<string, any> | Array<Record<string, any>>,
-	classnames: string | string[],
-	_id?: number,
-) {
-	if (message === null) message = '<null>';
-	if (message === undefined) message = '<undefined>';
-	if (typeof message === 'string' && message.trim() === '') return;
-	const loggerDiv = document.getElementById('logger');
-	if (loggerDiv) {
-		const logEntry = document.createElement('div');
-		logEntry.classList.add('log-entry');
-
-		const timeCol = document.createElement('div');
-		timeCol.classList.add('log-time');
-		timeCol.textContent = getCurrentTime();
-
-		const messageCol = document.createElement('div');
-		messageCol.classList.add('log-message');
-
-		if (typeof message === 'object') {
-			const table = createTableFromObject(message);
-			messageCol.appendChild(table);
-		} else {
-			const pre = document.createElement('pre');
-			if (!Array.isArray(classnames)) classnames = [classnames];
-			if (!_id && typeof _id === 'number') {
-				classnames.push(`log-group-${_id}`);
-			}
-			classnames.forEach(c => {
-				if (typeof c === 'string' && c.trim() !== '') {
-					pre.classList.add(c.trim());
-				}
-			});
-			pre.textContent = message;
-			messageCol.appendChild(pre);
-		}
-
-		logEntry.appendChild(timeCol);
-		logEntry.appendChild(messageCol);
-
-		loggerDiv.appendChild(logEntry);
-	}
-}
 
 function createTableFromObject(data: Record<string, any> | Array<Record<string, any>>) {
 	const table = document.createElement('table');
@@ -142,20 +98,82 @@ function getCurrentTime() {
 	return now.toTimeString().split(' ')[0];
 }
 
-class Logger {
+export default class Logger {
 	public useLogger: boolean;
+	public id: string;
 
 	constructor(useLogger: boolean = false) {
 		this.useLogger = useLogger;
+		this.id = `logger-${Sequence.nextId()}`;
+	}
+
+	addToDocument(location: HTMLElement = document.body, divId: string = this.id): boolean {
+		const div = document.getElementById(divId);
+		if (div) {
+			div.innerHTML = '';
+		} else {
+			const loggerDiv = document.createElement('div');
+			loggerDiv.id = divId;
+			loggerDiv.classList.add(`logger`, `${this.id}`);
+			location.appendChild(loggerDiv);
+		}
+		this.log(`async-monitor.js$${version}`, 'log-info');
+		return true;
+	}
+
+	appendLogTologger(
+		message: string | Record<string, any> | Array<Record<string, any>>,
+		classnames: string | string[],
+		_id?: number,
+	) {
+		if (message === null) message = '<null>';
+		if (message === undefined) message = '<undefined>';
+		if (typeof message === 'string' && message.trim() === '') return;
+		const loggerDiv = document.getElementById(this.id);
+		if (loggerDiv) {
+			const logEntry = document.createElement('div');
+			logEntry.classList.add('log-entry');
+
+			const timeCol = document.createElement('div');
+			timeCol.classList.add('log-time');
+			timeCol.textContent = getCurrentTime();
+
+			const messageCol = document.createElement('div');
+			messageCol.classList.add('log-message');
+
+			if (typeof message === 'object') {
+				const table = createTableFromObject(message);
+				messageCol.appendChild(table);
+			} else {
+				const pre = document.createElement('pre');
+				if (!Array.isArray(classnames)) classnames = [classnames];
+				if (!_id && typeof _id === 'number') {
+					classnames.push(`log-group-${_id}`);
+				}
+				classnames.forEach(c => {
+					if (typeof c === 'string' && c.trim() !== '') {
+						pre.classList.add(c.trim());
+					}
+				});
+				pre.textContent = message;
+				messageCol.appendChild(pre);
+			}
+
+			logEntry.appendChild(timeCol);
+			logEntry.appendChild(messageCol);
+
+			loggerDiv.appendChild(logEntry);
+		}
 	}
 
 	clear() {
 		if (!this.useLogger) return;
-		const loggerDiv = document.getElementById('logger');
+		const loggerDiv = document.getElementById(this.id);
 		if (loggerDiv) {
 			loggerDiv.innerHTML = '';
 		}
 		this.log(`async-monitor.js$${version}`);
+		this.log(`${this.id}`);
 	}
 
 	log(message: any, classnames?: string | string[]) {
@@ -164,23 +182,23 @@ class Logger {
 			_id = classnames;
 			classnames = undefined;
 		}
-		appendLogTologger(message, classnames || [], _id);
+		this.appendLogTologger(message, classnames || [], _id);
 	}
 
 	warn(message: any, _id?: number) {
-		appendLogTologger(message, 'log-warn', _id);
+		this.appendLogTologger(message, 'log-warn', _id);
 	}
 
 	error(message: any, _id?: number) {
-		appendLogTologger(message, 'log-error', _id);
+		this.appendLogTologger(message, 'log-error', _id);
 	}
 
 	group(label: string, _id?: number) {
-		appendLogTologger(`${label}`, 'log-group', _id);
+		this.appendLogTologger(`${label}`, 'log-group', _id);
 	}
 
 	table(data: Record<string, any> | Array<Record<string, any>>) {
-		appendLogTologger(data, 'log-table');
+		this.appendLogTologger(data, 'log-table');
 	}
 
 	highlight(text: RegExp | string, ids: {id: number; index?: number}, className: string | string[] = 'start') {
@@ -234,12 +252,3 @@ class Logger {
 		}
 	}
 }
-
-export const logger = new Logger();
-logger.clear = function () {
-	const loggerDiv = document.getElementById('logger');
-	if (loggerDiv) {
-		loggerDiv.innerHTML = '';
-	}
-	logger.log(`async-monitor.js$${version}`);
-};
