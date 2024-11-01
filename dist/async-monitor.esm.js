@@ -15,7 +15,7 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var version = '1.1.10';
+var version = '1.1.11';
 
 function createTableFromObject(data) {
     var table = document.createElement('table');
@@ -249,14 +249,6 @@ var Logger = /** @class */ (function () {
     };
     return Logger;
 }());
-// export const logger = new Logger();
-// logger.clear = function () {
-// 	const loggerDiv = document.getElementById('logger');
-// 	if (loggerDiv) {
-// 		loggerDiv.innerHTML = '';
-// 	}
-// 	logger.log(`async-monitor.js$${version}`);
-// };
 
 var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
