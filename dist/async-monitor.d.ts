@@ -3,6 +3,7 @@ declare class Logger {
     id: string;
     constructor(useLogger?: boolean);
     addToDocument(location?: HTMLElement, divId?: string): boolean;
+    addCSSToDocument(cssHref?: string): void;
     appendLogTologger(message: string | Record<string, any> | Array<Record<string, any>>, classnames: string | string[], _id?: number): void;
     clear(): void;
     log(message: any, classnames?: string | string[]): void;

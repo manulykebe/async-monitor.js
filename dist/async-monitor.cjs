@@ -118,6 +118,7 @@ var Logger = /** @class */ (function () {
     Logger.prototype.addToDocument = function (location, divId) {
         if (location === void 0) { location = document.body; }
         if (divId === void 0) { divId = this.id; }
+        this.addCSSToDocument();
         var div = document.getElementById(divId);
         if (div) {
             div.innerHTML = '';
@@ -130,6 +131,17 @@ var Logger = /** @class */ (function () {
         }
         this.log("async-monitor.js$".concat(version), 'log-info');
         return true;
+    };
+    Logger.prototype.addCSSToDocument = function (cssHref) {
+        if (cssHref === void 0) { cssHref = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css'; }
+        var existingLink = document.querySelector("link[href=\"".concat(cssHref, "\"]"));
+        if (!existingLink) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = cssHref;
+            document.head.appendChild(link);
+        }
     };
     Logger.prototype.appendLogTologger = function (message, classnames, _id) {
         if (message === null)
@@ -253,15 +265,6 @@ var Logger = /** @class */ (function () {
     };
     return Logger;
 }());
-var cssHref = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css';
-var existingLink = document.querySelector("link[href=\"".concat(cssHref, "\"]"));
-if (!existingLink) {
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = cssHref;
-    document.head.appendChild(link);
-}
 
 var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }

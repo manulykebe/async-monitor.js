@@ -108,6 +108,7 @@ export default class Logger {
 	}
 
 	addToDocument(location: HTMLElement = document.body, divId: string = this.id): boolean {
+		this.addCSSToDocument();
 		const div = document.getElementById(divId);
 		if (div) {
 			div.innerHTML = '';
@@ -119,6 +120,18 @@ export default class Logger {
 		}
 		this.log(`async-monitor.js$${version}`, 'log-info');
 		return true;
+	}
+
+	addCSSToDocument(cssHref: string = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css') {
+		const existingLink = document.querySelector(`link[href="${cssHref}"]`);
+
+		if (!existingLink) {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = cssHref;
+			document.head.appendChild(link);
+		}
 	}
 
 	appendLogTologger(
@@ -251,15 +264,4 @@ export default class Logger {
 			}
 		}
 	}
-}
-
-const cssHref = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css';
-const existingLink = document.querySelector(`link[href="${cssHref}"]`);
-
-if (!existingLink) {
-	const link = document.createElement('link');
-	link.rel = 'stylesheet';
-	link.type = 'text/css';
-	link.href = cssHref;
-	document.head.appendChild(link);
 }
