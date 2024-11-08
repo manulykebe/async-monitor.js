@@ -1,0 +1,75 @@
+html {
+	background-color: #f4f4f4;
+}
+
+.button-container {
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	width: 150px;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-flex-direction: column;
+	-ms-flex-direction: column;
+	flex-direction: column;
+	-webkit-flex-wrap: nowrap;
+	-ms-flex-wrap: nowrap;
+	flex-wrap: nowrap;
+	-webkit-align-content: flex-start;
+	-ms-flex-line-pack: start;
+	align-content: flex-start;
+}
+
+.button-container > * {
+	margin-bottom: 2px;
+}
+
+.button-container > *:last-child {
+	margin-bottom: 0;
+}
+
+.btn-wrapper {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-align-items: center;
+	-ms-flex-align: center;
+	align-items: center;
+}
+
+#codeIcon {
+	font-size: 24px;
+	margin-right: 10px;
+	cursor: pointer;
+	color: grey;
+	-webkit-transition: color 0.3s ease;
+	-moz-transition: color 0.3s ease;
+	transition: color 0.3s ease;
+	-webkit-transform: translateX(119px);
+	-moz-transform: translateX(119px);
+	transform: translateX(119px);
+}
+
+
+#codeIcon:hover {
+	color: #0056b3;
+}
+
+button {
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	text-align: left;
+	width: 200px;
+}
+
+button:hover {
+	background-color: #0056b3;
+}

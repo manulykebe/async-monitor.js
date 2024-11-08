@@ -1,15 +1,15 @@
-html {
+.logger {
 	background-color: #f4f4f4;
 }
 
-html,
-table {
+.logger,
+.logger table {
 	font-size: 10px;
 	font-family: monospace;
 }
 
-pre,
-code {
+.logger pre,
+.logger code {
 	margin: 0px;
 }
 
@@ -22,110 +22,34 @@ code {
 	border-bottom: 1px solid #d3d3d3;
 }
 
-.button-container {
-	position: absolute;
-	right: 20px;
-	top: 20px;
-	width: 150px;
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-	-webkit-flex-direction: column;
-	-ms-flex-direction: column;
-	flex-direction: column;
-	-webkit-flex-wrap: nowrap;
-	-ms-flex-wrap: nowrap;
-	flex-wrap: nowrap;
-	-webkit-align-content: flex-start;
-	-ms-flex-line-pack: start;
-	align-content: flex-start;
-}
-
-.button-container > * {
-	margin-bottom: 2px;
-}
-
-.button-container > *:last-child {
-	margin-bottom: 0;
-}
-
-.btn-wrapper {
-	display: -webkit-box;
-	display: -ms-flexbox;
-	display: flex;
-	-webkit-align-items: center;
-	-ms-flex-align: center;
-	align-items: center;
-}
-
-/* Styling for the code icon (next to the button) */
-#codeIcon {
-	font-size: 24px;
-	margin-right: 10px;
-	cursor: pointer;
-	color: grey;
-	-webkit-transition: color 0.3s ease;
-	-moz-transition: color 0.3s ease;
-	transition: color 0.3s ease;
-	-webkit-transform: translateX(119px);
-	-moz-transform: translateX(119px);
-	transform: translateX(119px);
-}
-
-/* Change icon color on hover */
-#codeIcon:hover {
-	color: #0056b3;
-}
-
-button {
-	padding: 10px 20px;
-	font-size: 16px;
-	cursor: pointer;
-	background-color: #007bff;
-	color: white;
-	border: none;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	text-align: left;
-	width: 200px;
-}
-
-button:hover {
-	background-color: #0056b3;
-}
-
-.log-info {
+.logger .log-info {
 	color: #d3d3d3;
 }
 
-.log-entry {
+.logger .log-entry {
 	display: -webkit-box;
 	display: -ms-flexbox;
 	display: flex;
 }
 
-.log-time {
+.logger .log-time {
 	color: lightgray;
 	width: 45px;
 }
 
-.log-message {
-	/* -webkit-box-flex: 1;
-	-ms-flex: 1;
-	flex: 1; */
+.logger .log-message {
 	margin-left: 10px;
 }
 
-.log-pre {
+.logger .log-pre {
 	white-space: pre-wrap;
 }
 
-.log-group {
+.logger .log-group {
 	font-weight: bold;
 }
 
-.log-error {
+.logger .log-error {
 	color: red;
 	background-color: #fcebeb;
 	font-weight: bold;
@@ -137,7 +61,7 @@ button:hover {
 	align-items: center;
 }
 
-.log-warn {
+.logger .log-warn {
 	background-color: #fef6d5;
 	font-weight: bold;
 	display: -webkit-box;
@@ -148,7 +72,7 @@ button:hover {
 	align-items: center;
 }
 
-.log-error::before {
+.logger .log-error::before {
 	content: '⛔';
 	margin-right: 8px;
 	font-size: 1.2em;
@@ -157,7 +81,7 @@ button:hover {
 	transform: translateY(-2px);
 }
 
-.log-warn::before {
+.logger .log-warn::before {
 	content: '⚠️';
 	margin-right: 8px;
 	font-size: 1.2em;
@@ -166,76 +90,79 @@ button:hover {
 	transform: translateY(-2px);
 }
 
-/* Styling for the log table */
-.log-table {
+.logger .log-table {
 	width: 100%;
 	border-collapse: collapse;
 }
 
-.log-table th {
+.logger .log-table th {
 	padding: 0px 10px 0px 0px;
 }
-.log-table td:first-child {
+
+.logger .log-table td:first-child {
 	color: #d3d3d3;
 }
-.log-table td {
+
+.logger .log-table td {
 	padding: 0px 5px;
 }
 
-/* Styling for table headers */
-.log-table-header {
+.logger .log-table-header {
 	font-weight: normal;
 	color: #999;
 	border: 0px solid black;
 	text-align: left;
 }
 
-.log-table-cell {
+.logger .log-table-cell {
 	border-top: 1px solid #d3d3d3;
 	border-bottom: 1px solid #d3d3d3;
 }
 
-span {
+.logger span {
 	position: relative;
 	display: inline-block;
 }
 
-.highlight-start {
+.logger .highlight-start {
 	background-color: lightyellow;
 	font-style: italic;
 }
-.highlight-complete {
+
+.logger .highlight-complete {
 	background-color: lightgreen;
 	font-style: normal;
 	font-weight: bold;
 }
-.highlight-aborted,
-.highlight-rejected {
+
+.logger .highlight-aborted,
+.logger .highlight-rejected {
 	background-color: rgba(255, 0, 0, 0.2);
 	font-style: normal;
 	font-weight: bold;
 }
-.highlight-repeat {
+
+.logger .highlight-repeat {
 	border: 0px solid black;
 }
-.tree {
+
+.logger .tree {
 	padding: 10px;
 	border: 1px solid #d3d3d3;
 	background-color: #f4f4f4;
 	margin: 0 0 2px 0;
 }
 
-.icon {
+.logger .icon {
 	position: absolute;
 	left: -8px;
 	top: 1px;
 	cursor: pointer;
-	/* color:  rgba(255, 0, 0); */
 }
 
-.highlight-complete .icon,
-.highlight-repeat .icon,
-.highlight-rejected .icon,
-.highlight-aborted .icon {
+.logger .highlight-complete .icon,
+.logger .highlight-repeat .icon,
+.logger .highlight-rejected .icon,
+.logger .highlight-aborted .icon {
 	display: none;
 }
