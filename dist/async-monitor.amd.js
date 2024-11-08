@@ -17,7 +17,7 @@ define(['exports'], (function (exports) { 'use strict';
         return Sequence;
     }());
 
-    var version = '1.1.11';
+    var version = '1.1.12';
 
     function createTableFromObject(data) {
         var table = document.createElement('table');
