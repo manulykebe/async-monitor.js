@@ -124,7 +124,6 @@ export default class Logger {
 
 	addCSSToDocument(cssHref: string = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css') {
 		const existingLink = document.querySelector(`link[href="${cssHref}"]`);
-
 		if (!existingLink) {
 			const link = document.createElement('link');
 			link.rel = 'stylesheet';
