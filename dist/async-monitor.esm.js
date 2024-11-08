@@ -15,7 +15,7 @@ var Sequence = /** @class */ (function () {
     return Sequence;
 }());
 
-var version = '1.1.12';
+var version = '1.1.13';
 
 function createTableFromObject(data) {
     var table = document.createElement('table');
