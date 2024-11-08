@@ -255,6 +255,15 @@
         };
         return Logger;
     }());
+    var cssHref = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css';
+    var existingLink = document.querySelector("link[href=\"".concat(cssHref, "\"]"));
+    if (!existingLink) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = cssHref;
+        document.head.appendChild(link);
+    }
 
     var __awaiter$2 = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }

@@ -252,3 +252,14 @@ export default class Logger {
 		}
 	}
 }
+
+const cssHref = 'https://manulykebe.github.io/async-monitor.js/examples/styles.css';
+const existingLink = document.querySelector(`link[href="${cssHref}"]`);
+
+if (!existingLink) {
+	const link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.type = 'text/css';
+	link.href = cssHref;
+	document.head.appendChild(link);
+}
