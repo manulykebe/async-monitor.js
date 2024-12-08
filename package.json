@@ -76,6 +76,6 @@
 	},
 	"dependencies": {
 		"tough-cookie": "^5.0.0",
-		"uuid": "^11.0.2"
+		"uuid": "^11.0.3"
 	}
 }
